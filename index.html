@@ -4,71 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 매니저 Pro</title>
-    <style>
-        :root { 
-            --main-blue: #0ea5e9; --dark-blue: #075985; --card-bg: #ffffff;
-            --text-main: #1e293b; --error-red: #f43f5e; --success-green: #10b981;
-        }
-        
-        body { 
-            background: radial-gradient(circle at top, var(--main-blue) 0%, var(--dark-blue) 100%);
-            background-attachment: fixed; font-family: sans-serif; 
-            display: flex; flex-direction: column; align-items: center; 
-            margin: 0; padding: 0; min-height: 100vh; color: white; overflow-x: hidden;
-        }
-
-        .top-bar { 
-            width: 100%; height: 65px; display: flex; align-items: center; padding: 0 15px; 
-            box-sizing: border-box; position: sticky; top: 0; z-index: 100;
-            background: rgba(7, 89, 133, 0.8); backdrop-filter: blur(10px);
-        }
-        .menu-btn { font-size: 30px; cursor: pointer; background: none; border: none; color: white; padding: 5px 10px; }
-        .header-title { flex-grow: 1; text-align: center; font-size: 18px; font-weight: 700; margin-right: 50px; }
-
-        .side-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #ffffff; color: #333; transition: 0.4s; z-index: 1000; box-shadow: 10px 0 30px rgba(0,0,0,0.4); }
-        .side-menu.open { left: 0; }
-        .menu-header { padding: 30px 20px; font-weight: 800; font-size: 20px; border-bottom: 2px solid var(--main-blue); color: var(--main-blue); background: #f8fafc; }
-        .menu-item { padding: 16px 25px; font-size: 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; }
-        .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 999; }
-        .set-select { width: 85%; margin: 10px 20px; padding: 12px; border-radius: 10px; border: 2px solid #e2e8f0; }
-
-        #part-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0; padding: 0 15px; width: 100%; max-width: 420px; }
-        .part-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 10px; border-radius: 12px; cursor: pointer; font-size: 12px; flex: 1 1 calc(33% - 10px); }
-        .part-btn.active { background: white; color: var(--dark-blue); font-weight: 800; }
-        
-        #test-setup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .setup-card { background: white; padding: 30px; border-radius: 25px; width: 300px; text-align: center; color: #333; }
-        .setup-input { width: 80%; padding: 15px; font-size: 24px; text-align: center; border: 2px solid #ddd; border-radius: 15px; margin: 15px 0; outline: none; }
-
-        .card { 
-            background: var(--card-bg); width: calc(100% - 30px); max-width: 380px; border-radius: 25px; padding: 30px; 
-            text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4); min-height: 180px; 
-            display: flex; flex-direction: column; justify-content: center; position: relative; color: var(--text-main); box-sizing: border-box;
-        }
-        .score-display { font-size: 32px; font-weight: 900; color: var(--error-red); margin-bottom: 10px; display: none; }
-        .id-tag { color: var(--main-blue); font-weight: 800; font-size: 14px; margin-bottom: 8px; }
-        .theme { color: var(--dark-blue); font-size: 24px; font-weight: 800; margin: 5px 0; }
-        .ref { color: #64748b; font-size: 20px; margin-bottom: 15px; }
-        .content { color: #0f172a; font-size: 19px; line-height: 1.7; display: none; text-align: left; background: #f8fafc; padding: 20px; border-radius: 15px; word-break: keep-all; }
-        .result-view { text-align: left; font-size: 17px; line-height: 1.6; margin-top: 15px; display: none; background: #fff1f2; padding: 15px; border-radius: 12px; color: #333; }
-        .wrong { color: var(--error-red); text-decoration: underline; font-weight: bold; }
-        
-        #test-section { width: calc(100% - 30px); max-width: 380px; margin-top: 20px; display: none; }
-        .input-label { font-size: 14px; font-weight: bold; margin-bottom: 8px; display: block; opacity: 0.9; }
-        .test-input { width: 100%; border-radius: 12px; border: none; padding: 15px; font-size: 16px; box-sizing: border-box; outline: none; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        textarea.test-input { height: 110px; }
-        
-        .controls { display: flex; gap: 12px; margin: 25px 0; width: calc(100% - 30px); max-width: 380px; }
-        .btn { flex: 1; background: white; border: none; color: var(--dark-blue); padding: 16px; border-radius: 15px; font-weight: 800; cursor: pointer; font-size: 16px; box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
-        .primary-btn { background: var(--main-blue); color: white; margin-top: 10px; }
-        .check-btn { background: #fbbf24; color: #78350f; width: calc(100% - 30px); max-width: 380px; margin-top: 5px; font-weight: bold; display: none; }
-
-        .status-panel { width: calc(100% - 30px); max-width: 380px; display: none; justify-content: space-between; margin-bottom: 10px; font-size: 14px; font-weight: bold; }
-        .footer { margin-bottom: 50px; font-size: 14px; opacity: 0.8; background: rgba(0,0,0,0.2); padding: 6px 18px; border-radius: 20px; }
-    </style>
-</head>
+    <link rel="stylesheet" href="style.css"> </head>
 <body>
-
     <div class="top-bar">
         <button class="menu-btn" onclick="toggleMenu()">≡</button>
         <div class="header-title" id="mode-title">암송 카드 (연습)</div>
@@ -76,11 +13,14 @@
 
     <div id="test-setup">
         <div class="setup-card">
-            <h3 style="margin-top:0; color:var(--dark-blue);">테스트 설정</h3>
-            <p>몇 구절을 테스트하시겠습니까?</p>
-            <input type="number" id="test-count-input" class="setup-input" value="10" min="1">
+            <h3>테스트 범위 설정</h3>
+            <div id="part-selector-list" class="part-selector"></div>
+            <div class="setup-input-group">
+                <span>문항 수:</span>
+                <input type="number" id="test-count-input" class="setup-input" value="10">
+            </div>
             <button class="btn primary-btn" onclick="startTestSession()">테스트 시작</button>
-            <button class="btn" style="margin-top:10px; background:#eee;" onclick="setMode('practice')">취소</button>
+            <button class="btn cancel-btn" onclick="setMode('practice')">취소</button>
         </div>
     </div>
 
@@ -89,11 +29,11 @@
         <div class="menu-header">암송 매니저</div>
         <div class="menu-item" onclick="setMode('practice')">📖 암송 카드 (연습)</div>
         <div class="menu-item" onclick="setMode('test')">✍️ 암송 테스트 (시험)</div>
-        <div style="padding: 20px 20px 5px; font-size: 12px; color: #999;">데이터 세트</div>
-        <select class="set-select" id="data-select" onchange="loadData(this.value); toggleMenu();"></select>
+        <div class="menu-label">데이터 세트</div>
+        <select id="data-select" class="set-select" onchange="loadData(this.value); toggleMenu();"></select>
     </div>
 
-    <div id="part-container"></div>
+    <div id="part-container" class="part-menu"></div>
 
     <div class="status-panel" id="status-panel">
         <span id="test-progress">진행: 0 / 0</span>
@@ -110,13 +50,11 @@
     </div>
 
     <div id="test-section">
-        <span class="input-label">제목 입력</span>
         <input type="text" id="input-theme" class="test-input" placeholder="제목을 입력하세요">
-        <span class="input-label">내용 입력</span>
         <textarea id="input-content" class="test-input" placeholder="본문 내용을 입력하세요"></textarea>
     </div>
 
-    <button id="check-btn" class="btn check-btn" onclick="runCheck()">채점하기 (체킹)</button>
+    <button id="check-btn" class="check-btn" onclick="runCheck()">채점하기 (체킹)</button>
 
     <div class="controls">
         <button class="btn" onclick="prevVerse()" id="prev-btn">이전</button>
@@ -125,215 +63,7 @@
 
     <div id="v-page" class="footer">0 / 0</div>
 
-    <script>
-        let allVerses = [];
-        let currentVerses = [];
-        let currentIndex = 0;
-        let isShowing = false;
-        let currentMode = 'practice';
-        
-        let testSessionVerses = [];
-        let testCurrentStep = 0;
-        let testTotalPenalty = 0;
-        let testMaxSteps = 10;
-        let isCurrentChecked = false;
-
-        async function initApp() {
-            try {
-                const response = await fetch('data/config.json');
-                const config = await response.json();
-                const selectEl = document.getElementById('data-select');
-                config.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item.file; option.innerText = item.name;
-                    selectEl.appendChild(option);
-                });
-                loadData(config[0].file);
-            } catch (e) { loadData('nav_60.json'); }
-        }
-
-        function toggleMenu() {
-            const sideMenu = document.getElementById('sideMenu');
-            const overlay = document.getElementById('overlay');
-            sideMenu.classList.toggle('open');
-            overlay.style.display = sideMenu.classList.contains('open') ? 'block' : 'none';
-        }
-
-        function setMode(mode) {
-            currentMode = mode;
-            document.getElementById('mode-title').innerText = mode === 'practice' ? '암송 카드 (연습)' : '암송 테스트 (시험)';
-            document.getElementById('test-setup').style.display = mode === 'test' ? 'flex' : 'none';
-            document.getElementById('test-section').style.display = 'none';
-            document.getElementById('check-btn').style.display = 'none';
-            document.getElementById('part-container').style.display = mode === 'test' ? 'none' : 'flex';
-            document.getElementById('status-panel').style.display = 'none';
-            
-            document.getElementById('next-btn').innerText = mode === 'test' ? '다음 구절' : '다음';
-            document.getElementById('prev-btn').style.visibility = mode === 'test' ? 'hidden' : 'visible';
-
-            if(mode === 'practice') {
-                toggleMenu();
-                filterPart('A');
-            } else {
-                const sideMenu = document.getElementById('sideMenu');
-                const overlay = document.getElementById('overlay');
-                sideMenu.classList.remove('open');
-                overlay.style.display = 'none';
-            }
-        }
-
-        async function loadData(fileName) {
-            const response = await fetch('data/' + fileName);
-            allVerses = await response.json();
-            generatePartButtons();
-            if(currentMode === 'practice') filterPart('A');
-        }
-
-        function generatePartButtons() {
-            const container = document.getElementById('part-container');
-            const parts = [...new Set(allVerses.map(v => v.p))];
-            container.innerHTML = '';
-            parts.forEach(p => {
-                const btn = document.createElement('button');
-                btn.className = 'part-btn';
-                btn.innerText = p + "파트";
-                btn.onclick = () => filterPart(p);
-                container.appendChild(btn);
-            });
-        }
-
-        function filterPart(part) {
-            currentVerses = allVerses.filter(v => v.p === part);
-            currentIndex = 0;
-            updateCard();
-            document.querySelectorAll('.part-btn').forEach(btn => btn.classList.toggle('active', btn.innerText.includes(part)));
-        }
-
-        function startTestSession() {
-            const countInput = document.getElementById('test-count-input').value;
-            testMaxSteps = Math.min(parseInt(countInput) || 10, allVerses.length);
-            document.getElementById('test-setup').style.display = 'none';
-            document.getElementById('test-section').style.display = 'block';
-            document.getElementById('check-btn').style.display = 'block';
-            document.getElementById('status-panel').style.display = 'flex';
-            testSessionVerses = [...allVerses].sort(() => Math.random() - 0.5).slice(0, testMaxSteps);
-            testCurrentStep = 0;
-            testTotalPenalty = 0;
-            isCurrentChecked = false;
-            currentVerses = testSessionVerses;
-            currentIndex = 0;
-            updateCard();
-            updateStatus();
-        }
-
-        function updateStatus() {
-            document.getElementById('test-progress').innerText = `진행: ${testCurrentStep + 1} / ${testMaxSteps}`;
-            document.getElementById('test-total-score').innerText = `누적 감점: ${testTotalPenalty}`;
-        }
-
-        function handleNext() {
-            if(currentMode === 'test') {
-                if(!isCurrentChecked) {
-                    if(!confirm("채점하지 않고 다음 구절로 넘어가시겠습니까?")) return;
-                }
-                if(testCurrentStep < testMaxSteps - 1) {
-                    testCurrentStep++;
-                    currentIndex = testCurrentStep;
-                    isCurrentChecked = false;
-                    updateCard();
-                    updateStatus();
-                } else {
-                    alert(`테스트 완료!\n총 ${testMaxSteps}구절 중 누적 감점: ${testTotalPenalty}\n연습 모드로 돌아갑니다.`);
-                    setMode('practice');
-                }
-            } else {
-                if (currentIndex < currentVerses.length - 1) { currentIndex++; updateCard(); }
-            }
-        }
-
-        function updateCard() {
-            const v = currentVerses[currentIndex];
-            if(!v) return;
-            
-            // 핵심 수정: 테스트 모드에서는 ID(A-1)와 제목(theme) 모두 숨김
-            const idEl = document.getElementById('v-id');
-            const themeEl = document.getElementById('v-theme');
-            
-            idEl.innerText = v.id;
-            themeEl.innerText = v.theme;
-            document.getElementById('v-ref').innerText = v.ref;
-            document.getElementById('v-content').innerText = v.content;
-            
-            if(currentMode === 'test') {
-                idEl.style.display = 'none';
-                themeEl.style.display = 'none';
-            } else {
-                idEl.style.display = 'block';
-                themeEl.style.display = 'block';
-            }
-            
-            isShowing = false;
-            document.getElementById('v-content').style.display = 'none';
-            document.getElementById('result-view').style.display = 'none';
-            document.getElementById('score-text').style.display = 'none';
-            document.getElementById('input-theme').value = "";
-            document.getElementById('input-content').value = "";
-            
-            if(currentMode === 'practice') {
-                document.getElementById('v-page').innerText = (currentIndex + 1) + " / " + currentVerses.length;
-            } else {
-                document.getElementById('v-page').innerText = "랜덤 테스트 중";
-            }
-        }
-
-        function handleCardClick() {
-            if(currentMode === 'practice') {
-                const content = document.getElementById('v-content');
-                isShowing = !isShowing;
-                content.style.display = isShowing ? 'block' : 'none';
-            }
-        }
-
-        function runCheck() {
-            if(isCurrentChecked) return;
-            const v = currentVerses[currentIndex];
-            const themeInput = document.getElementById('input-theme').value.trim();
-            const contentInput = document.getElementById('input-content').value.trim();
-            const clean = (text) => text.replace(/[.,·?!"'()]/g, "").replace(/\s/g, "");
-            const originalWords = v.content.split(/\s+/);
-            const inputWords = contentInput.split(/\s+/);
-            let penalty = 0;
-            let resultHTML = "";
-            if(clean(themeInput) !== clean(v.theme)) { penalty += 1; }
-            const maxLength = Math.max(originalWords.length, inputWords.length);
-            for(let i = 0; i < maxLength; i++) {
-                const target = originalWords[i] || "";
-                const input = inputWords[i] || "";
-                if (target !== "" && clean(target) === clean(input)) {
-                    resultHTML += target + " ";
-                } else {
-                    penalty += 1;
-                    resultHTML += `<span class="wrong">${input || "___"}</span> `;
-                }
-            }
-            const currentPenalty = Math.min(penalty, 5);
-            testTotalPenalty += currentPenalty;
-            isCurrentChecked = true;
-            const scoreEl = document.getElementById('score-text');
-            scoreEl.innerText = (currentPenalty === 0 ? "0" : "-" + currentPenalty);
-            scoreEl.style.display = 'block';
-            const resultEl = document.getElementById('result-view');
-            // 결과창에서는 ID와 제목을 보여줘서 정답 확인 가능하게 함
-            resultEl.innerHTML = `<strong>정답 확인 [${v.id}]</strong><br>제목: ${v.theme}<br><br><strong>채점 결과:</strong><br>${resultHTML}<br><br><strong>원문 본문:</strong><br>${v.content}`;
-            resultEl.style.display = 'block';
-            updateStatus();
-        }
-
-        function prevVerse() {
-            if(currentMode === 'practice' && currentIndex > 0) { currentIndex--; updateCard(); }
-        }
-
-        initApp();
-    </script>
+    <script src="app.js"></script>
+    <script src="test.js"></script>
 </body>
 </html>
