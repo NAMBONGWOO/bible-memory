@@ -3,108 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>성경암송 매니저</title>
+    <title>주제별 성경암송 - 연습 & 시험</title>
     <style>
-        /* (스타일은 이전과 동일하게 유지하되 메뉴 선택바 추가) */
-        :root { --main-blue: #0284c7; --dark-blue: #1e40af; }
+        :root { --main-blue: #0284c7; --dark-blue: #1e40af; --error-red: #ef4444; --success-green: #10b981; }
         body { background: linear-gradient(135deg, var(--main-blue) 0%, #075985 100%); font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; min-height: 100vh; color: white; }
-        .set-selector { margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 15px; }
-        .card { background: white; width: 100%; max-width: 360px; border-radius: 20px; padding: 25px; text-align: center; color: #333; min-height: 250px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); cursor: pointer; }
-        .content { display: none; background: #f3f4f6; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: left; }
-        .test-input { width: 100%; max-width: 360px; margin-top: 20px; height: 80px; border-radius: 10px; border: none; padding: 10px; box-sizing: border-box; }
-        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
-        .btn { padding: 10px 25px; border-radius: 10px; border: 1px solid white; background: transparent; color: white; cursor: pointer; }
-        .part-menu { display: flex; flex-wrap: wrap; gap: 5px; margin: 15px 0; justify-content: center; }
-        .part-btn { font-size: 12px; padding: 5px 10px; border-radius: 5px; border: 1px solid white; background: rgba(255,255,255,0.1); color: white; }
-        .active { background: white; color: var(--main-blue); font-weight: bold; }
+        .header { text-align: center; margin-bottom: 15px; }
+        .part-menu { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 15px; }
+        .part-btn { background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-size: 13px; }
+        .part-btn.active { background: white; color: var(--main-blue); font-weight: bold; }
+        
+        /* 카드 영역 */
+        .card { background: white; width: 100%; max-width: 360px; border-radius: 20px; padding: 25px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); cursor: pointer; min-height: 220px; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; position: relative; color: #333; }
+        .score-badge { position: absolute; top: 15px; right: 15px; background: var(--success-green); color: white; padding: 5px 12px; border-radius: 15px; font-weight: bold; font-size: 14px; display: none; }
+        .id-tag { color: var(--main-blue); font-weight: bold; font-size: 14px; }
+        .theme { color: var(--dark-blue); font-size: 24px; font-weight: bold; margin: 10px 0; }
+        .ref { color: #6b7280; font-size: 18px; margin-bottom: 10px; }
+        .content { color: #1f2937; font-size: 19px; line-height: 1.6; display: none; text-align: left; background: #f3f4f6; padding: 15px; border-radius: 10px; word-break: keep-all; }
+        
+        /* 시험 입력창 */
+        .test-section { width: 100%; max-width: 360px; margin-top: 20px; }
+        textarea { width: 100%; height: 100px; border-radius: 15px; border: none; padding: 15px; font-size: 17px; box-sizing: border-box; outline: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); font-family: inherit; }
+        
+        /* 컨트롤 버튼 */
+        .controls { display: flex; gap: 15px; margin-top: 20px; width: 100%; max-width: 360px; }
+        .btn { flex: 1; background: white; border: none; color: var(--main-blue); padding: 15px; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn:active { transform: scale(0.98); }
+        .footer { margin-top: 20px; font-size: 14px; opacity: 0.8; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="set-selector">
-        <select id="data-select" onchange="loadData(this.value)" style="padding: 5px; border-radius: 5px;">
-            <option value="nav_60.json">네비게이토 60구절</option>
-            <option value="nav_180.json">네비게이토 180구절</option>
-        </select>
+    <div class="header">
+        <h2>성경암송 연습 & 시험</h2>
     </div>
 
-    <div class="part-menu" id="part-menu">
-        <button class="part-btn active" onclick="filterPart('A')">A파트</button>
-        <button class="part-btn" onclick="filterPart('B')">B파트</button>
-        <button class="part-btn" onclick="filterPart('C')">C파트</button>
-        <button class="part-btn" onclick="filterPart('D')">D파트</button>
-        <button class="part-btn" onclick="filterPart('E')">E파트</button>
+    <div class="part-menu">
+        <button class="part-btn active" onclick="filterPart('A')">A.새로운삶</button>
+        <button class="part-btn" onclick="filterPart('B')">B.그리스도전파</button>
+        <button class="part-btn" onclick="filterPart('C')">C.하나님의뢰</button>
+        <button class="part-btn" onclick="filterPart('D')">D.제자자격</button>
+        <button class="part-btn" onclick="filterPart('E')">E.그리스도닮음</button>
     </div>
 
-    <div class="card" onclick="document.getElementById('v-content').style.display='block'">
-        <div id="v-id" style="color:var(--main-blue); font-weight:bold;">A-1</div>
-        <div id="v-theme" style="font-size:22px; margin:10px 0;">주제 로딩중...</div>
-        <div id="v-ref" style="color:#666;">장절 로딩중...</div>
-        <div id="v-content" class="content">본문 내용</div>
+    <div class="card" onclick="toggleContent()">
+        <div id="score" class="score-badge">100점</div>
+        <div id="v-id" class="id-tag">A-1</div>
+        <div id="v-theme" class="theme">주제</div>
+        <div id="v-ref" class="ref">장절</div>
+        <div id="v-content" class="content">내용</div>
+        <div id="v-hint" style="color:#94a3b8; font-size:12px; margin-top:10px;">(터치하면 정답 확인)</div>
     </div>
 
-    <textarea class="test-input" id="test-input" placeholder="암송을 입력해보세요..."></textarea>
-
-    <div class="btn-group">
-        <button class="btn" onclick="prev()">이전</button>
-        <button class="btn" onclick="next()">다음</button>
+    <div class="test-section">
+        <textarea id="test-input" placeholder="여기에 암송한 내용을 적어보세요..." oninput="checkTest()"></textarea>
     </div>
+
+    <div class="controls">
+        <button class="btn" onclick="prevVerse()">이전</button>
+        <button class="btn" onclick="nextVerse()">다음</button>
+    </div>
+
+    <div id="v-page" class="footer">로딩 중...</div>
 
     <script>
-    let allVerses = [];
-    let currentVerses = [];
-    let currentIndex = 0;
+        let allVerses = [];
+        let currentVerses = [];
+        let currentIndex = 0;
+        let isShowing = false;
 
-    async function loadData(fileName) {
-        try {
-            // 1. 경로에서 ./ 를 빼고 'data/파일명'으로 직접 접근해봅니다.
-            const response = await fetch('data/' + fileName); 
-            
-            if (!response.ok) {
-                // 만약 실패하면 서버가 주는 정확한 에러를 알림창으로 띄웁니다.
-                throw new Error('파일을 찾을 수 없습니다. 상태코드: ' + response.status);
+        // 1. 데이터 불러오기
+        async function loadData(fileName) {
+            try {
+                const response = await fetch('data/' + fileName);
+                if (!response.ok) throw new Error('파일 로드 실패');
+                allVerses = await response.json();
+                filterPart('A'); // 시작 시 A파트 표시
+            } catch (error) {
+                alert("데이터를 불러오지 못했습니다. 경로를 확인해주세요.");
             }
+        }
+
+        // 2. 파트 필터링 (A~E)
+        function filterPart(part) {
+            currentVerses = allVerses.filter(v => v.p === part);
+            currentIndex = 0;
+            updateCard();
             
-            allVerses = await response.json();
-            console.log("데이터 로드 성공:", allVerses.length + "구절");
-            filterPart('A'); 
-        } catch (error) {
-            console.error("데이터 로딩 실패:", error);
-            alert("데이터 오류: " + error.message + "\n파일명: " + fileName + "\n폴더 구조를 다시 확인해주세요.");
+            // 버튼 활성화 표시
+            document.querySelectorAll('.part-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText.includes(part));
+            });
         }
-    }
 
-    function filterPart(part) {
-        currentVerses = allVerses.filter(v => v.p === part);
-        if (currentVerses.length === 0) {
-            alert(part + "파트에 해당하는 데이터가 없습니다.");
-            return;
+        // 3. 카드 화면 업데이트 (이전/다음 클릭 시 실행)
+        function updateCard() {
+            const v = currentVerses[currentIndex];
+            if(!v) return;
+
+            document.getElementById('v-id').innerText = v.id;
+            document.getElementById('v-theme').innerText = v.theme;
+            document.getElementById('v-ref').innerText = v.ref;
+            document.getElementById('v-content').innerText = v.content;
+            
+            // 상태 초기화
+            document.getElementById('v-content').style.display = 'none';
+            document.getElementById('test-input').value = "";
+            document.getElementById('score').style.display = 'none';
+            document.getElementById('v-page').innerText = (currentIndex + 1) + " / " + currentVerses.length;
+            isShowing = false;
         }
-        currentIndex = 0;
-        updateCard();
-        document.querySelectorAll('.part-btn').forEach(b => b.classList.toggle('active', b.innerText.includes(part)));
-    }
 
-    function updateCard() {
-        const v = currentVerses[currentIndex];
-        if(!v) return;
-        document.getElementById('v-id').innerText = v.id;
-        document.getElementById('v-theme').innerText = v.theme;
-        document.getElementById('v-ref').innerText = v.ref;
-        document.getElementById('v-content').innerText = v.content;
-        document.getElementById('v-content').style.display = 'none';
-        document.getElementById('test-input').value = "";
-        
-        // 점수 초기화
-        const scoreEl = document.getElementById('score');
-        if(scoreEl) scoreEl.style.display = 'none';
-    }
+        // 4. 실시간 채점 (입력할 때마다 실행)
+        function checkTest() {
+            const input = document.getElementById('test-input').value.replace(/\s/g, ""); // 공백 제거
+            const original = currentVerses[currentIndex].content.replace(/\s/g, ""); // 공백 제거
+            const scoreEl = document.getElementById('score');
+            
+            if (input.length === 0) {
+                scoreEl.style.display = 'none';
+                return;
+            }
 
-    // 초기 호출
-    loadData('nav_60.json');
+            let penalty = 0;
+            // 입력한 글자 수만큼 비교
+            for(let i=0; i < input.length; i++) {
+                if(input[i] !== original[i]) {
+                    penalty++;
+                }
+            }
 
-    // 나머지 함수들(next, prev, toggleContent 등)은 그대로 유지하세요!
-</script>
+            // 최대 5점까지만 감점 (95점 유지)
+            const finalPenalty = Math.min(penalty, 5);
+            const currentScore = 100 - finalPenalty;
+
+            scoreEl.innerText = currentScore + "점";
+            scoreEl.style.display = 'block';
+            scoreEl.style.background = currentScore < 100 ? '#ef4444' : '#10b981';
+        }
+
+        // 5. 정답 보기 토글
+        function toggleContent() {
+            const content = document.getElementById('v-content');
+            isShowing = !isShowing;
+            content.style.display = isShowing ? 'block' : 'none';
+        }
+
+        // 6. 이전/다음 버튼 기능
+        function nextVerse() {
+            if (currentIndex < currentVerses.length - 1) {
+                currentIndex++;
+                updateCard();
+            }
+        }
+
+        function prevVerse() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+            }
+        }
+
+        // 앱 시작
+        loadData('nav_60.json');
     </script>
 </body>
 </html>
