@@ -25,7 +25,6 @@
         .menu-btn { font-size: 30px; cursor: pointer; background: none; border: none; color: white; padding: 5px 10px; }
         .header-title { flex-grow: 1; text-align: center; font-size: 18px; font-weight: 700; margin-right: 50px; }
 
-        /* 사이드바 */
         .side-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #ffffff; color: #333; transition: 0.4s; z-index: 1000; box-shadow: 10px 0 30px rgba(0,0,0,0.4); }
         .side-menu.open { left: 0; }
         .menu-header { padding: 30px 20px; font-weight: 800; font-size: 20px; border-bottom: 2px solid var(--main-blue); color: var(--main-blue); background: #f8fafc; }
@@ -33,15 +32,13 @@
         .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 999; }
         .set-select { width: 85%; margin: 10px 20px; padding: 12px; border-radius: 10px; border: 2px solid #e2e8f0; }
 
-        /* 파트 버튼 (연습모드에서만 보임) */
         #part-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0; padding: 0 15px; width: 100%; max-width: 420px; }
         .part-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 10px; border-radius: 12px; cursor: pointer; font-size: 12px; flex: 1 1 calc(33% - 10px); }
         .part-btn.active { background: white; color: var(--dark-blue); font-weight: 800; }
         
-        /* 카드 디자인 */
         .card { 
             background: var(--card-bg); width: calc(100% - 30px); max-width: 380px; border-radius: 25px; padding: 30px; 
-            text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4); min-height: 200px; 
+            text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4); min-height: 180px; 
             display: flex; flex-direction: column; justify-content: center; position: relative; color: var(--text-main); box-sizing: border-box;
         }
         .score-display { font-size: 32px; font-weight: 900; color: var(--error-red); margin-bottom: 10px; display: none; }
@@ -49,19 +46,19 @@
         .theme { color: var(--dark-blue); font-size: 24px; font-weight: 800; margin: 5px 0; }
         .ref { color: #64748b; font-size: 20px; margin-bottom: 15px; }
         .content { color: #0f172a; font-size: 19px; line-height: 1.7; display: none; text-align: left; background: #f8fafc; padding: 20px; border-radius: 15px; word-break: keep-all; }
-        .result-view { text-align: left; font-size: 18px; line-height: 1.7; margin-top: 15px; display: none; background: #fff1f2; padding: 15px; border-radius: 12px; color: #333; }
+        .result-view { text-align: left; font-size: 17px; line-height: 1.6; margin-top: 15px; display: none; background: #fff1f2; padding: 15px; border-radius: 12px; color: #333; }
         .wrong { color: var(--error-red); text-decoration: underline; font-weight: bold; }
         
-        /* 테스트 입력창 */
         #test-section { width: calc(100% - 30px); max-width: 380px; margin-top: 20px; display: none; }
         .input-label { font-size: 14px; font-weight: bold; margin-bottom: 8px; display: block; opacity: 0.9; }
         .test-input { width: 100%; border-radius: 12px; border: none; padding: 15px; font-size: 16px; box-sizing: border-box; outline: none; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-        textarea.test-input { height: 120px; }
+        textarea.test-input { height: 110px; }
         
         .controls { display: flex; gap: 12px; margin: 25px 0; width: calc(100% - 30px); max-width: 380px; }
         .btn { flex: 1; background: white; border: none; color: var(--dark-blue); padding: 16px; border-radius: 15px; font-weight: 800; cursor: pointer; font-size: 16px; box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
-        .check-btn { background: #fbbf24; color: #78350f; width: calc(100% - 30px); max-width: 380px; margin-top: 10px; font-weight: bold; }
+        .check-btn { background: #fbbf24; color: #78350f; width: calc(100% - 30px); max-width: 380px; margin-top: 5px; font-weight: bold; display: none; }
 
+        .status-panel { width: calc(100% - 30px); max-width: 380px; display: none; justify-content: space-between; margin-bottom: 10px; font-size: 14px; font-weight: bold; }
         .footer { margin-bottom: 50px; font-size: 14px; opacity: 0.8; background: rgba(0,0,0,0.2); padding: 6px 18px; border-radius: 20px; }
     </style>
 </head>
@@ -83,27 +80,32 @@
 
     <div id="part-container"></div>
 
+    <div class="status-panel" id="status-panel">
+        <span id="test-progress">진행: 0 / 10</span>
+        <span id="test-total-score">누적 감점: 0</span>
+    </div>
+
     <div class="card" id="main-card" onclick="handleCardClick()">
         <div id="score-text" class="score-display">0</div>
         <div id="v-id" class="id-tag">-</div>
-        <div id="v-theme" class="theme">주제</div>
+        <div id="v-theme" class="theme">제목</div>
         <div id="v-ref" class="ref">장절</div>
         <div id="v-content" class="content">내용</div>
         <div id="result-view" class="result-view"></div>
     </div>
 
     <div id="test-section">
-        <span class="input-label">주제 입력</span>
-        <input type="text" id="input-theme" class="test-input" placeholder="주제를 입력하세요">
+        <span class="input-label">제목 입력</span>
+        <input type="text" id="input-theme" class="test-input" placeholder="제목을 입력하세요">
         <span class="input-label">내용 입력</span>
         <textarea id="input-content" class="test-input" placeholder="본문 내용을 입력하세요"></textarea>
     </div>
 
-    <button id="check-btn" class="btn check-btn" onclick="runCheck()" style="display:none;">채점하기 (체킹)</button>
+    <button id="check-btn" class="btn check-btn" onclick="runCheck()">채점하기 (체킹)</button>
 
     <div class="controls">
         <button class="btn" onclick="prevVerse()" id="prev-btn">이전</button>
-        <button class="btn" onclick="nextVerse()" id="next-btn">다음</button>
+        <button class="btn" onclick="handleNext()" id="next-btn">다음</button>
     </div>
 
     <div id="v-page" class="footer">0 / 0</div>
@@ -114,6 +116,12 @@
         let currentIndex = 0;
         let isShowing = false;
         let currentMode = 'practice';
+        
+        // 테스트 세션 변수
+        let testSessionVerses = [];
+        let testCurrentStep = 0;
+        let testTotalPenalty = 0;
+        let isCurrentChecked = false;
 
         async function initApp() {
             try {
@@ -142,15 +150,15 @@
             document.getElementById('test-section').style.display = mode === 'test' ? 'block' : 'none';
             document.getElementById('check-btn').style.display = mode === 'test' ? 'block' : 'none';
             document.getElementById('part-container').style.display = mode === 'test' ? 'none' : 'flex';
+            document.getElementById('status-panel').style.display = mode === 'test' ? 'flex' : 'none';
             
-            // 테스트 모드일 때 버튼 텍스트 변경
-            document.getElementById('next-btn').innerText = mode === 'test' ? '랜덤 출제' : '다음';
+            document.getElementById('next-btn').innerText = mode === 'test' ? '다음 구절' : '다음';
             document.getElementById('prev-btn').style.visibility = mode === 'test' ? 'hidden' : 'visible';
 
             toggleMenu();
             
             if(mode === 'test') {
-                goRandom();
+                startTestSession();
             } else {
                 filterPart('A');
             }
@@ -161,7 +169,7 @@
             allVerses = await response.json();
             generatePartButtons();
             if(currentMode === 'practice') filterPart('A');
-            else goRandom();
+            else startTestSession();
         }
 
         function generatePartButtons() {
@@ -184,17 +192,50 @@
             document.querySelectorAll('.part-btn').forEach(btn => btn.classList.toggle('active', btn.innerText.includes(part)));
         }
 
-        function goRandom() {
-            currentIndex = Math.floor(Math.random() * allVerses.length);
-            currentVerses = allVerses;
+        // --- 테스트 세션 로직 ---
+        function startTestSession() {
+            // 전체에서 랜덤하게 10구절 추출
+            testSessionVerses = [...allVerses].sort(() => Math.random() - 0.5).slice(0, 10);
+            testCurrentStep = 0;
+            testTotalPenalty = 0;
+            isCurrentChecked = false;
+            currentVerses = testSessionVerses;
+            currentIndex = 0;
             updateCard();
+            updateStatus();
+        }
+
+        function updateStatus() {
+            document.getElementById('test-progress').innerText = `진행: ${testCurrentStep + 1} / 10`;
+            document.getElementById('test-total-score').innerText = `누적 감점: ${testTotalPenalty}`;
+        }
+
+        function handleNext() {
+            if(currentMode === 'test') {
+                if(!isCurrentChecked) {
+                    if(!confirm("채점하지 않고 다음 구절로 넘어가시겠습니까?")) return;
+                }
+                
+                if(testCurrentStep < 9) {
+                    testCurrentStep++;
+                    currentIndex = testCurrentStep;
+                    isCurrentChecked = false;
+                    updateCard();
+                    updateStatus();
+                } else {
+                    alert(`테스트 종료!\n최종 누적 감점: ${testTotalPenalty}\n확인을 누르면 새로 시작합니다.`);
+                    startTestSession();
+                }
+            } else {
+                if (currentIndex < currentVerses.length - 1) { currentIndex++; updateCard(); }
+            }
         }
 
         function updateCard() {
             const v = currentVerses[currentIndex];
             if(!v) return;
             document.getElementById('v-id').innerText = v.id;
-            document.getElementById('v-theme').innerText = v.theme;
+            document.getElementById('v-theme').innerText = v.theme; // 데이터 필드는 theme이지만 UI는 제목으로 인식
             document.getElementById('v-ref').innerText = v.ref;
             document.getElementById('v-content').innerText = v.content;
             
@@ -208,7 +249,7 @@
             if(currentMode === 'practice') {
                 document.getElementById('v-page').innerText = (currentIndex + 1) + " / " + currentVerses.length;
             } else {
-                document.getElementById('v-page').innerText = "랜덤 테스트 중";
+                document.getElementById('v-page').innerText = "랜덤 테스트 모드";
             }
         }
 
@@ -221,6 +262,8 @@
         }
 
         function runCheck() {
+            if(isCurrentChecked) return; // 이미 채점했다면 중복 방지
+
             const v = currentVerses[currentIndex];
             const themeInput = document.getElementById('input-theme').value.trim();
             const contentInput = document.getElementById('input-content').value.trim();
@@ -232,12 +275,12 @@
             let penalty = 0;
             let resultHTML = "";
 
-            // 주제 채점
+            // 제목(theme) 채점
             if(clean(themeInput) !== clean(v.theme)) {
                 penalty += 1;
             }
 
-            // 본문 채점
+            // 내용 채점
             const maxLength = Math.max(originalWords.length, inputWords.length);
             for(let i = 0; i < maxLength; i++) {
                 const target = originalWords[i] || "";
@@ -251,20 +294,19 @@
                 }
             }
 
-            // 점수 계산 (0점에서 시작하여 -5까지)
-            const finalScore = Math.max(-penalty, -5);
+            const currentPenalty = Math.min(penalty, 5);
+            testTotalPenalty += currentPenalty;
+            isCurrentChecked = true;
+
             const scoreEl = document.getElementById('score-text');
-            scoreEl.innerText = (finalScore === 0 ? "0" : finalScore);
+            scoreEl.innerText = (currentPenalty === 0 ? "0" : "-" + currentPenalty);
             scoreEl.style.display = 'block';
             
             const resultEl = document.getElementById('result-view');
-            resultEl.innerHTML = `<strong>채점 결과 (틀린 소절):</strong><br>${resultHTML}<br><br><strong>원문 보기:</strong><br>${v.content}`;
+            resultEl.innerHTML = `<strong>채점 결과:</strong><br>${resultHTML}<br><br><strong>원문(정답):</strong><br>${v.content}`;
             resultEl.style.display = 'block';
-        }
-
-        function nextVerse() {
-            if(currentMode === 'test') goRandom();
-            else if (currentIndex < currentVerses.length - 1) { currentIndex++; updateCard(); }
+            
+            updateStatus();
         }
 
         function prevVerse() {
