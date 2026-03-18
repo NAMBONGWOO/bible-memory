@@ -30,13 +30,13 @@
         .side-menu.open { left: 0; }
         .menu-header { padding: 30px 20px; font-weight: 800; font-size: 20px; border-bottom: 2px solid var(--main-blue); color: var(--main-blue); background: #f8fafc; }
         .menu-item { padding: 16px 25px; font-size: 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; }
-        .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; z-index: 999; }
+        .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 999; }
         .set-select { width: 85%; margin: 10px 20px; padding: 12px; border-radius: 10px; border: 2px solid #e2e8f0; }
 
-        /* 파트 버튼 */
-        .part-menu { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0; padding: 0 15px; width: 100%; max-width: 420px; }
+        /* 파트 버튼 (연습모드에서만 보임) */
+        #part-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0; padding: 0 15px; width: 100%; max-width: 420px; }
         .part-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 10px; border-radius: 12px; cursor: pointer; font-size: 12px; flex: 1 1 calc(33% - 10px); }
-        .part-btn.active { background: white; color: var(--dark-blue); font-weight: 800; transform: translateY(-2px); }
+        .part-btn.active { background: white; color: var(--dark-blue); font-weight: 800; }
         
         /* 카드 디자인 */
         .card { 
@@ -44,10 +44,10 @@
             text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4); min-height: 200px; 
             display: flex; flex-direction: column; justify-content: center; position: relative; color: var(--text-main); box-sizing: border-box;
         }
-        .score-display { font-size: 40px; font-weight: 900; color: var(--error-red); margin-bottom: 10px; display: none; }
+        .score-display { font-size: 32px; font-weight: 900; color: var(--error-red); margin-bottom: 10px; display: none; }
         .id-tag { color: var(--main-blue); font-weight: 800; font-size: 14px; margin-bottom: 8px; }
         .theme { color: var(--dark-blue); font-size: 24px; font-weight: 800; margin: 5px 0; }
-        .ref { color: #64748b; font-size: 18px; margin-bottom: 15px; }
+        .ref { color: #64748b; font-size: 20px; margin-bottom: 15px; }
         .content { color: #0f172a; font-size: 19px; line-height: 1.7; display: none; text-align: left; background: #f8fafc; padding: 20px; border-radius: 15px; word-break: keep-all; }
         .result-view { text-align: left; font-size: 18px; line-height: 1.7; margin-top: 15px; display: none; background: #fff1f2; padding: 15px; border-radius: 12px; color: #333; }
         .wrong { color: var(--error-red); text-decoration: underline; font-weight: bold; }
@@ -58,11 +58,11 @@
         .test-input { width: 100%; border-radius: 12px; border: none; padding: 15px; font-size: 16px; box-sizing: border-box; outline: none; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         textarea.test-input { height: 120px; }
         
-        .controls { display: flex; gap: 12px; margin-top: 25px; width: calc(100% - 30px); max-width: 380px; }
+        .controls { display: flex; gap: 12px; margin: 25px 0; width: calc(100% - 30px); max-width: 380px; }
         .btn { flex: 1; background: white; border: none; color: var(--dark-blue); padding: 16px; border-radius: 15px; font-weight: 800; cursor: pointer; font-size: 16px; box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
-        .check-btn { background: #fbbf24; color: #78350f; width: calc(100% - 30px); max-width: 380px; margin-top: 15px; }
+        .check-btn { background: #fbbf24; color: #78350f; width: calc(100% - 30px); max-width: 380px; margin-top: 10px; font-weight: bold; }
 
-        .footer { margin: 25px 0 50px 0; font-size: 14px; opacity: 0.8; background: rgba(0,0,0,0.2); padding: 6px 18px; border-radius: 20px; }
+        .footer { margin-bottom: 50px; font-size: 14px; opacity: 0.8; background: rgba(0,0,0,0.2); padding: 6px 18px; border-radius: 20px; }
     </style>
 </head>
 <body>
@@ -81,16 +81,15 @@
         <select class="set-select" id="data-select" onchange="loadData(this.value); toggleMenu();"></select>
     </div>
 
-    <div class="part-menu" id="part-container"></div>
+    <div id="part-container"></div>
 
     <div class="card" id="main-card" onclick="handleCardClick()">
-        <div id="score-text" class="score-display">100</div>
+        <div id="score-text" class="score-display">0</div>
         <div id="v-id" class="id-tag">-</div>
         <div id="v-theme" class="theme">주제</div>
         <div id="v-ref" class="ref">장절</div>
         <div id="v-content" class="content">내용</div>
         <div id="result-view" class="result-view"></div>
-        <div id="v-hint" class="hint-text" style="color:#94a3b8; font-size:12px; margin-top:15px;">터치하여 본문 보기</div>
     </div>
 
     <div id="test-section">
@@ -103,8 +102,8 @@
     <button id="check-btn" class="btn check-btn" onclick="runCheck()" style="display:none;">채점하기 (체킹)</button>
 
     <div class="controls">
-        <button class="btn" onclick="prevVerse()">이전</button>
-        <button class="btn" onclick="nextVerse()">다음</button>
+        <button class="btn" onclick="prevVerse()" id="prev-btn">이전</button>
+        <button class="btn" onclick="nextVerse()" id="next-btn">다음</button>
     </div>
 
     <div id="v-page" class="footer">0 / 0</div>
@@ -133,9 +132,8 @@
         function toggleMenu() {
             const sideMenu = document.getElementById('sideMenu');
             const overlay = document.getElementById('overlay');
-            const isOpen = sideMenu.classList.contains('open');
-            sideMenu.classList.toggle('open', !isOpen);
-            overlay.style.display = !isOpen ? 'block' : 'none';
+            sideMenu.classList.toggle('open');
+            overlay.style.display = sideMenu.classList.contains('open') ? 'block' : 'none';
         }
 
         function setMode(mode) {
@@ -143,15 +141,27 @@
             document.getElementById('mode-title').innerText = mode === 'practice' ? '암송 카드 (연습)' : '암송 테스트 (시험)';
             document.getElementById('test-section').style.display = mode === 'test' ? 'block' : 'none';
             document.getElementById('check-btn').style.display = mode === 'test' ? 'block' : 'none';
+            document.getElementById('part-container').style.display = mode === 'test' ? 'none' : 'flex';
+            
+            // 테스트 모드일 때 버튼 텍스트 변경
+            document.getElementById('next-btn').innerText = mode === 'test' ? '랜덤 출제' : '다음';
+            document.getElementById('prev-btn').style.visibility = mode === 'test' ? 'hidden' : 'visible';
+
             toggleMenu();
-            updateCard();
+            
+            if(mode === 'test') {
+                goRandom();
+            } else {
+                filterPart('A');
+            }
         }
 
         async function loadData(fileName) {
             const response = await fetch('data/' + fileName);
             allVerses = await response.json();
             generatePartButtons();
-            filterPart(allVerses[0].p);
+            if(currentMode === 'practice') filterPart('A');
+            else goRandom();
         }
 
         function generatePartButtons() {
@@ -174,6 +184,12 @@
             document.querySelectorAll('.part-btn').forEach(btn => btn.classList.toggle('active', btn.innerText.includes(part)));
         }
 
+        function goRandom() {
+            currentIndex = Math.floor(Math.random() * allVerses.length);
+            currentVerses = allVerses;
+            updateCard();
+        }
+
         function updateCard() {
             const v = currentVerses[currentIndex];
             if(!v) return;
@@ -182,21 +198,17 @@
             document.getElementById('v-ref').innerText = v.ref;
             document.getElementById('v-content').innerText = v.content;
             
-            // 상태 초기화
             isShowing = false;
             document.getElementById('v-content').style.display = 'none';
             document.getElementById('result-view').style.display = 'none';
             document.getElementById('score-text').style.display = 'none';
             document.getElementById('input-theme').value = "";
             document.getElementById('input-content').value = "";
-            document.getElementById('v-page').innerText = (currentIndex + 1) + " / " + currentVerses.length;
             
-            const hint = document.getElementById('v-hint');
-            if(currentMode === 'test') {
-                hint.innerText = "테스트 모드 (본문 가림)";
-                document.getElementById('v-theme').style.display = 'block';
+            if(currentMode === 'practice') {
+                document.getElementById('v-page').innerText = (currentIndex + 1) + " / " + currentVerses.length;
             } else {
-                hint.innerText = "터치하여 본문 보기";
+                document.getElementById('v-page').innerText = "랜덤 테스트 중";
             }
         }
 
@@ -205,54 +217,59 @@
                 const content = document.getElementById('v-content');
                 isShowing = !isShowing;
                 content.style.display = isShowing ? 'block' : 'none';
-                document.getElementById('v-hint').innerText = isShowing ? "터치하여 본문 숨기기" : "터치하여 본문 보기";
             }
         }
 
-        // 핵심 채점 로직
         function runCheck() {
             const v = currentVerses[currentIndex];
             const themeInput = document.getElementById('input-theme').value.trim();
             const contentInput = document.getElementById('input-content').value.trim();
             
-            // 1. 소절 단위 분리 (문장부호 제거)
-            const cleanText = (text) => text.replace(/[.,·?!"'()]/g, "");
+            const clean = (text) => text.replace(/[.,·?!"'()]/g, "").replace(/\s/g, "");
             const originalWords = v.content.split(/\s+/);
             const inputWords = contentInput.split(/\s+/);
 
-            let score = 100;
+            let penalty = 0;
             let resultHTML = "";
 
-            // 주제(제목) 틀리면 -5점 (간소화)
-            if(cleanText(themeInput).replace(/\s/g, "") !== cleanText(v.theme).replace(/\s/g, "")) {
-                score -= 5;
+            // 주제 채점
+            if(clean(themeInput) !== clean(v.theme)) {
+                penalty += 1;
             }
 
-            // 본문 채점 (원문 소절 기준으로 비교)
-            originalWords.forEach((word, idx) => {
-                const cleanWord = cleanText(word);
-                const cleanInput = inputWords[idx] ? cleanText(inputWords[idx]) : "";
+            // 본문 채점
+            const maxLength = Math.max(originalWords.length, inputWords.length);
+            for(let i = 0; i < maxLength; i++) {
+                const target = originalWords[i] || "";
+                const input = inputWords[i] || "";
 
-                if (cleanWord === cleanInput) {
-                    resultHTML += word + " ";
+                if (target !== "" && clean(target) === clean(input)) {
+                    resultHTML += target + " ";
                 } else {
-                    score -= 1; // 소절당 -1점
-                    resultHTML += `<span class="wrong">${inputWords[idx] || "___"}</span> `;
+                    penalty += 1;
+                    resultHTML += `<span class="wrong">${input || "___"}</span> `;
                 }
-            });
+            }
 
-            // 결과 표시
+            // 점수 계산 (0점에서 시작하여 -5까지)
+            const finalScore = Math.max(-penalty, -5);
             const scoreEl = document.getElementById('score-text');
-            scoreEl.innerText = Math.max(score, 0);
+            scoreEl.innerText = (finalScore === 0 ? "0" : finalScore);
             scoreEl.style.display = 'block';
             
             const resultEl = document.getElementById('result-view');
-            resultEl.innerHTML = `<strong>결과 분석:</strong><br>${resultHTML}<br><br><strong>정답:</strong><br>${v.content}`;
+            resultEl.innerHTML = `<strong>채점 결과 (틀린 소절):</strong><br>${resultHTML}<br><br><strong>원문 보기:</strong><br>${v.content}`;
             resultEl.style.display = 'block';
         }
 
-        function nextVerse() { if(currentIndex < currentVerses.length - 1) { currentIndex++; updateCard(); } }
-        function prevVerse() { if(currentIndex > 0) { currentIndex--; updateCard(); } }
+        function nextVerse() {
+            if(currentMode === 'test') goRandom();
+            else if (currentIndex < currentVerses.length - 1) { currentIndex++; updateCard(); }
+        }
+
+        function prevVerse() {
+            if(currentMode === 'practice' && currentIndex > 0) { currentIndex--; updateCard(); }
+        }
 
         initApp();
     </script>
