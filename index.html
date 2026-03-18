@@ -3,41 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>주제별 성경암송 - 연습 & 시험</title>
+    <title>성경암송 매니저</title>
     <style>
         :root { --main-blue: #0284c7; --dark-blue: #1e40af; --error-red: #ef4444; --success-green: #10b981; }
-        body { background: linear-gradient(135deg, var(--main-blue) 0%, #075985 100%); font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; min-height: 100vh; color: white; }
-        .header { text-align: center; margin-bottom: 15px; }
-        .part-menu { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 15px; }
-        .part-btn { background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 8px 15px; border-radius: 10px; cursor: pointer; font-size: 13px; }
+        body { background: linear-gradient(135deg, var(--main-blue) 0%, #075985 100%); font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 0; min-height: 100vh; color: white; overflow-x: hidden; }
+        
+        /* 상단 바 */
+        .top-bar { width: 100%; height: 60px; display: flex; align-items: center; padding: 0 20px; box-sizing: border-box; position: relative; }
+        .menu-btn { font-size: 28px; cursor: pointer; background: none; border: none; color: white; padding: 10px; z-index: 100; }
+        .header-title { flex-grow: 1; text-align: center; font-size: 18px; font-weight: bold; margin-right: 48px; }
+
+        /* 사이드바 메뉴 */
+        .side-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: white; color: #333; transition: 0.3s; z-index: 1000; box-shadow: 5px 0 15px rgba(0,0,0,0.3); padding-top: 60px; }
+        .side-menu.open { left: 0; }
+        .menu-item { padding: 20px 25px; font-size: 18px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        .menu-item:active { background: #f0f9ff; }
+        .menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 999; }
+
+        /* 파트 메뉴 */
+        .part-menu { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin: 15px 0; padding: 0 10px; }
+        .part-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.5); color: white; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; }
         .part-btn.active { background: white; color: var(--main-blue); font-weight: bold; }
         
-        /* 카드 영역 */
-        .card { background: white; width: 100%; max-width: 360px; border-radius: 20px; padding: 25px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3); cursor: pointer; min-height: 220px; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; position: relative; color: #333; }
+        /* 카드 디자인 */
+        .card { background: white; width: calc(100% - 40px); max-width: 360px; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); cursor: pointer; min-height: 280px; display: flex; flex-direction: column; justify-content: center; position: relative; color: #333; margin-top: 10px; box-sizing: border-box; }
         .score-badge { position: absolute; top: 15px; right: 15px; background: var(--success-green); color: white; padding: 5px 12px; border-radius: 15px; font-weight: bold; font-size: 14px; display: none; }
-        .id-tag { color: var(--main-blue); font-weight: bold; font-size: 14px; }
-        .theme { color: var(--dark-blue); font-size: 24px; font-weight: bold; margin: 10px 0; }
-        .ref { color: #6b7280; font-size: 18px; margin-bottom: 10px; }
-        .content { color: #1f2937; font-size: 19px; line-height: 1.6; display: none; text-align: left; background: #f3f4f6; padding: 15px; border-radius: 10px; word-break: keep-all; }
+        .id-tag { color: var(--main-blue); font-weight: bold; font-size: 13px; }
+        .theme { color: var(--dark-blue); font-size: 24px; font-weight: bold; margin: 5px 0; }
+        .ref { color: #6b7280; font-size: 18px; margin-bottom: 15px; }
+        .content { color: #1f2937; font-size: 19px; line-height: 1.6; display: none; text-align: left; background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; word-break: keep-all; }
+        .hint-text { color: #94a3b8; font-size: 13px; margin-top: 15px; }
         
         /* 시험 입력창 */
-        .test-section { width: 100%; max-width: 360px; margin-top: 20px; }
-        textarea { width: 100%; height: 100px; border-radius: 15px; border: none; padding: 15px; font-size: 17px; box-sizing: border-box; outline: none; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); font-family: inherit; }
+        #test-section { width: calc(100% - 40px); max-width: 360px; margin-top: 20px; display: none; }
+        textarea { width: 100%; height: 110px; border-radius: 15px; border: none; padding: 15px; font-size: 17px; box-sizing: border-box; outline: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-family: inherit; }
         
-        /* 컨트롤 버튼 */
-        .controls { display: flex; gap: 15px; margin-top: 20px; width: 100%; max-width: 360px; }
+        .controls { display: flex; gap: 15px; margin-top: 25px; width: calc(100% - 40px); max-width: 360px; }
         .btn { flex: 1; background: white; border: none; color: var(--main-blue); padding: 15px; border-radius: 15px; font-weight: bold; cursor: pointer; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .btn:active { transform: scale(0.98); }
-        .footer { margin-top: 20px; font-size: 14px; opacity: 0.8; background: rgba(0,0,0,0.2); padding: 5px 15px; border-radius: 20px; }
+        .footer { margin-top: 20px; font-size: 13px; opacity: 0.7; margin-bottom: 30px; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h2>성경암송 연습 & 시험</h2>
+    <div class="top-bar">
+        <button class="menu-btn" onclick="toggleMenu()">≡</button>
+        <div class="header-title" id="mode-title">암송 카드 (연습)</div>
     </div>
 
-    <div class="part-menu">
+    <div class="menu-overlay" id="overlay" onclick="toggleMenu()"></div>
+    <div class="side-menu" id="sideMenu">
+        <div style="padding: 20px; font-weight: bold; border-bottom: 2px solid var(--main-blue); color: var(--main-blue);">메뉴</div>
+        <div class="menu-item" onclick="setMode('practice')">📖 암송 카드 (연습)</div>
+        <div class="menu-item" onclick="setMode('test')">✍️ 암송 테스트 (시험)</div>
+        <div class="menu-item" style="color: #999; cursor: default;">⚙️ 설정 (준비중)</div>
+    </div>
+
+    <div class="part-menu" id="menu">
         <button class="part-btn active" onclick="filterPart('A')">A.새로운삶</button>
         <button class="part-btn" onclick="filterPart('B')">B.그리스도전파</button>
         <button class="part-btn" onclick="filterPart('C')">C.하나님의뢰</button>
@@ -47,15 +68,15 @@
 
     <div class="card" onclick="toggleContent()">
         <div id="score" class="score-badge">100점</div>
-        <div id="v-id" class="id-tag">A-1</div>
-        <div id="v-theme" class="theme">주제</div>
-        <div id="v-ref" class="ref">장절</div>
+        <div id="v-id" class="id-tag">로딩중</div>
+        <div id="v-theme" class="theme">데이터를 불러오는 중...</div>
+        <div id="v-ref" class="ref">잠시만 기다려주세요</div>
         <div id="v-content" class="content">내용</div>
-        <div id="v-hint" style="color:#94a3b8; font-size:12px; margin-top:10px;">(터치하면 정답 확인)</div>
+        <div id="v-hint" class="hint-text">터치하여 본문 보기</div>
     </div>
 
-    <div class="test-section">
-        <textarea id="test-input" placeholder="여기에 암송한 내용을 적어보세요..." oninput="checkTest()"></textarea>
+    <div id="test-section">
+        <textarea id="test-input" placeholder="암송 내용을 입력하세요..." oninput="checkTest()"></textarea>
     </div>
 
     <div class="controls">
@@ -63,39 +84,57 @@
         <button class="btn" onclick="nextVerse()">다음</button>
     </div>
 
-    <div id="v-page" class="footer">로딩 중...</div>
+    <div id="v-page" class="footer">0 / 0</div>
 
     <script>
         let allVerses = [];
         let currentVerses = [];
         let currentIndex = 0;
         let isShowing = false;
+        let currentMode = 'practice';
 
-        // 1. 데이터 불러오기
+        // 메뉴 열기/닫기
+        function toggleMenu() {
+            const sideMenu = document.getElementById('sideMenu');
+            const overlay = document.getElementById('overlay');
+            const isOpen = sideMenu.classList.contains('open');
+            
+            if (isOpen) {
+                sideMenu.classList.remove('open');
+                overlay.style.display = 'none';
+            } else {
+                sideMenu.classList.add('open');
+                overlay.style.display = 'block';
+            }
+        }
+
+        // 모드 전환
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('mode-title').innerText = mode === 'practice' ? '암송 카드 (연습)' : '암송 테스트 (시험)';
+            document.getElementById('test-section').style.display = mode === 'test' ? 'block' : 'none';
+            toggleMenu(); // 메뉴 닫기
+            updateCard();
+        }
+
         async function loadData(fileName) {
             try {
                 const response = await fetch('data/' + fileName);
                 if (!response.ok) throw new Error('파일 로드 실패');
                 allVerses = await response.json();
-                filterPart('A'); // 시작 시 A파트 표시
+                filterPart('A');
             } catch (error) {
-                alert("데이터를 불러오지 못했습니다. 경로를 확인해주세요.");
+                alert("데이터 오류: " + error.message);
             }
         }
 
-        // 2. 파트 필터링 (A~E)
         function filterPart(part) {
             currentVerses = allVerses.filter(v => v.p === part);
             currentIndex = 0;
             updateCard();
-            
-            // 버튼 활성화 표시
-            document.querySelectorAll('.part-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.innerText.includes(part));
-            });
+            document.querySelectorAll('.part-btn').forEach(b => b.classList.toggle('active', b.innerText.includes(part)));
         }
 
-        // 3. 카드 화면 업데이트 (이전/다음 클릭 시 실행)
         function updateCard() {
             const v = currentVerses[currentIndex];
             if(!v) return;
@@ -105,65 +144,44 @@
             document.getElementById('v-ref').innerText = v.ref;
             document.getElementById('v-content').innerText = v.content;
             
-            // 상태 초기화
+            isShowing = false;
             document.getElementById('v-content').style.display = 'none';
+            document.getElementById('v-hint').innerText = "터치하여 본문 보기";
             document.getElementById('test-input').value = "";
             document.getElementById('score').style.display = 'none';
             document.getElementById('v-page').innerText = (currentIndex + 1) + " / " + currentVerses.length;
-            isShowing = false;
         }
 
-        // 4. 실시간 채점 (입력할 때마다 실행)
-        function checkTest() {
-            const input = document.getElementById('test-input').value.replace(/\s/g, ""); // 공백 제거
-            const original = currentVerses[currentIndex].content.replace(/\s/g, ""); // 공백 제거
-            const scoreEl = document.getElementById('score');
-            
-            if (input.length === 0) {
-                scoreEl.style.display = 'none';
-                return;
-            }
-
-            let penalty = 0;
-            // 입력한 글자 수만큼 비교
-            for(let i=0; i < input.length; i++) {
-                if(input[i] !== original[i]) {
-                    penalty++;
-                }
-            }
-
-            // 최대 5점까지만 감점 (95점 유지)
-            const finalPenalty = Math.min(penalty, 5);
-            const currentScore = 100 - finalPenalty;
-
-            scoreEl.innerText = currentScore + "점";
-            scoreEl.style.display = 'block';
-            scoreEl.style.background = currentScore < 100 ? '#ef4444' : '#10b981';
-        }
-
-        // 5. 정답 보기 토글
         function toggleContent() {
             const content = document.getElementById('v-content');
+            const hint = document.getElementById('v-hint');
             isShowing = !isShowing;
             content.style.display = isShowing ? 'block' : 'none';
+            hint.innerText = isShowing ? "터치하여 본문 숨기기" : "터치하여 본문 보기";
         }
 
-        // 6. 이전/다음 버튼 기능
-        function nextVerse() {
-            if (currentIndex < currentVerses.length - 1) {
-                currentIndex++;
-                updateCard();
+        function checkTest() {
+            const input = document.getElementById('test-input').value.replace(/\s/g, "");
+            const original = currentVerses[currentIndex].content.replace(/\s/g, "");
+            const scoreEl = document.getElementById('score');
+            
+            if(input.length === 0) { scoreEl.style.display = 'none'; return; }
+
+            let penalty = 0;
+            for(let i=0; i<input.length; i++) {
+                if(input[i] !== original[i]) penalty++;
             }
+
+            const finalPenalty = Math.min(penalty, 5);
+            const score = 100 - finalPenalty;
+            scoreEl.innerText = score + "점";
+            scoreEl.style.display = 'block';
+            scoreEl.style.background = score < 100 ? '#ef4444' : '#10b981';
         }
 
-        function prevVerse() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                updateCard();
-            }
-        }
+        function nextVerse() { if(currentIndex < currentVerses.length - 1) { currentIndex++; updateCard(); } }
+        function prevVerse() { if(currentIndex > 0) { currentIndex--; updateCard(); } }
 
-        // 앱 시작
         loadData('nav_60.json');
     </script>
 </body>
