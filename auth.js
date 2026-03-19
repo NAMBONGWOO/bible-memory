@@ -17,23 +17,22 @@ export const db = getFirestore(app);
 
 window.isNickValid = false;
 
-// 실시간 체크 로직들 (비밀번호, 닉네임)
 document.addEventListener('input', async (e) => {
     if (e.target.id === 'reg-pw' || e.target.id === 'reg-pw-confirm') {
         const pw = document.getElementById('reg-pw').value;
         const confirm = document.getElementById('reg-pw-confirm').value;
         const msg = document.getElementById('pw-match-msg');
-        if (pw === confirm && pw !== "") { msg.innerText = "✓ 일치"; msg.style.color="green"; }
-        else { msg.innerText = "✕ 불일치"; msg.style.color="red"; }
+        if (pw === confirm && pw !== "") { msg.innerText = "✓ 비밀번호 일치"; msg.style.color="green"; }
+        else { msg.innerText = "✕ 비밀번호 불일치"; msg.style.color="red"; }
     }
     if (e.target.id === 'reg-nickname') {
         const nick = e.target.value.trim();
         const msg = document.getElementById('nick-match-msg');
-        if (nick.length < 2) { window.isNickValid = false; return; }
+        if (nick.length < 2) { msg.innerText = "2자 이상 입력하세요."; msg.style.color="#888"; window.isNickValid = false; return; }
         const q = query(collection(db, "users"), where("nickname", "==", nick));
         const snap = await getDocs(q);
-        if (!snap.empty) { msg.innerText = "✕ 중복"; msg.style.color="red"; window.isNickValid = false; }
-        else { msg.innerText = "✓ 가능"; msg.style.color="green"; window.isNickValid = true; }
+        if (!snap.empty) { msg.innerText = "✕ 이미 사용 중인 닉네임"; msg.style.color="red"; window.isNickValid = false; }
+        else { msg.innerText = "✓ 사용 가능한 닉네임"; msg.style.color="green"; window.isNickValid = true; }
     }
 });
 
@@ -42,11 +41,12 @@ window.handleLogin = () => {
 };
 
 window.handleSignUpFinal = async () => {
-    if(!window.isNickValid) { alert("닉네임을 확인하세요."); return; }
+    if(!window.isNickValid) { alert("닉네임 중복 확인이 필요합니다."); return; }
     const email = document.getElementById('reg-email').value;
     const pw = document.getElementById('reg-pw').value;
     const nick = document.getElementById('reg-nickname').value;
     const courses = Array.from(document.querySelectorAll('input[name="course"]:checked')).map(cb => cb.value);
+    if(courses.length === 0) { alert("코스를 선택하세요."); return; }
     try {
         const cred = await createUserWithEmailAndPassword(auth, email, pw);
         await setDoc(doc(db, "users", cred.user.uid), { nickname: nick, selectedCourses: courses });
@@ -55,3 +55,5 @@ window.handleSignUpFinal = async () => {
 };
 
 window.handleLogout = () => signOut(auth);
+window.openSignupModal = () => { document.getElementById('login-card').style.display='none'; document.getElementById('signup-card').style.display='flex'; };
+window.closeSignupModal = () => { document.getElementById('login-card').style.display='flex'; document.getElementById('signup-card').style.display='none'; };
