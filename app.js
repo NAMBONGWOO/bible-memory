@@ -1,10 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } 
-from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc } 
-from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-// 사용자님의 출입증 (Firebase Config)
 const firebaseConfig = {
     apiKey: "AIzaSyAPuQQcX0mT1fqAa97CPPbhTy9GWdG8_J0",
     authDomain: "bible-memory-app-4e246.firebaseapp.com",
@@ -15,94 +12,107 @@ const firebaseConfig = {
     measurementId: "G-LXD25M9ER2"
 };
 
-// 초기화
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 전역 변수 (기존 로직 연결을 위해 window 객체에 할당)
 window.allVerses = [];
 window.currentVerses = [];
 window.currentIndex = 0;
-window.currentMode = 'practice';
-window.currentUser = null;
 
-// --- [로그인/회원가입 기능] ---
-window.handleSignUp = () => {
+// --- [팝업 제어 함수] ---
+
+window.openRegisterPopup = () => {
+    console.log("회원가입 버튼 클릭됨");
+    // 1단계 입력값이 비어있어도 일단 팝업을 띄웁니다.
+    document.getElementById('auth-step-1').style.display = 'none';
+    document.getElementById('auth-step-2').style.display = 'block';
+};
+
+window.closeRegisterPopup = () => {
+    document.getElementById('auth-step-1').style.display = 'block';
+    document.getElementById('auth-step-2').style.display = 'none';
+};
+
+// 최종 가입 완료 버튼 로직
+window.handleSignUpFinal = async () => {
     const email = document.getElementById('auth-email').value;
     const pw = document.getElementById('auth-pw').value;
-    createUserWithEmailAndPassword(auth, email, pw)
-        .catch(err => document.getElementById('auth-error').innerText = "가입 실패: " + err.message);
+    const nickname = document.getElementById('reg-nickname').value;
+    const course = document.getElementById('reg-course').value;
+    const useOyo = document.getElementById('reg-oyo').checked;
+
+    if(!email || !email.includes('@')) { alert("로그인용 이메일을 정확히 입력해주세요."); return; }
+    if(pw.length < 6) { alert("비밀번호를 6자 이상 입력해주세요."); return; }
+    if(!nickname) { alert("닉네임을 입력해주세요."); return; }
+
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, pw);
+        const user = userCredential.user;
+
+        // Firestore에 사용자 프로필 저장
+        await setDoc(doc(db, "users", user.uid), {
+            nickname: nickname,
+            baseCourse: course,
+            useOyo: useOyo,
+            joinDate: new Date(),
+            completedVerses: [] 
+        });
+
+        alert(`${nickname}님, 가입을 환영합니다!`);
+    } catch (err) {
+        alert("가입 실패: " + err.message);
+    }
 };
 
 window.handleLogin = () => {
     const email = document.getElementById('auth-email').value;
     const pw = document.getElementById('auth-pw').value;
-    signInWithEmailAndPassword(auth, email, pw)
-        .catch(err => document.getElementById('auth-error').innerText = "로그인 실패: " + err.message);
+    if(!email || !pw) { alert("이메일과 비밀번호를 입력하세요."); return; }
+    signInWithEmailAndPassword(auth, email, pw).catch(err => alert("로그인 실패: " + err.message));
 };
 
 window.handleLogout = () => signOut(auth);
 
-// 인증 상태 감시 (로그인 하면 앱 보여주기)
-onAuthStateChanged(auth, (user) => {
+// 인증 상태 감시
+onAuthStateChanged(auth, async (user) => {
     if (user) {
-        window.currentUser = user;
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('app-content').style.display = 'flex';
-        document.getElementById('user-name').innerText = user.email.split('@')[0] + "님 환영합니다";
-        initApp(); // 앱 시작
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+            document.getElementById('user-display').innerText = `${userDoc.data().nickname}님 환영합니다!`;
+        }
+        initApp();
     } else {
         document.getElementById('auth-screen').style.display = 'flex';
         document.getElementById('app-content').style.display = 'none';
     }
 });
 
-// --- [기존 앱 로직 통합] ---
-async function initApp() {
-    try {
-        const response = await fetch('data/config.json');
-        const config = await response.json();
-        const selectEl = document.getElementById('data-select');
-        selectEl.innerHTML = "";
-        config.forEach(item => {
-            const option = document.createElement('option');
-            option.value = item.file; option.innerText = item.name;
-            selectEl.appendChild(option);
-        });
-        loadData(config[0].file);
-    } catch (e) { loadData('nav_60.json'); }
-}
+async function initApp() { loadData('nav_60.json'); }
 
 window.loadData = async (fileName) => {
-    const response = await fetch('data/' + fileName);
-    window.allVerses = await response.json();
-    generatePracticePartButtons();
-    if(window.currentMode === 'practice') filterPart('A');
+    try {
+        const response = await fetch('data/' + fileName);
+        window.allVerses = await response.json();
+        generatePartButtons();
+        filterPart('A'); 
+    } catch (e) { console.error("데이터 로드 실패", e); }
 };
 
-window.toggleMenu = () => {
-    const sideMenu = document.getElementById('sideMenu');
-    const overlay = document.getElementById('overlay');
-    const isOpen = sideMenu.classList.contains('open');
-    sideMenu.classList.toggle('open', !isOpen);
-    overlay.style.display = !isOpen ? 'block' : 'none';
+window.updateCard = () => {
+    const v = window.currentVerses[window.currentIndex];
+    if(!v) return;
+    document.getElementById('v-id').innerText = v.id;
+    document.getElementById('v-theme').innerText = v.theme;
+    document.getElementById('v-ref').innerText = v.ref;
+    document.getElementById('v-content').innerText = v.content;
+    document.getElementById('v-content').style.display = 'none';
+    document.getElementById('v-page').innerText = `${window.currentIndex + 1} / ${window.currentVerses.length}`;
 };
 
-window.setMode = (mode) => {
-    window.currentMode = mode;
-    document.getElementById('mode-title').innerText = mode === 'practice' ? '암송 카드 (연습)' : '암송 테스트 (시험)';
-    document.getElementById('test-setup').style.display = mode === 'test' ? 'flex' : 'none';
-    document.getElementById('test-section').style.display = 'none';
-    document.getElementById('check-btn').style.display = 'none';
-    document.getElementById('status-panel').style.display = 'none';
-    document.getElementById('part-container').style.display = mode === 'test' ? 'none' : 'flex';
-    document.getElementById('next-btn').innerText = mode === 'test' ? '다음 구절' : '다음';
-    document.getElementById('prev-btn').style.visibility = mode === 'test' ? 'hidden' : 'visible';
-    if(mode === 'test') { generatePartCheckboxes(); } else { filterPart('A'); }
-};
-
-function generatePracticePartButtons() {
+function generatePartButtons() {
     const container = document.getElementById('part-container');
     const parts = [...new Set(window.allVerses.map(v => v.p))];
     container.innerHTML = '';
@@ -117,39 +127,12 @@ function generatePracticePartButtons() {
 window.filterPart = (part) => {
     window.currentVerses = window.allVerses.filter(v => v.p === part);
     window.currentIndex = 0; updateCard();
-    document.querySelectorAll('.part-btn').forEach(btn => btn.classList.toggle('active', btn.innerText.includes(part)));
-};
-
-window.updateCard = () => {
-    const v = window.currentVerses[window.currentIndex];
-    if(!v) return;
-    const idEl = document.getElementById('v-id');
-    const themeEl = document.getElementById('v-theme');
-    idEl.innerText = v.id; themeEl.innerText = v.theme;
-    document.getElementById('v-ref').innerText = v.ref;
-    document.getElementById('v-content').innerText = v.content;
-    
-    if(window.currentMode === 'test') { idEl.style.display = 'none'; themeEl.style.display = 'none'; }
-    else { idEl.style.display = 'block'; themeEl.style.display = 'block'; }
-    
-    document.getElementById('v-content').style.display = 'none';
-    document.getElementById('result-view').style.display = 'none';
-    document.getElementById('score-text').style.display = 'none';
-    document.getElementById('input-theme').value = "";
-    document.getElementById('input-content').value = "";
-    document.getElementById('v-page').innerText = `${window.currentIndex + 1} / ${window.currentVerses.length}`;
 };
 
 window.handleCardClick = () => {
-    if(window.currentMode === 'practice') {
-        const content = document.getElementById('v-content');
-        const isShown = content.style.display === 'block';
-        content.style.display = isShown ? 'none' : 'block';
-    }
+    const content = document.getElementById('v-content');
+    content.style.display = (content.style.display === 'block') ? 'none' : 'block';
 };
 
+window.handleNext = () => { if (window.currentIndex < window.currentVerses.length - 1) { window.currentIndex++; updateCard(); } };
 window.prevVerse = () => { if(window.currentIndex > 0) { window.currentIndex--; updateCard(); } };
-window.handleNext = () => {
-    if(window.currentMode === 'test') { nextTestVerse(); } 
-    else if (window.currentIndex < window.currentVerses.length - 1) { window.currentIndex++; updateCard(); }
-};
