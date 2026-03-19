@@ -1,19 +1,149 @@
-:root { --main-blue: #0ea5e9; --dark-blue: #075985; }
+:root { 
+    --main-blue: #0ea5e9; 
+    --dark-blue: #075985; 
+}
+
 body { 
     background: radial-gradient(circle at top, var(--main-blue) 0%, var(--dark-blue) 100%);
-    background-attachment: fixed; margin: 0; padding: 0; min-height: 100vh;
-    display: flex; flex-direction: column; align-items: center; font-family: sans-serif;
+    background-attachment: fixed; 
+    margin: 0; padding: 0; 
+    min-height: 100vh;
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    font-family: 'Pretendard', sans-serif;
 }
-.auth-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top, var(--main-blue) 0%, var(--dark-blue) 100%); z-index: 5000; display: flex; align-items: center; justify-content: center; }
-.auth-card { background: white; padding: 30px; border-radius: 25px; width: 90%; max-width: 380px; color: #333; text-align: center; }
-.top-bar { width: 100%; height: 60px; background: rgba(7, 89, 133, 0.9); backdrop-filter: blur(10px); position: fixed; top: 0; left: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; box-sizing: border-box; z-index: 2000; color: white; }
-.menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 3000; display: none; }
-.side-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: white; z-index: 3100; transition: 0.3s ease; padding: 25px; box-sizing: border-box; color: #333; display: flex; flex-direction: column; }
+
+/* 인증(로그인/회원가입) 전체 배경 */
+.auth-overlay { 
+    position: fixed; 
+    top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    background: radial-gradient(circle at top, var(--main-blue) 0%, var(--dark-blue) 100%); 
+    z-index: 5000; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+}
+
+/* 인증 카드 박스 - 스크린샷 꼬임 해결의 핵심 */
+.auth-card { 
+    background: white; 
+    padding: 30px; 
+    border-radius: 25px; 
+    width: 90%; 
+    max-width: 380px; 
+    color: #333; 
+    text-align: center; 
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    box-sizing: border-box;
+    display: block; /* 내부 요소들이 세로로 차곡차곡 쌓이도록 강제 */
+    max-height: 90vh; /* 화면 높이에 맞춰 조절 */
+    overflow-y: auto; /* 내용이 길어지면 내부 스크롤 */
+}
+
+/* 상단바 */
+.top-bar { 
+    width: 100%; height: 60px; 
+    background: rgba(7, 89, 133, 0.9); 
+    backdrop-filter: blur(10px); 
+    position: fixed; top: 0; left: 0; 
+    display: flex; align-items: center; 
+    justify-content: space-between; 
+    padding: 0 15px; 
+    box-sizing: border-box; 
+    z-index: 2000; color: white; 
+}
+
+/* 사이드 메뉴 */
+.menu-overlay { 
+    position: fixed; top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    background: rgba(0, 0, 0, 0.5); 
+    z-index: 3000; display: none; 
+}
+.side-menu { 
+    position: fixed; top: 0; left: -280px; 
+    width: 280px; height: 100%; 
+    background: white; z-index: 3100; 
+    transition: 0.3s ease; 
+    padding: 25px; box-sizing: border-box; 
+    color: #333; display: flex; flex-direction: column; 
+}
 .side-menu.open { left: 0; }
-.main-content { margin-top: 80px; width: 100%; display: flex; flex-direction: column; align-items: center; }
-.card { background: white; width: 90%; max-width: 450px; min-height: 320px; border-radius: 30px; padding: 40px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; cursor: pointer; margin-bottom: 25px; box-sizing: border-box; color: #333; }
-.test-input { width: 100%; height: 45px; border-radius: 10px; border: 1px solid #ddd; padding: 0 12px; box-sizing: border-box; background: #f8fafc; margin-bottom: 10px; }
-.btn { border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: bold; cursor: pointer; }
+
+/* 메인 콘텐츠 */
+.main-content { 
+    margin-top: 80px; 
+    width: 100%; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+}
+
+/* 구절 카드 */
+.card { 
+    background: white; 
+    width: 90%; 
+    max-width: 450px; 
+    min-height: 320px; 
+    border-radius: 30px; 
+    padding: 40px; 
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3); 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    text-align: center; 
+    margin-bottom: 25px; 
+    box-sizing: border-box; 
+    color: #333; 
+}
+
+/* 입력창 공통 */
+.test-input { 
+    width: 100%; height: 45px; 
+    border-radius: 10px; 
+    border: 1px solid #ddd; 
+    padding: 0 12px; 
+    box-sizing: border-box; 
+    background: #f8fafc; 
+    margin-bottom: 10px; 
+    font-size: 14px;
+}
+
+/* 버튼 공통 */
+.btn { 
+    border: none; 
+    border-radius: 12px; 
+    padding: 14px; 
+    font-size: 16px; 
+    font-weight: bold; 
+    cursor: pointer; 
+}
 .primary-btn { background: var(--main-blue); color: white; width: 100%; }
-.part-btn { padding: 8px 15px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: white; cursor: pointer; font-size: 12px; }
+
+/* 파트 버튼 스타일 */
+.part-btn { 
+    padding: 8px 15px; 
+    border-radius: 20px; 
+    border: 1px solid rgba(255,255,255,0.3); 
+    background: rgba(255,255,255,0.1); 
+    color: white; 
+    cursor: pointer; 
+    font-size: 12px; 
+    margin: 2px;
+}
 .part-btn.active { background: white; color: var(--dark-blue); font-weight: bold; }
+
+/* 회원가입 코스 선택 박스 내부 정렬 */
+#course-checkboxes {
+    background: #f1f5f9;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    font-size: 13px;
+    text-align: left;
+    color: #475569;
+}
+.check-msg { font-size: 11px; margin-top: -5px; margin-bottom: 8px; text-align: left; }
