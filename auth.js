@@ -17,7 +17,7 @@ export const db = getFirestore(app);
 
 window.isNickValid = false;
 
-// [실시간 비밀번호 체크]
+// 실시간 PW 일치 체크
 document.addEventListener('input', (e) => {
     if (e.target.id === 'reg-pw' || e.target.id === 'reg-pw-confirm') {
         const pw = document.getElementById('reg-pw').value;
@@ -29,7 +29,7 @@ document.addEventListener('input', (e) => {
     }
 });
 
-// [실시간 닉네임 체크]
+// 실시간 닉네임 중복 체크
 document.addEventListener('input', async (e) => {
     if (e.target.id === 'reg-nickname') {
         const nick = e.target.value.trim();
@@ -43,9 +43,8 @@ document.addEventListener('input', async (e) => {
 });
 
 window.handleLogin = () => {
-    const email = document.getElementById('login-email').value;
-    const pw = document.getElementById('login-pw').value;
-    signInWithEmailAndPassword(auth, email, pw).catch(e => alert(e.message));
+    signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pw').value)
+        .catch(e => alert("로그인 실패: " + e.message));
 };
 
 window.handleSignUpFinal = async () => {
@@ -54,14 +53,19 @@ window.handleSignUpFinal = async () => {
     const nick = document.getElementById('reg-nickname').value.trim();
     const courses = Array.from(document.querySelectorAll('input[name="course"]:checked')).map(cb => cb.value);
 
-    if(!window.isNickValid) { alert("닉네임 중복을 확인하세요."); return; }
-    
+    if(!window.isNickValid) { alert("닉네임 중복 확인이 필요합니다."); return; }
+    if(courses.length === 0) { alert("최소 하나 이상의 코스를 선택해 주세요."); return; }
+
     try {
         const cred = await createUserWithEmailAndPassword(auth, email, pw);
-        await setDoc(doc(db, "users", cred.user.uid), { nickname: nick, selectedCourses: courses });
-        alert("가입 성공!");
+        await setDoc(doc(db, "users", cred.user.uid), { 
+            nickname: nick, 
+            selectedCourses: courses,
+            joinDate: new Date()
+        });
+        alert("가입 성공! 로그인해 주세요.");
         location.reload();
-    } catch (e) { alert(e.message); }
+    } catch (e) { alert("가입 에러: " + e.message); }
 };
 
 window.handleLogout = () => signOut(auth);
