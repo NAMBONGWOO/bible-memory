@@ -17,40 +17,31 @@
             <p style="font-size:13px; margin-top:15px;">계정이 없으신가요? <a href="#" onclick="openSignupModal()" style="color:var(--main-blue); font-weight:bold; text-decoration:none;">회원가입 하기</a></p>
         </div>
 
-<div id="signup-card" class="auth-card" style="display:none; max-height: 90vh; overflow-y: auto;">
-    <h3 style="color:var(--main-blue); margin-bottom: 20px;">새 계정 만들기</h3>
+<div id="signup-card" class="auth-card" style="display:none;">
+    <h3 style="color:var(--main-blue); margin: 0 0 20px 0;">새 계정 만들기</h3>
     
-    <div style="text-align:left;">
-        <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px;">이메일</label>
-        <input type="email" id="reg-email" class="test-input" placeholder="example@mail.com">
+    <div style="text-align:left; width: 100%;">
+        <label style="font-size:12px; font-weight:bold;">이메일</label>
+        <input type="email" id="reg-email" class="test-input" placeholder="이메일 입력">
         
-        <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px;">비밀번호 (6자 이상)</label>
-        <input type="password" id="reg-pw" class="test-input" placeholder="비밀번호 입력">
+        <label style="font-size:12px; font-weight:bold;">비밀번호</label>
+        <input type="password" id="reg-pw" class="test-input" placeholder="비밀번호">
         <input type="password" id="reg-pw-confirm" class="test-input" placeholder="비밀번호 확인">
-        <div id="pw-match-msg" class="check-msg" style="margin-bottom:10px;"></div>
-
-        <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px;">닉네임</label>
-        <input type="text" id="reg-nickname" class="test-input" placeholder="암송왕">
-        <div id="nick-match-msg" class="check-msg" style="margin-bottom:10px;"></div>
         
-        <label style="font-weight:bold; font-size:13px; display:block; margin-bottom:10px;">암송 코스 선택</label>
-        <div id="course-checkboxes">
-            <p style="margin:0 0 5px; font-weight:bold; color:var(--dark-blue);">[기본]</p>
-            <label><input type="checkbox" name="course" value="nav_60.json" checked> 주제별 60</label><br>
-            <label><input type="checkbox" name="course" value="nav_60_en.json"> 주제별 60 (EN)</label>
-            
-            <p style="margin:10px 0 5px; font-weight:bold; color:var(--dark-blue);">[시리즈 180]</p>
-            <label><input type="checkbox" name="course" value="series_180_s1.json"> 시리즈 1</label><br>
-            <p style="margin:10px 0 5px; font-weight:bold; color:var(--dark-blue);">[DEP 242]</p>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
-                <label><input type="checkbox" name="course" value="dep_242_p1.json"> DEP 1</label>
-                <label><input type="checkbox" name="course" value="dep_242_p2.json"> DEP 2</label>
-                </div>
-        </div>
+        <label style="font-size:12px; font-weight:bold;">닉네임</label>
+        <input type="text" id="reg-nickname" class="test-input" placeholder="닉네임">
+        
+        <label style="font-weight:bold; font-size:13px; margin-top:10px; display:block;">암송 코스 선택</label>
+        <div id="course-checkboxes" style="background:#f1f5f9; padding:10px; border-radius:10px; margin-top:5px; max-height:200px; overflow-y:auto;">
+            <div style="margin-bottom:5px;"><label><input type="checkbox" name="course" value="nav_60.json" checked> 주제별 60</label></div>
+            <div style="margin-bottom:5px;"><label><input type="checkbox" name="course" value="series_180_s1.json"> 시리즈 1</label></div>
+            </div>
     </div>
     
-    <button class="btn primary-btn" style="margin-top:10px;" onclick="handleSignUpFinal()">가입 완료</button>
-    <button class="btn" style="background:#eee; color:#333; margin-top:10px;" onclick="closeSignupModal()">취소</button>
+    <div style="width: 100%; margin-top: 15px;">
+        <button class="btn primary-btn" onclick="handleSignUpFinal()">가입 완료</button>
+        <button class="btn" style="background:#eee; color:#333;" onclick="closeSignupModal()">취소</button>
+    </div>
 </div>
     </div>
 

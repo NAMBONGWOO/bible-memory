@@ -26,7 +26,7 @@ body {
     justify-content: center; 
 }
 
-/* 인증 카드 박스 - 스크린샷 꼬임 해결의 핵심 */
+/* 인증 카드 박스 - 꼬임 해결의 핵심 */
 .auth-card { 
     background: white; 
     padding: 30px; 
@@ -37,7 +37,12 @@ body {
     text-align: center; 
     box-shadow: 0 20px 40px rgba(0,0,0,0.3);
     box-sizing: border-box;
-    display: block; /* 내부 요소들이 세로로 차곡차곡 쌓이도록 강제 */
+    
+    /* 세로 정렬 및 내부 요소 간격 제어 */
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    
     max-height: 90vh; /* 화면 높이에 맞춰 조절 */
     overflow-y: auto; /* 내용이 길어지면 내부 스크롤 */
 }
@@ -102,14 +107,15 @@ body {
 
 /* 입력창 공통 */
 .test-input { 
-    width: 100%; height: 45px; 
+    width: 100%; 
+    height: 45px; 
     border-radius: 10px; 
     border: 1px solid #ddd; 
     padding: 0 12px; 
     box-sizing: border-box; 
     background: #f8fafc; 
-    margin-bottom: 10px; 
     font-size: 14px;
+    flex-shrink: 0; /* 크기 줄어듦 방지 */
 }
 
 /* 버튼 공통 */
@@ -120,8 +126,11 @@ body {
     font-size: 16px; 
     font-weight: bold; 
     cursor: pointer; 
+    width: 100%; /* 버튼이 부모 너비를 꽉 채우도록 */
+    box-sizing: border-box;
+    flex-shrink: 0;
 }
-.primary-btn { background: var(--main-blue); color: white; width: 100%; }
+.primary-btn { background: var(--main-blue); color: white; }
 
 /* 파트 버튼 스타일 */
 .part-btn { 
@@ -141,9 +150,14 @@ body {
     background: #f1f5f9;
     padding: 15px;
     border-radius: 12px;
-    margin-bottom: 15px;
     font-size: 13px;
     text-align: left;
     color: #475569;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
-.check-msg { font-size: 11px; margin-top: -5px; margin-bottom: 8px; text-align: left; }
+#course-checkboxes div { margin-bottom: 8px; }
+#course-checkboxes label { cursor: pointer; display: flex; align-items: center; gap: 8px; }
+
+.check-msg { font-size: 11px; margin-top: -5px; text-align: left; min-height: 14px; }
