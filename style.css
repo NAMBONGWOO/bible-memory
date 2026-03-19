@@ -1,68 +1,60 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>성경암송 매니저 Pro</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <div id="auth-screen" class="auth-overlay">
-        <div id="login-card" class="auth-card">
-            <h2 style="color:var(--main-blue)">성경암송 매니저</h2>
-            <input type="email" id="login-email" class="btn" style="background:#f1f5f9; text-align:left" placeholder="이메일">
-            <input type="password" id="login-pw" class="btn" style="background:#f1f5f9; text-align:left" placeholder="비밀번호">
-            <button class="btn primary-btn" onclick="handleLogin()">로그인</button>
-            <p style="font-size:13px; margin-top:15px;">계정이 없으신가요? <a href="#" onclick="openSignupModal()">회원가입</a></p>
-        </div>
-        <div id="signup-card" class="auth-card" style="display:none">
-            <h3>회원가입</h3>
-            <input type="email" id="reg-email" class="btn" style="background:#f1f5f9" placeholder="이메일 주소">
-            <input type="password" id="reg-pw" class="btn" style="background:#f1f5f9" placeholder="비밀번호">
-            <input type="text" id="reg-nickname" class="btn" style="background:#f1f5f9" placeholder="닉네임">
-            <div id="course-checkboxes" style="text-align:left; font-size:13px; background:#f8fafc; padding:10px; border-radius:10px; margin-top:10px;">
-                <label style="font-weight:bold; margin-bottom:5px; display:block">코스 선택</label>
-                <div><input type="checkbox" name="course" value="nav_60.json" checked> 주제별 60구절</div>
-                <div><input type="checkbox" name="course" value="basic_100.json"> 기초 과정</div>
-                <div><input type="checkbox" name="course" value="deep_180.json"> 심화 180구절</div>
-            </div>
-            <button class="btn primary-btn" onclick="handleSignUpFinal()">가입 완료</button>
-            <button class="btn" style="background:#eee" onclick="closeSignupModal()">취소</button>
-        </div>
-    </div>
+:root { 
+    --main-blue: #0ea5e9; --dark-blue: #075985; --card-bg: #ffffff;
+    --text-main: #1e293b; --error-red: #f43f5e; --success-green: #10b981;
+}
 
-    <div id="app-content" style="display:none">
-        <div class="top-bar">
-            <button class="menu-btn" onclick="toggleMenu()">≡</button>
-            <div class="header-title" id="mode-title">암송 카드 (연습)</div>
-            <button onclick="handleLogout()" style="background:none; border:none; color:white; font-size:12px">로그아웃</button>
-        </div>
+body { 
+    background: radial-gradient(circle at top, var(--main-blue) 0%, var(--dark-blue) 100%);
+    background-attachment: fixed; font-family: sans-serif; 
+    display: flex; flex-direction: column; align-items: center; 
+    margin: 0; padding: 0; min-height: 100vh; color: white; overflow-x: hidden;
+}
 
-        <div class="menu-overlay" id="overlay" onclick="toggleMenu()"></div>
-        <div class="side-menu" id="sideMenu">
-            <div class="menu-header" id="user-display">사용자님</div>
-            <div class="menu-item" onclick="setMode('practice')">📖 암송 카드 (연습)</div>
-            <div class="menu-item" onclick="setMode('test')">✍️ 암송 테스트 (시험)</div>
-            <div style="padding: 20px 20px 5px; font-size: 12px; color: #999;">데이터 세트 선택</div>
-            <select id="data-select" class="btn" onchange="loadData(this.value); toggleMenu();" style="width:85%; margin:0 20px; background:#f1f5f9"></select>
-            <div id="part-container"></div>
-        </div>
+.top-bar { 
+    width: 100%; height: 65px; display: flex; align-items: center; padding: 0 15px; 
+    box-sizing: border-box; position: sticky; top: 0; z-index: 100;
+    background: rgba(7, 89, 133, 0.8); backdrop-filter: blur(10px);
+}
+.menu-btn { font-size: 30px; cursor: pointer; background: none; border: none; color: white; padding: 5px 10px; }
+.header-title { flex-grow: 1; text-align: center; font-size: 18px; font-weight: 700; margin-right: 50px; }
 
-        <main class="main-content">
-            <div class="card" id="main-card" onclick="handleCardClick()">
-                <div id="v-id" style="color:var(--main-blue); font-weight:bold; font-size:14px; margin-bottom:5px">-</div>
-                <div id="v-theme" class="theme">제목</div>
-                <div id="v-ref" class="ref">장절</div>
-                <div id="v-content" class="content">내용</div>
-            </div>
-            <div class="controls">
-                <button class="btn" style="background:white; color:#333" onclick="prevVerse()">이전</button>
-                <button class="btn primary-btn" onclick="handleNext()">다음</button>
-            </div>
-            <div id="v-page" style="margin-top:20px; opacity:0.8; font-size:14px;">0 / 0</div>
-        </main>
-    </div>
+.side-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #ffffff; color: #333; transition: 0.4s; z-index: 1000; box-shadow: 10px 0 30px rgba(0,0,0,0.4); }
+.side-menu.open { left: 0; }
+.menu-header { padding: 30px 20px; font-weight: 800; font-size: 20px; border-bottom: 2px solid var(--main-blue); color: var(--main-blue); background: #f8fafc; }
+.menu-item { padding: 16px 25px; font-size: 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; }
+.menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 999; }
+.set-select { width: 85%; margin: 10px 20px; padding: 12px; border-radius: 10px; border: 2px solid #e2e8f0; }
 
-    <script type="module" src="app.js"></script>
-</body>
-</html>
+#part-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0; padding: 0 15px; width: 100%; max-width: 420px; }
+.part-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 10px; border-radius: 12px; cursor: pointer; font-size: 12px; flex: 1 1 calc(33% - 10px); }
+.part-btn.active { background: white; color: var(--dark-blue); font-weight: 800; }
+
+#test-setup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+.setup-card { background: white; padding: 30px; border-radius: 25px; width: 300px; text-align: center; color: #333; }
+.setup-input { width: 80%; padding: 15px; font-size: 24px; text-align: center; border: 2px solid #ddd; border-radius: 15px; margin: 15px 0; outline: none; }
+
+.card { 
+    background: var(--card-bg); width: calc(100% - 30px); max-width: 380px; border-radius: 25px; padding: 30px; 
+    text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4); min-height: 180px; 
+    display: flex; flex-direction: column; justify-content: center; position: relative; color: var(--text-main); box-sizing: border-box;
+}
+.score-display { font-size: 32px; font-weight: 900; color: var(--error-red); margin-bottom: 10px; display: none; }
+.id-tag { color: var(--main-blue); font-weight: 800; font-size: 14px; margin-bottom: 8px; }
+.theme { color: var(--dark-blue); font-size: 24px; font-weight: 800; margin: 5px 0; }
+.ref { color: #64748b; font-size: 20px; margin-bottom: 15px; }
+.content { color: #0f172a; font-size: 19px; line-height: 1.7; display: none; text-align: left; background: #f8fafc; padding: 20px; border-radius: 15px; word-break: keep-all; }
+.result-view { text-align: left; font-size: 17px; line-height: 1.6; margin-top: 15px; display: none; background: #fff1f2; padding: 15px; border-radius: 12px; color: #333; }
+.wrong { color: var(--error-red); text-decoration: underline; font-weight: bold; }
+
+#test-section { width: calc(100% - 30px); max-width: 380px; margin-top: 20px; display: none; }
+.input-label { font-size: 14px; font-weight: bold; margin-bottom: 8px; display: block; opacity: 0.9; }
+.test-input { width: 100%; border-radius: 12px; border: none; padding: 15px; font-size: 16px; box-sizing: border-box; outline: none; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+textarea.test-input { height: 110px; }
+
+.controls { display: flex; gap: 12px; margin: 25px 0; width: calc(100% - 30px); max-width: 380px; }
+.btn { flex: 1; background: white; border: none; color: var(--dark-blue); padding: 16px; border-radius: 15px; font-weight: 800; cursor: pointer; font-size: 16px; box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+.primary-btn { background: var(--main-blue); color: white; margin-top: 10px; }
+.check-btn { background: #fbbf24; color: #78350f; width: calc(100% - 30px); max-width: 380px; margin-top: 5px; font-weight: bold; display: none; }
+
+.status-panel { width: calc(100% - 30px); max-width: 380px; display: none; justify-content: space-between; margin-bottom: 10px; font-size: 14px; font-weight: bold; }
+.footer { margin-bottom: 50px; font-size: 14px; opacity: 0.8; background: rgba(0,0,0,0.2); padding: 6px 18px; border-radius: 20px; }

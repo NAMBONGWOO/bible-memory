@@ -7,62 +7,64 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="auth-screen" class="auth-overlay">
-        <div id="login-card" class="auth-card">
-            <h2 style="color:var(--main-blue)">성경암송 매니저</h2>
-            <input type="email" id="login-email" class="btn" style="background:#f1f5f9; text-align:left" placeholder="이메일">
-            <input type="password" id="login-pw" class="btn" style="background:#f1f5f9; text-align:left" placeholder="비밀번호">
-            <button class="btn primary-btn" onclick="handleLogin()">로그인</button>
-            <p style="font-size:13px; margin-top:15px;">계정이 없으신가요? <a href="#" onclick="openSignupModal()">회원가입</a></p>
-        </div>
-        <div id="signup-card" class="auth-card" style="display:none">
-            <h3>회원가입</h3>
-            <input type="email" id="reg-email" class="btn" style="background:#f1f5f9" placeholder="이메일 주소">
-            <input type="password" id="reg-pw" class="btn" style="background:#f1f5f9" placeholder="비밀번호">
-            <input type="text" id="reg-nickname" class="btn" style="background:#f1f5f9" placeholder="닉네임">
-            <div id="course-checkboxes" style="text-align:left; font-size:13px; background:#f8fafc; padding:10px; border-radius:10px; margin-top:10px;">
-                <label style="font-weight:bold; margin-bottom:5px; display:block">코스 선택</label>
-                <div><input type="checkbox" name="course" value="nav_60.json" checked> 주제별 60구절</div>
-                <div><input type="checkbox" name="course" value="basic_100.json"> 기초 과정</div>
-                <div><input type="checkbox" name="course" value="deep_180.json"> 심화 180구절</div>
-            </div>
-            <button class="btn primary-btn" onclick="handleSignUpFinal()">가입 완료</button>
-            <button class="btn" style="background:#eee" onclick="closeSignupModal()">취소</button>
+
+    <div class="top-bar">
+        <button class="menu-btn" onclick="toggleMenu()">≡</button>
+        <div class="header-title" id="mode-title">암송 카드 (연습)</div>
+    </div>
+
+    <div id="test-setup">
+        <div class="setup-card">
+            <h3 style="margin-top:0; color:var(--dark-blue);">테스트 설정</h3>
+            <p>몇 구절을 테스트하시겠습니까?</p>
+            <input type="number" id="test-count-input" class="setup-input" value="10" min="1">
+            <button class="btn primary-btn" onclick="startTestSession()">테스트 시작</button>
+            <button class="btn" style="margin-top:10px; background:#eee;" onclick="setMode('practice')">취소</button>
         </div>
     </div>
 
-    <div id="app-content" style="display:none">
-        <div class="top-bar">
-            <button class="menu-btn" onclick="toggleMenu()">≡</button>
-            <div class="header-title" id="mode-title">암송 카드 (연습)</div>
-            <button onclick="handleLogout()" style="background:none; border:none; color:white; font-size:12px">로그아웃</button>
-        </div>
-
-        <div class="menu-overlay" id="overlay" onclick="toggleMenu()"></div>
-        <div class="side-menu" id="sideMenu">
-            <div class="menu-header" id="user-display">사용자님</div>
-            <div class="menu-item" onclick="setMode('practice')">📖 암송 카드 (연습)</div>
-            <div class="menu-item" onclick="setMode('test')">✍️ 암송 테스트 (시험)</div>
-            <div style="padding: 20px 20px 5px; font-size: 12px; color: #999;">데이터 세트 선택</div>
-            <select id="data-select" class="btn" onchange="loadData(this.value); toggleMenu();" style="width:85%; margin:0 20px; background:#f1f5f9"></select>
-            <div id="part-container"></div>
-        </div>
-
-        <main class="main-content">
-            <div class="card" id="main-card" onclick="handleCardClick()">
-                <div id="v-id" style="color:var(--main-blue); font-weight:bold; font-size:14px; margin-bottom:5px">-</div>
-                <div id="v-theme" class="theme">제목</div>
-                <div id="v-ref" class="ref">장절</div>
-                <div id="v-content" class="content">내용</div>
-            </div>
-            <div class="controls">
-                <button class="btn" style="background:white; color:#333" onclick="prevVerse()">이전</button>
-                <button class="btn primary-btn" onclick="handleNext()">다음</button>
-            </div>
-            <div id="v-page" style="margin-top:20px; opacity:0.8; font-size:14px;">0 / 0</div>
-        </main>
+    <div class="menu-overlay" id="overlay" onclick="toggleMenu()"></div>
+    <div class="side-menu" id="sideMenu">
+        <div class="menu-header">암송 매니저</div>
+        <div class="menu-item" onclick="setMode('practice')">📖 암송 카드 (연습)</div>
+        <div class="menu-item" onclick="setMode('test')">✍️ 암송 테스트 (시험)</div>
+        <div style="padding: 20px 20px 5px; font-size: 12px; color: #999;">데이터 세트</div>
+        <select class="set-select" id="data-select" onchange="loadData(this.value); toggleMenu();"></select>
     </div>
 
-    <script type="module" src="app.js"></script>
+    <div id="part-container"></div>
+
+    <div class="status-panel" id="status-panel">
+        <span id="test-progress">진행: 0 / 0</span>
+        <span id="test-total-score">누적 감점: 0</span>
+    </div>
+
+    <div class="card" id="main-card" onclick="handleCardClick()">
+        <div id="score-text" class="score-display">0</div>
+        <div id="v-id" class="id-tag">-</div>
+        <div id="v-theme" class="theme">제목</div>
+        <div id="v-ref" class="ref">장절</div>
+        <div id="v-content" class="content">내용</div>
+        <div id="result-view" class="result-view"></div>
+    </div>
+
+    <div id="test-section">
+        <span class="input-label">제목 입력</span>
+        <input type="text" id="input-theme" class="test-input" placeholder="제목을 입력하세요">
+        <span class="input-label">내용 입력</span>
+        <textarea id="input-content" class="test-input" placeholder="본문 내용을 입력하세요"></textarea>
+    </div>
+
+    <button id="check-btn" class="btn check-btn" onclick="runCheck()">채점하기 (체킹)</button>
+
+    <div class="controls">
+        <button class="btn" onclick="prevVerse()" id="prev-btn">이전</button>
+        <button class="btn" onclick="handleNext()" id="next-btn">다음</button>
+    </div>
+
+    <div id="v-page" class="footer">0 / 0</div>
+
+    <script src="app.js"></script>
+    <script src="test.js"></script>
 </body>
 </html>
