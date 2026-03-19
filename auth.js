@@ -43,8 +43,7 @@ document.addEventListener('input', async (e) => {
 });
 
 window.handleLogin = () => {
-    signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pw').value)
-        .catch(e => alert("로그인 실패: " + e.message));
+    signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pw').value).catch(e => alert(e.message));
 };
 
 window.handleSignUpFinal = async () => {
@@ -54,18 +53,14 @@ window.handleSignUpFinal = async () => {
     const courses = Array.from(document.querySelectorAll('input[name="course"]:checked')).map(cb => cb.value);
 
     if(!window.isNickValid) { alert("닉네임 중복 확인이 필요합니다."); return; }
-    if(courses.length === 0) { alert("최소 하나 이상의 코스를 선택해 주세요."); return; }
+    if(courses.length === 0) { alert("코스를 선택해주세요."); return; }
 
     try {
         const cred = await createUserWithEmailAndPassword(auth, email, pw);
-        await setDoc(doc(db, "users", cred.user.uid), { 
-            nickname: nick, 
-            selectedCourses: courses,
-            joinDate: new Date()
-        });
-        alert("가입 성공! 로그인해 주세요.");
+        await setDoc(doc(db, "users", cred.user.uid), { nickname: nick, selectedCourses: courses, joinDate: new Date() });
+        alert("가입 성공!");
         location.reload();
-    } catch (e) { alert("가입 에러: " + e.message); }
+    } catch (e) { alert(e.message); }
 };
 
 window.handleLogout = () => signOut(auth);

@@ -11,11 +11,14 @@ onAuthStateChanged(auth, async (user) => {
             const data = docSnap.data();
             document.getElementById('user-display').innerText = `${data.nickname}님`;
             
-            // 데이터 세트 선택창 구성
             const sel = document.getElementById('data-select');
             sel.innerHTML = data.selectedCourses.map(file => {
-                // 파일명을 보기 좋은 이름으로 변환
-                let label = file.replace('.json', '').replace('deep_180_', 'Series ').replace('nav_60', '주제별 60').toUpperCase();
+                // [파일명 변환기] 파일명을 읽기 쉬운 한글 메뉴명으로 바꿉니다.
+                let label = file.replace('.json', '')
+                                .replace('series_180_s', '심화 시리즈 ')
+                                .replace('dep_242_p', 'DEP 파트 ')
+                                .replace('nav_60_en', '60구절 (English)')
+                                .replace('nav_60', '주제별 60구절');
                 return `<option value="${file}">${label}</option>`;
             }).join('');
             
@@ -30,8 +33,10 @@ onAuthStateChanged(auth, async (user) => {
 window.loadData = async (f) => {
     const res = await fetch(`data/${f}`);
     window.allVerses = await res.json();
-    if(typeof generatePartButtons === 'function') generatePartButtons();
-    filterPart('Series 1'); // 심화 과정은 'A' 파트가 없을 수 있으므로 유연하게 대처 필요
+    generatePartButtons();
+    // 첫 파트 자동 필터 (I, A, Series 1 등 데이터의 첫 파트 자동 감지)
+    const firstPart = window.allVerses[0].p;
+    filterPart(firstPart);
 };
 
 window.toggleMenu = () => document.getElementById('sideMenu').classList.toggle('open');

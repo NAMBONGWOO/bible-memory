@@ -24,24 +24,37 @@
                 <input type="email" id="reg-email" class="test-input" placeholder="example@mail.com">
                 <label style="font-size:12px; font-weight:bold;">비밀번호 (6자 이상)</label>
                 <input type="password" id="reg-pw" class="test-input" placeholder="비밀번호 입력">
-                <label style="font-size:12px; font-weight:bold;">비밀번호 확인</label>
-                <input type="password" id="reg-pw-confirm" class="test-input" placeholder="비밀번호 재입력">
+                <input type="password" id="reg-pw-confirm" class="test-input" placeholder="비밀번호 확인">
                 <div id="pw-match-msg" class="check-msg"></div>
 
                 <label style="font-size:12px; font-weight:bold;">닉네임</label>
                 <input type="text" id="reg-nickname" class="test-input" placeholder="암송왕">
                 <div id="nick-match-msg" class="check-msg"></div>
                 
-                <label style="font-weight:bold; margin-top:10px;">암송 코스 선택 (복수 선택 가능)</label>
-                <div id="course-checkboxes" style="background:#f8fafc; padding:15px; border-radius:15px; border:1px solid #eee; color:#333; font-size:13px; text-align:left;">
-                    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="nav_60.json" checked> 주제별 60구절 (한글)</div>
-                    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="nav_60_en.json"> 주제별 60구절 (English)</div>
-                    <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
-                    <div style="margin-bottom:5px;"><input type="checkbox" name="course" value="deep_180_s1.json"> 심화 Series 1 (하나님)</div>
-                    <div style="margin-bottom:5px;"><input type="checkbox" name="course" value="deep_180_s2.json"> 심화 Series 2 (사랑)</div>
-                    <div style="margin-bottom:5px;"><input type="checkbox" name="course" value="deep_180_s3.json"> 심화 Series 3 (믿음)</div>
-                    <div style="margin-bottom:5px;"><input type="checkbox" name="course" value="deep_180_s4.json"> 심화 Series 4 (승리)</div>
-                    <div><input type="checkbox" name="course" value="deep_180_s5.json"> 심화 Series 5 (증거)</div>
+                <label style="font-weight:bold; margin-top:10px;">암송 코스 선택</label>
+                <div id="course-checkboxes" style="background:#f8fafc; padding:15px; border-radius:15px; border:1px solid #eee; color:#333; font-size:12px; text-align:left;">
+                    <p style="margin:0 0 5px; font-weight:bold; color:var(--dark-blue);">[기본/심화]</p>
+                    <div><input type="checkbox" name="course" value="nav_60.json" checked> 주제별 60 (한글)</div>
+                    <div><input type="checkbox" name="course" value="nav_60_en.json"> 주제별 60 (English)</div>
+                    
+                    <p style="margin:10px 0 5px; font-weight:bold; color:var(--dark-blue);">[심화 180 시리즈]</p>
+                    <div><input type="checkbox" name="course" value="series_180_s1.json"> Series 1 (하나님)</div>
+                    <div><input type="checkbox" name="course" value="series_180_s2.json"> Series 2 (사랑)</div>
+                    <div><input type="checkbox" name="course" value="series_180_s3.json"> Series 3 (믿음)</div>
+                    <div><input type="checkbox" name="course" value="series_180_s4.json"> Series 4 (승리)</div>
+                    <div><input type="checkbox" name="course" value="series_180_s5.json"> Series 5 (증거)</div>
+
+                    <p style="margin:10px 0 5px; font-weight:bold; color:var(--dark-blue);">[DEP 242 파트]</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+                        <div><input type="checkbox" name="course" value="dep_242_p1.json"> P1 (확신)</div>
+                        <div><input type="checkbox" name="course" value="dep_242_p2.json"> P2 (QT)</div>
+                        <div><input type="checkbox" name="course" value="dep_242_p3.json"> P3 (말씀)</div>
+                        <div><input type="checkbox" name="course" value="dep_242_p4.json"> P4 (기도)</div>
+                        <div><input type="checkbox" name="course" value="dep_242_p5.json"> P5 (교제)</div>
+                        <div><input type="checkbox" name="course" value="dep_242_p6.json"> P6 (증거)</div>
+                        <div><input type="checkbox" name="course" value="dep_242_p7.json"> P7 (주재권)</div>
+                        <div><input type="checkbox" name="course" value="dep_242_p8.json"> P8 (비전)</div>
+                    </div>
                 </div>
             </div>
             <button class="btn primary-btn" style="margin-top:10px;" onclick="handleSignUpFinal()">가입 완료</button>
@@ -62,13 +75,13 @@
             <div class="menu-item" onclick="setMode('practice')">📖 암송 카드 (연습)</div>
             <div class="menu-item" onclick="setMode('test')">✍️ 암송 테스트 (시험)</div>
             <div style="padding: 20px 10px 5px; font-size: 12px; color: #999;">데이터 세트 선택</div>
-            <select id="data-select" class="test-input" onchange="loadData(this.value); toggleMenu();" style="width:100%; background:#f1f5f9; border:none;"></select>
+            <select id="data-select" class="test-input" onchange="loadData(this.value); toggleMenu();" style="width:100%; border:none;"></select>
         </div>
 
         <main class="main-content">
             <div id="part-container"></div>
             <div class="card" id="main-card" onclick="handleCardClick()">
-                <div id="v-id" style="color:var(--main-blue); font-weight:bold; font-size:14px; margin-bottom:5px">-</div>
+                <div id="v-id" style="color:var(--main-blue); font-weight:bold; font-size:14px;">-</div>
                 <div id="v-theme" class="theme">제목</div>
                 <div id="v-ref" class="ref">장절</div>
                 <div id="v-content" class="content">내용</div>
