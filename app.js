@@ -2,73 +2,60 @@ import { auth, db } from './auth.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+window.currentMode = 'practice';
+
 onAuthStateChanged(auth, async (user) => {
-    const authScreen = document.getElementById('auth-screen');
-    const appContent = document.getElementById('app-content');
     if (user) {
-        authScreen.style.display = 'none';
-        appContent.style.display = 'block';
+        document.getElementById('auth-screen').style.display = 'none';
+        document.getElementById('app-content').style.display = 'block';
         const docSnap = await getDoc(doc(db, "users", user.uid));
         if (docSnap.exists()) {
             const data = docSnap.data();
-            // 닉네임 및 사이드바 코스 채우기
             document.getElementById('user-display').innerText = `${data.nickname}님`;
             const sel = document.getElementById('data-select');
             sel.innerHTML = data.selectedCourses.map(f => {
                 let label = f.replace('.json','').replace('series_180_s','시리즈 ').replace('dep_242_p','DEP ');
                 return `<option value="${f}">${label}</option>`;
             }).join('');
-            
-            // 첫 번째 데이터 로드 및 UI 초기화
             await loadData(data.selectedCourses[0]);
         }
     } else {
-        authScreen.style.display = 'flex';
-        appContent.style.display = 'none';
+        document.getElementById('auth-screen').style.display = 'flex';
+        document.getElementById('app-content').style.display = 'none';
     }
 });
+
+window.setMode = (mode) => {
+    window.currentMode = mode;
+    const isTest = (mode === 'test');
+    
+    // 타이틀 변경
+    document.getElementById('mode-title').innerText = isTest ? '암송 테스트 (시험)' : '암송 카드 (연습)';
+    
+    // UI 요소 가시성 제어
+    document.getElementById('test-setup').style.display = isTest ? 'block' : 'none';
+    document.getElementById('practice-area').style.display = isTest ? 'none' : 'block';
+    document.getElementById('practice-controls').style.display = isTest ? 'none' : 'flex';
+    document.getElementById('test-controls').style.display = 'none'; // 시작 전엔 숨김
+    document.getElementById('test-section').style.display = 'none';
+    document.getElementById('status-panel').style.display = 'none';
+    document.getElementById('part-container').style.display = isTest ? 'none' : 'flex';
+
+    if (!isTest) {
+        // 연습 모드로 돌아올 때 데이터 원복
+        loadData(document.getElementById('data-select').value);
+    }
+};
+window.loadData = async (f) => {
+    const res = await fetch(`data/${f}`);
+    window.allVerses = await res.json();
+    if(window.generatePartButtons) generatePartButtons();
+    if(window.filterPart) filterPart(window.allVerses[0].p);
+};
 
 window.toggleMenu = () => {
     const side = document.getElementById('sideMenu');
     const over = document.getElementById('overlay');
     side.classList.toggle('open');
     over.style.display = side.classList.contains('open') ? 'block' : 'none';
-};
-
-window.loadData = async (f) => {
-    try {
-        const res = await fetch(`data/${f}`);
-        window.allVerses = await res.json();
-        
-        // 연습 모드 필터 버튼 생성
-        if(window.generatePartButtons) generatePartButtons();
-        
-        // 파트 필터링 및 첫 구절 업데이트
-        const firstPart = window.allVerses[0].p;
-        if(window.filterPart) {
-            window.filterPart(firstPart);
-        } else {
-            window.currentIndex = 0;
-            window.updateCardUI(window.allVerses[0]);
-        }
-    } catch (e) {
-        console.error("데이터 로드 실패:", e);
-    }
-};
-
-// [중요] 카드를 실제로 그리는 함수
-window.updateCardUI = (v) => {
-    if(!v) return;
-    document.getElementById('v-id').innerText = v.id || "-";
-    document.getElementById('v-theme').innerText = v.theme || "제목 없음";
-    document.getElementById('v-ref').innerText = v.ref || "장절 정보 없음";
-    const content = document.getElementById('v-content');
-    content.innerText = v.content || "내용이 없습니다.";
-    content.style.display = 'none'; // 연습 모드이므로 처음엔 숨김
-
-    // 페이지 표시 업데이트
-    const pageInfo = document.getElementById('v-page');
-    if (window.verses && pageInfo) {
-        pageInfo.innerText = `${window.currentIndex + 1} / ${window.verses.length}`;
-    }
 };
