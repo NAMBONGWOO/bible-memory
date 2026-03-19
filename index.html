@@ -8,14 +8,11 @@
 </head>
 <body>
     <div id="auth-screen" class="modal-overlay" style="display: flex;">
-        
         <div class="auth-card" id="auth-step-1">
             <h2 style="color:var(--dark-blue);">성경암송 매니저</h2>
-            <p style="font-size:14px; color:#666; margin-bottom:20px;">가입 정보를 입력하고 시작하세요.</p>
-            
+            <p style="font-size:14px; color:#666; margin-bottom:20px;">로그인 정보를 입력해주세요.</p>
             <input type="email" id="auth-email" class="test-input" placeholder="이메일 주소">
             <input type="password" id="auth-pw" class="test-input" placeholder="비밀번호">
-            
             <div style="display:flex; gap:10px; margin-top:10px;">
                 <button class="btn" style="background:#eee; flex:1;" onclick="handleLogin()">로그인</button>
                 <button class="btn primary-btn" style="flex:1;" onclick="openRegisterPopup()">회원가입</button>
@@ -24,25 +21,24 @@
         </div>
 
         <div class="auth-card" id="auth-step-2" style="display:none;">
-           <h3 style="color:var(--main-blue);">회원정보 설정</h3>
-<p style="font-size:13px; color:#666;">암송하고 싶은 과정을 모두 선택해주세요.</p>
+            <h3 style="color:var(--main-blue);">회원정보 설정</h3>
+            <p style="font-size:13px; color:#666;">암송하고 싶은 코스를 선택해주세요.</p>
+            <input type="text" id="reg-nickname" class="test-input" placeholder="닉네임 (활동명)">
+            
+            <label style="display:block; text-align:left; font-size:12px; margin: 10px 0 5px 5px; font-weight:bold;">암송 코스 선택 (중복 가능):</label>
+            <div id="course-checkboxes" style="text-align:left; background:#f9f9f9; padding:10px; border-radius:8px; max-height:160px; overflow-y:auto; font-size:13px; border:1px solid #ddd;">
+                <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BB01" checked> <label>주제별 60구절 (개역한글)</label></div>
+                <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BA01"> <label>기초 과정 (새출발/동행)</label></div>
+                <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BC01"> <label>심화 180구절 세트</label></div>
+                <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BF10"> <label>DEP 242구절 세트</label></div>
+                <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BD03"> <label>어린이 암송카드</label></div>
+                <div style="margin-bottom:8px; color:var(--main-blue); font-weight:bold;"><input type="checkbox" id="reg-oyo" checked disabled> <label>OYO (나만의 카드 - 기본제공)</label></div>
+            </div>
 
-<input type="text" id="reg-nickname" class="test-input" placeholder="닉네임 (활동명)">
-
-<label style="display:block; text-align:left; font-size:12px; margin: 10px 0 5px 5px; font-weight:bold;">암송 코스 선택 (중복 가능):</label>
-<div id="course-checkboxes" style="text-align:left; background:#f9f9f9; padding:10px; border-radius:8px; max-height:160px; overflow-y:auto; font-size:13px; border:1px solid #ddd;">
-    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BB01" checked> <label>주제별 60구절 (개역한글)</label></div>
-    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BA01"> <label>기초 과정 (새출발/동행)</label></div>
-    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BC01"> <label>심화 180구절 세트</label></div>
-    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BF10"> <label>DEP 242구절 세트</label></div>
-    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BD03"> <label>어린이 암송카드</label></div>
-    <div style="margin-bottom:8px; color:var(--main-blue); font-weight:bold;"><input type="checkbox" id="reg-oyo" checked disabled> <label>OYO (나만의 카드 - 기본제공)</label></div>
-</div>
-
-<div style="display:flex; gap:10px; margin-top:15px;">
-    <button class="btn" style="background:#eee;" onclick="closeRegisterPopup()">이전으로</button>
-    <button class="btn primary-btn" onclick="handleSignUpFinal()">가입 완료 및 시작</button>
-</div>
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="btn" style="background:#eee;" onclick="closeRegisterPopup()">이전으로</button>
+                <button class="btn primary-btn" onclick="handleSignUpFinal()">가입 완료 및 시작</button>
+            </div>
         </div>
     </div>
 
@@ -51,7 +47,7 @@
             <div class="header-title" id="mode-title">암송 카드 (연습)</div>
             <button onclick="handleLogout()" style="background:none; border:none; color:white; font-size:12px;">로그아웃</button>
         </div>
-        <div id="user-display" style="margin-top:10px; font-weight:bold;"></div>
+        <div id="user-display" style="margin-top:15px; font-weight:bold; color:var(--dark-blue);"></div>
         <div id="part-container" class="part-menu"></div>
         <div class="card" id="main-card" onclick="handleCardClick()">
             <div id="v-id" class="id-tag">-</div>
