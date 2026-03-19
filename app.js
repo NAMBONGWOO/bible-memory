@@ -15,13 +15,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 상태 변수 (보내주신 로직 변수들 포함)
-window.allVerses = [];
-window.currentVerses = [];
-window.currentIndex = 0;
-window.currentMode = 'practice';
+window.allVerses = []; window.currentVerses = []; window.currentIndex = 0;
 
-// [UI 제어]
+// UI 제어
 window.toggleMenu = () => {
     const side = document.getElementById('sideMenu');
     const over = document.getElementById('overlay');
@@ -31,28 +27,24 @@ window.toggleMenu = () => {
 window.openSignupModal = () => { document.getElementById('login-card').style.display='none'; document.getElementById('signup-card').style.display='block'; };
 window.closeSignupModal = () => { document.getElementById('login-card').style.display='block'; document.getElementById('signup-card').style.display='none'; };
 
-// [인증 로직]
+// 인증
 window.handleSignUpFinal = async () => {
     const email = document.getElementById('reg-email').value;
     const pw = document.getElementById('reg-pw').value;
     const nick = document.getElementById('reg-nickname').value;
     const courses = Array.from(document.querySelectorAll('input[name="course"]:checked')).map(cb => cb.value);
-
     try {
         const cred = await createUserWithEmailAndPassword(auth, email, pw);
         await setDoc(doc(db, "users", cred.user.uid), { nickname: nick, selectedCourses: courses });
         alert("가입 성공!");
     } catch (e) { alert(e.message); }
 };
-
 window.handleLogin = () => {
-    const e = document.getElementById('login-email').value;
-    const p = document.getElementById('login-pw').value;
-    signInWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
+    signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pw').value).catch(e => alert(e.message));
 };
 window.handleLogout = () => signOut(auth);
 
-// [핵심 데이터 로직]
+// 상태 감시 및 데이터 로드
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         document.getElementById('auth-screen').style.display = 'none';
@@ -61,8 +53,8 @@ onAuthStateChanged(auth, async (user) => {
         if (docSnap.exists()) {
             const data = docSnap.data();
             document.getElementById('user-display').innerText = `${data.nickname}님 환영합니다!`;
-            const selector = document.getElementById('data-select');
-            selector.innerHTML = data.selectedCourses.map(c => `<option value="${c}">${c}</option>`).join('');
+            const sel = document.getElementById('data-select');
+            sel.innerHTML = data.selectedCourses.map(c => `<option value="${c}">${c}</option>`).join('');
             loadData(data.selectedCourses[0]);
         }
     } else {
@@ -74,15 +66,10 @@ onAuthStateChanged(auth, async (user) => {
 window.loadData = async (file) => {
     const res = await fetch(`data/${file}`);
     window.allVerses = await res.json();
-    generatePartButtons();
-    filterPart('A');
-};
-
-function generatePartButtons() {
-    const container = document.getElementById('part-container');
     const parts = [...new Set(window.allVerses.map(v => v.p))];
-    container.innerHTML = parts.map(p => `<button class="part-btn" onclick="filterPart('${p}')">${p}파트</button>`).join('');
-}
+    document.getElementById('part-container').innerHTML = parts.map(p => `<button class="part-btn" onclick="filterPart('${p}')">${p}파트</button>`).join('');
+    filterPart(parts[0]);
+};
 
 window.filterPart = (p) => {
     window.currentVerses = window.allVerses.filter(v => v.p === p);
@@ -103,15 +90,7 @@ window.updateCard = () => {
 
 window.handleCardClick = () => {
     const el = document.getElementById('v-content');
-    el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    el.style.display = el.style.display==='block' ? 'none' : 'block';
 };
-
 window.handleNext = () => { if(window.currentIndex < window.currentVerses.length-1) { window.currentIndex++; updateCard(); } };
 window.prevVerse = () => { if(window.currentIndex > 0) { window.currentIndex--; updateCard(); } };
-
-window.setMode = (mode) => {
-    window.currentMode = mode;
-    document.getElementById('mode-title').innerText = mode === 'practice' ? '암송 카드 (연습)' : '암송 테스트 (시험)';
-    toggleMenu();
-    // 테스트 모드 로직은 나중에 추가 가능
-};
