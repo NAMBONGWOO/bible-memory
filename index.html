@@ -7,88 +7,79 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="auth-screen" class="modal-overlay">
-        <div class="auth-card" id="login-card" style="display: block;">
+    <div id="auth-screen" class="modal-overlay" style="display: flex;">
+        
+        <div class="auth-card" id="login-step" style="display: block;">
             <h2>성경암송 매니저</h2>
             <p>로그인 후 암송을 시작하세요.</p>
             <input type="email" id="login-email" class="test-input" placeholder="이메일 주소">
             <input type="password" id="login-pw" class="test-input" placeholder="비밀번호">
             <button class="btn primary-btn" style="width:100%; margin-top:10px;" onclick="handleLogin()">로그인</button>
-            <p style="margin-top:20px; font-size:13px;">
-                계정이 없으신가요? <a href="#" onclick="openSignupModal()" style="color:var(--main-blue); font-weight:bold;">회원가입 하기</a>
+            <p style="margin-top:20px; font-size:13px; color:#888;">
+                계정이 없으신가요? <a href="#" onclick="openSignupModal()" style="color:var(--main-blue); font-weight:bold; text-decoration:none;">회원가입 하기</a>
             </p>
         </div>
 
-        <div class="auth-card" id="signup-card" style="display: none;">
-            <h3>새 계정 만들기</h3>
-            <div style="text-align:left; font-size:12px;">
-                <label>이메일</label><input type="email" id="reg-email" class="test-input">
+        <div class="auth-card" id="signup-modal" style="display: none; color:#333;">
+            <h3 style="color:var(--main-blue); margin-bottom:15px;">새 계정 만들기</h3>
+            
+            <div style="text-align:left; font-size:12px; margin-bottom:15px;">
+                <label>이메일 아이디</label>
+                <input type="email" id="reg-email" class="test-input" placeholder="example@mail.com" style="color:#000;">
+                
                 <label>비밀번호</label>
                 <div class="pw-group">
-                    <input type="password" id="reg-pw" class="test-input">
+                    <input type="password" id="reg-pw" class="test-input" placeholder="6자 이상 입력" style="color:#000;">
                     <span class="pw-toggle" onclick="togglePw('reg-pw')">👁️</span>
                 </div>
+                
                 <label>비밀번호 확인</label>
                 <div class="pw-group">
-                    <input type="password" id="reg-pw-confirm" class="test-input">
+                    <input type="password" id="reg-pw-confirm" class="test-input" placeholder="비밀번호 재입력" style="color:#000;">
                     <span class="pw-toggle" onclick="togglePw('reg-pw-confirm')">👁️</span>
                 </div>
-                <div style="display:flex; justify-content:space-between;"><label>닉네임</label><span id="nick-check-msg"></span></div>
-                <input type="text" id="reg-nickname" class="test-input" oninput="checkNickname(this.value)">
+                
+                <label>닉네임 (활동명)</label>
+                <input type="text" id="reg-nickname" class="test-input" placeholder="암송왕" style="color:#000;">
 
-                <label style="font-weight:bold; margin-top:10px; display:block;">내 암송 코스 선택</label>
-                <div id="course-checkboxes" class="checkbox-area">
-                    <div><input type="checkbox" name="course" value="nav_60.json" checked> 주제별 60구절</div>
-                    <div><input type="checkbox" name="course" value="basic_100.json"> 기초 과정</div>
-                    <div><input type="checkbox" name="course" value="deep_180.json"> 심화 180구절</div>
-                    <div><input type="checkbox" name="course" value="dep_242.json"> DEP 242구절</div>
+                <label style="display:block; margin:15px 0 5px; font-weight:bold;">암송 코스 선택 (중복 가능)</label>
+                <div id="course-checkboxes" style="background:#f9f9f9; padding:10px; border-radius:8px; max-height:150px; overflow-y:auto; border:1px solid #ddd; font-size:13px;">
+                    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BB01" checked> 주제별 60구절 (개역한글)</div>
+                    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BA01"> 기초 과정 (새출발/동행)</div>
+                    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BC01"> 심화 180구절 세트</div>
+                    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BF10"> DEP 242구절 세트</div>
+                    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BD03"> 어린이 암송카드</div>
+                    <div style="color:var(--main-blue); font-weight:bold;"><input type="checkbox" checked disabled> OYO (나만의 카드 포함)</div>
                 </div>
             </div>
-            <div style="display:flex; gap:10px; margin-top:15px;">
-                <button class="btn" onclick="closeSignupModal()">취소</button>
-                <button class="btn primary-btn" onclick="handleSignUpFinal()">가입 완료</button>
+
+            <div style="display:flex; gap:10px;">
+                <button class="btn" style="background:#eee; flex:1; color:#333;" onclick="closeSignupModal()">취소</button>
+                <button class="btn primary-btn" style="flex:2;" onclick="handleSignUpFinal()">가입 완료</button>
             </div>
         </div>
     </div>
 
-    <div id="app-content" class="app-container" style="display: none;">
-        <nav class="sidebar">
-            <h2 class="sidebar-logo">암송 매니저</h2>
-            <ul class="menu-list">
-                <li onclick="changeMode('study')" class="active">📖 암송 카드 (연습)</li>
-                <li onclick="changeMode('test')">✍️ 암송 테스트 (시험)</li>
-            </ul>
-            <div class="sidebar-section">
-                <label>데이터 세트 선택</label>
-                <select id="data-selector" onchange="loadData(this.value)"></select>
-            </div>
-            <div id="part-container" class="part-buttons">
-                </div>
-            <button class="logout-btn" onclick="handleLogout()">로그아웃</button>
-        </nav>
-
-        <main class="main-view">
-            <header class="top-header">
-                <span id="user-display">사용자님 환영합니다</span>
-                <span id="mode-title">암송 카드 (연습)</span>
-            </header>
-
-            <div class="card-area">
-                <div class="card" id="main-card" onclick="handleCardClick()">
-                    <div id="v-id" class="id-tag">-</div>
-                    <div id="v-theme" class="theme">제목</div>
-                    <div id="v-ref" class="ref">장절</div>
-                    <div id="v-content" class="content">내용이 표시됩니다.</div>
-                </div>
-                <div class="controls">
-                    <button class="btn" onclick="prevVerse()">이전</button>
-                    <button class="btn primary-btn" onclick="handleNext()">다음</button>
-                </div>
-                <div id="v-page" class="page-indicator">0 / 0</div>
-            </div>
-        </main>
+    <div id="app-content" style="display: none; flex-direction: column; align-items: center; width: 100%;">
+        <div class="top-bar">
+            <div class="header-title" id="user-display">안녕하세요!</div>
+            <button onclick="handleLogout()" style="background:none; border:none; color:white; font-size:12px;">로그아웃</button>
+        </div>
+        <div id="part-container" class="part-menu" style="margin-top:80px;"></div>
+        <div class="card" id="main-card" onclick="handleCardClick()">
+            <div id="v-id" class="id-tag">-</div>
+            <div id="v-theme" class="theme">제목</div>
+            <div id="v-ref" class="ref">장절</div>
+            <div id="v-content" class="content">내용</div>
+        </div>
+        <div class="controls">
+            <button class="btn" onclick="prevVerse()">이전</button>
+            <button class="btn" onclick="handleNext()">다음</button>
+        </div>
+        <div id="v-page" class="footer">0 / 0</div>
     </div>
 
     <script type="module" src="app.js"></script>
+    <script src="test.js"></script>
 </body>
 </html>
