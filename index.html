@@ -14,7 +14,7 @@
             <input type="email" id="login-email" class="test-input" placeholder="이메일 주소">
             <input type="password" id="login-pw" class="test-input" placeholder="비밀번호">
             <button class="btn primary-btn" onclick="handleLogin()">로그인</button>
-            <p style="font-size:13px; margin-top:10px;">계정이 없으신가요? <a href="#" onclick="openSignupModal()" style="color:var(--main-blue); font-weight:bold; text-decoration:none;">회원가입 하기</a></p>
+            <p style="font-size:13px; margin-top:15px;">계정이 없으신가요? <a href="#" onclick="openSignupModal()" style="color:var(--main-blue); font-weight:bold; text-decoration:none;">회원가입 하기</a></p>
         </div>
 
         <div id="signup-card" class="auth-card" style="display:none; max-height: 90vh; overflow-y: auto;">
@@ -28,10 +28,15 @@
                 <input type="text" id="reg-nickname" class="test-input" placeholder="암송왕">
                 
                 <label style="font-weight:bold; margin-top:10px;">내 암송 코스 선택</label>
-                <div id="course-checkboxes" style="background:#f8fafc; padding:15px; border-radius:15px; border:1px solid #eee; color:#333; font-size:14px;">
-                    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="nav_60.json" checked> 주제별 60구절</div>
-                    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="basic_100.json"> 기초 과정</div>
-                    <div><input type="checkbox" name="course" value="deep_180.json"> 심화 180구절</div>
+                <div id="course-checkboxes" style="background:#f8fafc; padding:15px; border-radius:15px; border:1px solid #eee; color:#333; font-size:14px; text-align:left;">
+                    <div style="margin-bottom:10px;">
+                        <input type="checkbox" name="course" value="nav_60.json" id="chk-ko" checked> 
+                        <label for="chk-ko">주제별 60구절 (한글)</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" name="course" value="nav_60_en.json" id="chk-en"> 
+                        <label for="chk-en">주제별 60구절 (English)</label>
+                    </div>
                 </div>
             </div>
             <button class="btn primary-btn" style="margin-top:10px;" onclick="handleSignUpFinal()">가입 완료</button>

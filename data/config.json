@@ -1,5 +1,4 @@
 [
-  { "name": "네비게이토 60구절", "file": "nav_60.json" },
-  { "name": "네비게이토 180구절", "file": "nav_180.json" },
-  { "name": "네비게이토 242구절", "file": "nav_242.json" }
+  { "name": "주제별 60구절 (한글)", "file": "nav_60.json" },
+  { "name": "주제별 60구절 (English)", "file": "nav_60_en.json" }
 ]
