@@ -31,31 +31,31 @@
                 <input type="text" id="reg-nickname" class="test-input" placeholder="암송왕">
                 <div id="nick-match-msg" class="check-msg"></div>
                 
-                <label style="font-weight:bold; margin-top:10px;">암송 코스 선택</label>
-                <div id="course-checkboxes" style="background:#f8fafc; padding:15px; border-radius:15px; border:1px solid #eee; color:#333; font-size:12px; text-align:left;">
-                    <p style="margin:0 0 5px; font-weight:bold; color:var(--dark-blue);">[기본/심화]</p>
-                    <div><input type="checkbox" name="course" value="nav_60.json" checked> 주제별 60 (한글)</div>
-                    <div><input type="checkbox" name="course" value="nav_60_en.json"> 주제별 60 (English)</div>
-                    
-                    <p style="margin:10px 0 5px; font-weight:bold; color:var(--dark-blue);">[심화 180 시리즈]</p>
-                    <div><input type="checkbox" name="course" value="series_180_s1.json"> Series 1 (하나님)</div>
-                    <div><input type="checkbox" name="course" value="series_180_s2.json"> Series 2 (사랑)</div>
-                    <div><input type="checkbox" name="course" value="series_180_s3.json"> Series 3 (믿음)</div>
-                    <div><input type="checkbox" name="course" value="series_180_s4.json"> Series 4 (승리)</div>
-                    <div><input type="checkbox" name="course" value="series_180_s5.json"> Series 5 (증거)</div>
+               <label style="font-weight:bold; margin-top:10px;">암송 코스 선택</label>
+<div id="course-checkboxes" style="background:#f8fafc; padding:15px; border-radius:15px; border:1px solid #eee; color:#333; font-size:12px; text-align:left;">
+    <p style="margin:0 0 5px; font-weight:bold; color:var(--dark-blue);">[기본]</p>
+    <div><input type="checkbox" name="course" value="nav_60.json" checked> 주제별 60</div>
+    <div><input type="checkbox" name="course" value="nav_60_en.json"> 주제별 60 (EN)</div>
+    
+    <p style="margin:10px 0 5px; font-weight:bold; color:var(--dark-blue);">[시리즈 180]</p>
+    <div><input type="checkbox" name="course" value="series_180_s1.json"> 시리즈 1</div>
+    <div><input type="checkbox" name="course" value="series_180_s2.json"> 시리즈 2</div>
+    <div><input type="checkbox" name="course" value="series_180_s3.json"> 시리즈 3</div>
+    <div><input type="checkbox" name="course" value="series_180_s4.json"> 시리즈 4</div>
+    <div><input type="checkbox" name="course" value="series_180_s5.json"> 시리즈 5</div>
 
-                    <p style="margin:10px 0 5px; font-weight:bold; color:var(--dark-blue);">[DEP 242 파트]</p>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
-                        <div><input type="checkbox" name="course" value="dep_242_p1.json"> P1 (확신)</div>
-                        <div><input type="checkbox" name="course" value="dep_242_p2.json"> P2 (QT)</div>
-                        <div><input type="checkbox" name="course" value="dep_242_p3.json"> P3 (말씀)</div>
-                        <div><input type="checkbox" name="course" value="dep_242_p4.json"> P4 (기도)</div>
-                        <div><input type="checkbox" name="course" value="dep_242_p5.json"> P5 (교제)</div>
-                        <div><input type="checkbox" name="course" value="dep_242_p6.json"> P6 (증거)</div>
-                        <div><input type="checkbox" name="course" value="dep_242_p7.json"> P7 (주재권)</div>
-                        <div><input type="checkbox" name="course" value="dep_242_p8.json"> P8 (비전)</div>
-                    </div>
-                </div>
+    <p style="margin:10px 0 5px; font-weight:bold; color:var(--dark-blue);">[DEP 242]</p>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
+        <div><input type="checkbox" name="course" value="dep_242_p1.json"> DEP 1</div>
+        <div><input type="checkbox" name="course" value="dep_242_p2.json"> DEP 2</div>
+        <div><input type="checkbox" name="course" value="dep_242_p3.json"> DEP 3</div>
+        <div><input type="checkbox" name="course" value="dep_242_p4.json"> DEP 4</div>
+        <div><input type="checkbox" name="course" value="dep_242_p5.json"> DEP 5</div>
+        <div><input type="checkbox" name="course" value="dep_242_p6.json"> DEP 6</div>
+        <div><input type="checkbox" name="course" value="dep_242_p7.json"> DEP 7</div>
+        <div><input type="checkbox" name="course" value="dep_242_p8.json"> DEP 8</div>
+    </div>
+</div>
             </div>
             <button class="btn primary-btn" style="margin-top:10px;" onclick="handleSignUpFinal()">가입 완료</button>
             <button class="btn" style="background:#eee; color:#333;" onclick="closeSignupModal()">취소</button>

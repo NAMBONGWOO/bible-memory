@@ -13,12 +13,12 @@ onAuthStateChanged(auth, async (user) => {
             
             const sel = document.getElementById('data-select');
             sel.innerHTML = data.selectedCourses.map(file => {
-                // [파일명 변환기] 파일명을 읽기 쉬운 한글 메뉴명으로 바꿉니다.
+                // [파일명 변환기 - 간소화 버전]
                 let label = file.replace('.json', '')
-                                .replace('series_180_s', '심화 시리즈 ')
-                                .replace('dep_242_p', 'DEP 파트 ')
-                                .replace('nav_60_en', '60구절 (English)')
-                                .replace('nav_60', '주제별 60구절');
+                                .replace('series_180_s', '시리즈 ')
+                                .replace('dep_242_p', 'DEP ')
+                                .replace('nav_60_en', '60구절 (EN)')
+                                .replace('nav_60', '주제별 60');
                 return `<option value="${file}">${label}</option>`;
             }).join('');
             
@@ -33,8 +33,9 @@ onAuthStateChanged(auth, async (user) => {
 window.loadData = async (f) => {
     const res = await fetch(`data/${f}`);
     window.allVerses = await res.json();
-    generatePartButtons();
-    // 첫 파트 자동 필터 (I, A, Series 1 등 데이터의 첫 파트 자동 감지)
+    if(typeof generatePartButtons === 'function') generatePartButtons();
+    
+    // 데이터의 첫 번째 파트 자동 필터링 (A, I, 시리즈 1 등 유연하게 대응)
     const firstPart = window.allVerses[0].p;
     filterPart(firstPart);
 };
