@@ -27,16 +27,12 @@
                 
                 <label style="font-size:12px; font-weight:bold;">비밀번호 확인</label>
                 <input type="password" id="reg-pw-confirm" class="test-input" placeholder="비밀번호 재입력">
-                <div id="pw-match-msg" class="check-msg"></div>
-
-                <label style="font-size:12px; font-weight:bold;">닉네임</label>
+                <div id="pw-match-msg" class="check-msg"></div> <label style="font-size:12px; font-weight:bold;">닉네임</label>
                 <input type="text" id="reg-nickname" class="test-input" placeholder="암송왕">
-                <div id="nick-match-msg" class="check-msg"></div>
-                
-                <label style="font-weight:bold; margin-top:5px;">내 암송 코스 선택</label>
+                <div id="nick-match-msg" class="check-msg"></div> <label style="font-weight:bold; margin-top:5px;">내 암송 코스 선택</label>
                 <div id="course-checkboxes" style="background:#f8fafc; padding:15px; border-radius:15px; border:1px solid #eee; color:#333; font-size:14px;">
                     <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="nav_60.json" checked> 주제별 60구절 (한글)</div>
-                    <div><input type="checkbox" name="course" value="nav_60_en.json"> 주제별 60구절 (English)</div>
+                    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="nav_60_en.json"> 주제별 60구절 (English)</div>
                 </div>
             </div>
             <button class="btn primary-btn" style="margin-top:10px;" onclick="handleSignUpFinal()">가입 완료</button>
@@ -69,8 +65,10 @@
         </main>
     </div>
 
-    <script type="module" src="app.js"></script>
-    <script src="practice.js"></script>
-    <script src="test.js"></script>
+<script type="module" src="auth.js"></script>
+<script type="module" src="app.js"></script>
+<script src="practice.js"></script>
+<script src="test.js"></script>
+
 </body>
 </html>
