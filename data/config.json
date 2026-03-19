@@ -1,4 +1,19 @@
 [
   { "name": "주제별 60구절 (한글)", "file": "nav_60.json" },
-  { "name": "주제별 60구절 (English)", "file": "nav_60_en.json" }
+  { "name": "주제별 60구절 (English)", "file": "nav_60_en.json" },
+  
+  { "name": "심화 Series 1 (하나님)", "file": "series_180_s1.json" },
+  { "name": "심화 Series 2 (사랑)", "file": "series_180_s2.json" },
+  { "name": "심화 Series 3 (믿음)", "file": "series_180_s3.json" },
+  { "name": "심화 Series 4 (승리)", "file": "series_180_s4.json" },
+  { "name": "심화 Series 5 (증거)", "file": "series_180_s5.json" },
+
+  { "name": "DEP 파트 1 (구원의 확신)", "file": "dep_242_p1.json" },
+  { "name": "DEP 파트 2 (Quiet Time)", "file": "dep_242_p2.json" },
+  { "name": "DEP 파트 3 (말 씀)", "file": "dep_242_p3.json" },
+  { "name": "DEP 파트 4 (기 도)", "file": "dep_242_p4.json" },
+  { "name": "DEP 파트 5 (교 제)", "file": "dep_242_p5.json" },
+  { "name": "DEP 파트 6 (증 거)", "file": "dep_242_p6.json" },
+  { "name": "DEP 파트 7 (그리스도의 주재권)", "file": "dep_242_p7.json" },
+  { "name": "DEP 파트 8 (세 계 비 전)", "file": "dep_242_p8.json" }
 ]
