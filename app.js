@@ -20,50 +20,55 @@ window.allVerses = [];
 window.currentVerses = [];
 window.currentIndex = 0;
 
-// [팝업 제어]
-window.openRegisterPopup = () => {
-    document.getElementById('auth-step-1').style.display = 'none';
-    document.getElementById('auth-step-2').style.display = 'block';
+// [UI 제어]
+window.openSignUpModal = () => {
+    document.getElementById('login-step').style.display = 'none';
+    document.getElementById('signup-modal').style.display = 'block';
 };
 
-window.closeRegisterPopup = () => {
-    document.getElementById('auth-step-1').style.display = 'block';
-    document.getElementById('auth-step-2').style.display = 'none';
+window.closeSignUpModal = () => {
+    document.getElementById('login-step').style.display = 'block';
+    document.getElementById('signup-modal').style.display = 'none';
 };
 
-// [가입 완료 및 시작 로직]
+// [회원가입 최종 로직]
 window.handleSignUpFinal = async () => {
-    const email = document.getElementById('auth-email').value;
-    const pw = document.getElementById('auth-pw').value;
+    const email = document.getElementById('reg-email').value;
+    const pw = document.getElementById('reg-pw').value;
+    const pwConfirm = document.getElementById('reg-pw-confirm').value;
     const nickname = document.getElementById('reg-nickname').value;
     const selectedCourses = [];
     document.querySelectorAll('input[name="course"]:checked').forEach(cb => selectedCourses.push(cb.value));
 
-    if(!email || !email.includes('@')) { alert("메인 화면에서 이메일을 정확히 입력해주세요."); window.closeRegisterPopup(); return; }
-    if(pw.length < 6) { alert("비밀번호는 6자 이상이어야 합니다. 메인 화면에서 수정해주세요."); window.closeRegisterPopup(); return; }
+    // 유효성 검사
+    if(!email.includes('@')) { alert("올바른 이메일 형식을 입력하세요."); return; }
+    if(pw.length < 6) { alert("비비밀번호는 6자 이상이어야 합니다."); return; }
+    if(pw !== pwConfirm) { alert("비밀번호가 서로 일치하지 않습니다."); return; }
     if(!nickname) { alert("닉네임을 입력해주세요."); return; }
     if(selectedCourses.length === 0) { alert("최소 하나 이상의 코스를 선택해주세요."); return; }
 
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, pw);
         const user = userCredential.user;
+
         await setDoc(doc(db, "users", user.uid), {
             nickname: nickname,
             selectedCourses: selectedCourses,
             useOyo: true,
             joinDate: new Date(),
-            completedVerses: [] 
+            completedVerses: []
         });
-        alert(`${nickname}님, 가입을 축하합니다!`);
+
+        alert("회원가입이 완료되었습니다!");
     } catch (err) {
-        alert("가입 중 오류 발생: " + err.message);
+        alert("가입 실패: " + err.message);
     }
 };
 
+// [로그인 로직]
 window.handleLogin = () => {
-    const email = document.getElementById('auth-email').value;
-    const pw = document.getElementById('auth-pw').value;
-    if(!email || !pw) { alert("이메일과 비밀번호를 입력하세요."); return; }
+    const email = document.getElementById('login-email').value;
+    const pw = document.getElementById('login-pw').value;
     signInWithEmailAndPassword(auth, email, pw).catch(err => alert("로그인 실패: " + err.message));
 };
 
@@ -76,7 +81,7 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById('app-content').style.display = 'flex';
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
-            document.getElementById('user-display').innerText = `${userDoc.data().nickname}님, 암송을 시작합니다!`;
+            document.getElementById('user-display').innerText = `${userDoc.data().nickname}님 환영합니다!`;
         }
         initApp();
     } else {
@@ -85,15 +90,14 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
+// [메인 로직]
 async function initApp() { loadData('nav_60.json'); }
 
 window.loadData = async (fileName) => {
-    try {
-        const response = await fetch('data/' + fileName);
-        window.allVerses = await response.json();
-        generatePartButtons();
-        filterPart('A'); 
-    } catch (e) { console.error("데이터 로드 실패", e); }
+    const response = await fetch('data/' + fileName);
+    window.allVerses = await response.json();
+    generatePartButtons();
+    filterPart('A'); 
 };
 
 window.updateCard = () => {
