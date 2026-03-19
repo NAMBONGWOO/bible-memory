@@ -1,7 +1,7 @@
+// 전역 변수
 let allVerses = [];
 let currentVerses = [];
 let currentIndex = 0;
-let isShowing = false;
 let currentMode = 'practice';
 
 async function initApp() {
@@ -25,6 +25,13 @@ function toggleMenu() {
     overlay.style.display = sideMenu.classList.contains('open') ? 'block' : 'none';
 }
 
+async function loadData(fileName) {
+    const response = await fetch('data/' + fileName);
+    allVerses = await response.json();
+    if(typeof generatePartButtons === 'function') generatePartButtons();
+    if(currentMode === 'practice') filterPart('A');
+}
+
 function setMode(mode) {
     currentMode = mode;
     document.getElementById('mode-title').innerText = mode === 'practice' ? '암송 카드 (연습)' : '암송 테스트 (시험)';
@@ -41,44 +48,13 @@ function setMode(mode) {
         if(document.getElementById('sideMenu').classList.contains('open')) toggleMenu();
         filterPart('A');
     } else {
-        const sideMenu = document.getElementById('sideMenu');
-        const overlay = document.getElementById('overlay');
-        sideMenu.classList.remove('open');
-        overlay.style.display = 'none';
+        document.getElementById('sideMenu').classList.remove('open');
+        document.getElementById('overlay').style.display = 'none';
     }
 }
 
-async function loadData(fileName) {
-    const response = await fetch('data/' + fileName);
-    allVerses = await response.json();
-    generatePartButtons();
-    if(currentMode === 'practice') filterPart('A');
-}
-
-function generatePartButtons() {
-    const container = document.getElementById('part-container');
-    const parts = [...new Set(allVerses.map(v => v.p))];
-    container.innerHTML = '';
-    parts.forEach(p => {
-        const btn = document.createElement('button');
-        btn.className = 'part-btn';
-        btn.innerText = p + "파트";
-        btn.onclick = () => filterPart(p);
-        container.appendChild(btn);
-    });
-}
-
-function filterPart(part) {
-    currentVerses = allVerses.filter(v => v.p === part);
-    currentIndex = 0;
-    updateCard();
-    document.querySelectorAll('.part-btn').forEach(btn => btn.classList.toggle('active', btn.innerText.includes(part)));
-}
-
-function updateCard() {
-    const v = currentVerses[currentIndex];
-    if(!v) return;
-    
+// 공통 카드 업데이트 함수
+function updateCardUI(v) {
     const idEl = document.getElementById('v-id');
     const themeEl = document.getElementById('v-theme');
     
@@ -95,30 +71,11 @@ function updateCard() {
         themeEl.style.display = 'block';
     }
     
-    isShowing = false;
     document.getElementById('v-content').style.display = 'none';
     document.getElementById('result-view').style.display = 'none';
     document.getElementById('score-text').style.display = 'none';
     document.getElementById('input-theme').value = "";
     document.getElementById('input-content').value = "";
-    
-    if(currentMode === 'practice') {
-        document.getElementById('v-page').innerText = (currentIndex + 1) + " / " + currentVerses.length;
-    } else {
-        document.getElementById('v-page').innerText = "랜덤 테스트 중";
-    }
-}
-
-function handleCardClick() {
-    if(currentMode === 'practice') {
-        const content = document.getElementById('v-content');
-        isShowing = !isShowing;
-        content.style.display = isShowing ? 'block' : 'none';
-    }
-}
-
-function prevVerse() {
-    if(currentMode === 'practice' && currentIndex > 0) { currentIndex--; updateCard(); }
 }
 
 initApp();

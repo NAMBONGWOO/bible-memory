@@ -11,12 +11,14 @@ function startTestSession() {
     document.getElementById('test-section').style.display = 'block';
     document.getElementById('check-btn').style.display = 'block';
     document.getElementById('status-panel').style.display = 'flex';
+    
     testSessionVerses = [...allVerses].sort(() => Math.random() - 0.5).slice(0, testMaxSteps);
     testCurrentStep = 0;
     testTotalPenalty = 0;
     isCurrentChecked = false;
     currentVerses = testSessionVerses;
     currentIndex = 0;
+    
     updateCard();
     updateStatus();
 }
@@ -42,7 +44,10 @@ function handleNext() {
             setMode('practice');
         }
     } else {
-        if (currentIndex < currentVerses.length - 1) { currentIndex++; updateCard(); }
+        if (currentIndex < currentVerses.length - 1) { 
+            currentIndex++; 
+            updateCard(); 
+        }
     }
 }
 
@@ -77,9 +82,8 @@ function runCheck() {
     testTotalPenalty += currentPenalty;
     isCurrentChecked = true;
     
-    const scoreEl = document.getElementById('score-text');
-    scoreEl.innerText = (currentPenalty === 0 ? "0" : "-" + currentPenalty);
-    scoreEl.style.display = 'block';
+    document.getElementById('score-text').innerText = (currentPenalty === 0 ? "0" : "-" + currentPenalty);
+    document.getElementById('score-text').style.display = 'block';
     
     const resultEl = document.getElementById('result-view');
     resultEl.innerHTML = `<strong>정답 확인 [${v.id}]</strong><br>제목: ${v.theme}<br><br><strong>채점 결과:</strong><br>${resultHTML}<br><br><strong>원문 본문:</strong><br>${v.content}`;
