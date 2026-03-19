@@ -15,79 +15,43 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-window.isNickValid = false; // 기본값은 항상 false
+window.isNickValid = false;
 
-// [실시간 비밀번호 체크]
-document.addEventListener('input', (e) => {
+// 실시간 체크 로직들 (비밀번호, 닉네임)
+document.addEventListener('input', async (e) => {
     if (e.target.id === 'reg-pw' || e.target.id === 'reg-pw-confirm') {
         const pw = document.getElementById('reg-pw').value;
         const confirm = document.getElementById('reg-pw-confirm').value;
         const msg = document.getElementById('pw-match-msg');
-        if (!confirm) msg.innerText = "";
-        else if (pw === confirm) { msg.innerText = "✓ 비밀번호 일치"; msg.style.color = "green"; }
-        else { msg.innerText = "✕ 비밀번호 불일치"; msg.style.color = "red"; }
+        if (pw === confirm && pw !== "") { msg.innerText = "✓ 일치"; msg.style.color="green"; }
+        else { msg.innerText = "✕ 불일치"; msg.style.color="red"; }
     }
-});
-
-// [실시간 닉네임 중복 체크 보강]
-document.addEventListener('input', async (e) => {
     if (e.target.id === 'reg-nickname') {
         const nick = e.target.value.trim();
         const msg = document.getElementById('nick-match-msg');
-        
-        if (nick.length < 2) { 
-            msg.innerText = "2자 이상 입력하세요."; 
-            msg.style.color = "#888"; 
-            window.isNickValid = false; 
-            return; 
-        }
-
-        // 체크 중임을 표시
-        msg.innerText = "중복 확인 중...";
-        msg.style.color = "#0ea5e9";
-
-        try {
-            const q = query(collection(db, "users"), where("nickname", "==", nick));
-            const snap = await getDocs(q);
-            
-            if (!snap.empty) { 
-                msg.innerText = "✕ 이미 사용 중인 닉네임입니다."; 
-                msg.style.color = "red"; 
-                window.isNickValid = false; 
-            } else { 
-                msg.innerText = "✓ 사용 가능한 닉네임입니다."; 
-                msg.style.color = "green"; 
-                window.isNickValid = true; 
-            }
-        } catch (err) {
-            console.error(err);
-            window.isNickValid = false;
-        }
+        if (nick.length < 2) { window.isNickValid = false; return; }
+        const q = query(collection(db, "users"), where("nickname", "==", nick));
+        const snap = await getDocs(q);
+        if (!snap.empty) { msg.innerText = "✕ 중복"; msg.style.color="red"; window.isNickValid = false; }
+        else { msg.innerText = "✓ 가능"; msg.style.color="green"; window.isNickValid = true; }
     }
 });
 
 window.handleLogin = () => {
-    signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pw').value)
-        .catch(e => alert("로그인 실패: " + e.message));
+    signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pw').value).catch(e => alert(e.message));
 };
 
 window.handleSignUpFinal = async () => {
+    if(!window.isNickValid) { alert("닉네임을 확인하세요."); return; }
     const email = document.getElementById('reg-email').value;
     const pw = document.getElementById('reg-pw').value;
-    const confirm = document.getElementById('reg-pw-confirm').value;
-    const nick = document.getElementById('reg-nickname').value.trim();
+    const nick = document.getElementById('reg-nickname').value;
     const courses = Array.from(document.querySelectorAll('input[name="course"]:checked')).map(cb => cb.value);
-
-    if(!window.isNickValid) { alert("닉네임 중복 확인이 필요합니다."); return; }
-    if(pw !== confirm) { alert("비밀번호가 일치하지 않습니다."); return; }
-    if(courses.length === 0) { alert("코스를 선택해주세요."); return; }
-
     try {
         const cred = await createUserWithEmailAndPassword(auth, email, pw);
-        await setDoc(doc(db, "users", cred.user.uid), { nickname: nick, selectedCourses: courses, joinDate: new Date() });
-        alert("가입 성공!");
+        await setDoc(doc(db, "users", cred.user.uid), { nickname: nick, selectedCourses: courses });
         location.reload();
-    } catch (e) { alert("가입 에러: " + e.message); }
+    } catch (e) { alert(e.message); }
 };
 
 window.handleLogout = () => signOut(auth);
