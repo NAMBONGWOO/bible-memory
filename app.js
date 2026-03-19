@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAPuQQcX0mT1fqAa97CPPbhTy9GWdG8_J0",
@@ -16,94 +16,69 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-window.allVerses = [];
-window.currentVerses = [];
-window.currentIndex = 0;
+window.allVerses = []; window.currentVerses = []; window.currentIndex = 0;
 
 // [UI 제어]
-window.openSignupModal = () => {
-    document.getElementById('login-step').style.display = 'none';
-    document.getElementById('signup-modal').style.display = 'block';
+window.toggleSidebar = () => {
+    document.getElementById('sidebar').classList.toggle('active');
+    document.getElementById('sidebar-overlay').classList.toggle('active');
 };
+window.openSignupModal = () => { document.getElementById('login-card').style.display='none'; document.getElementById('signup-card').style.display='block'; };
+window.closeSignupModal = () => { document.getElementById('login-card').style.display='block'; document.getElementById('signup-card').style.display='none'; };
+window.togglePw = (id) => { const el = document.getElementById(id); el.type = el.type==='password'?'text':'password'; };
 
-window.closeSignUpModal = () => {
-    document.getElementById('login-step').style.display = 'block';
-    document.getElementById('signup-modal').style.display = 'none';
-};
-
-window.togglePw = (id) => {
-    const input = document.getElementById(id);
-    input.type = input.type === 'password' ? 'text' : 'password';
-};
-
-// [회원가입 최종 로직]
+// [인증 로직]
 window.handleSignUpFinal = async () => {
     const email = document.getElementById('reg-email').value;
     const pw = document.getElementById('reg-pw').value;
-    const pwConfirm = document.getElementById('reg-pw-confirm').value;
-    const nickname = document.getElementById('reg-nickname').value;
-    const selectedCourses = [];
-    document.querySelectorAll('input[name="course"]:checked').forEach(cb => selectedCourses.push(cb.value));
-
-    if(!email.includes('@')) { alert("올바른 이메일 형식을 입력하세요."); return; }
-    if(pw.length < 6) { alert("비비밀번호는 6자 이상이어야 합니다."); return; }
-    if(pw !== pwConfirm) { alert("비밀번호가 서로 일치하지 않습니다."); return; }
-    if(!nickname) { alert("닉네임을 입력해주세요."); return; }
-    if(selectedCourses.length === 0) { alert("최소 하나 이상의 코스를 선택해주세요."); return; }
+    const nick = document.getElementById('reg-nickname').value;
+    const courses = [];
+    document.querySelectorAll('input[name="course"]:checked').forEach(cb => courses.push(cb.value));
 
     try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, pw);
-        const user = userCredential.user;
-
-        await setDoc(doc(db, "users", user.uid), {
-            nickname: nickname,
-            selectedCourses: selectedCourses,
-            useOyo: true,
-            joinDate: new Date(),
-            completedVerses: []
-        });
-
-        alert("회원가입이 완료되었습니다!");
-    } catch (err) {
-        alert("가입 실패: " + err.message);
-    }
+        const cred = await createUserWithEmailAndPassword(auth, email, pw);
+        await setDoc(doc(db, "users", cred.user.uid), { nickname: nick, selectedCourses: courses });
+        alert("가입 성공!");
+    } catch (e) { alert(e.message); }
 };
 
-// [로그인 로직]
 window.handleLogin = () => {
-    const email = document.getElementById('login-email').value;
-    const pw = document.getElementById('login-pw').value;
-    signInWithEmailAndPassword(auth, email, pw).catch(err => alert("로그인 실패: " + err.message));
+    const e = document.getElementById('login-email').value;
+    const p = document.getElementById('login-pw').value;
+    signInWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
 };
-
 window.handleLogout = () => signOut(auth);
 
-// [인증 상태 감시 및 사이드바 복구]
+// [상태 감시 및 데이터 로드]
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         document.getElementById('auth-screen').style.display = 'none';
-        document.getElementById('app-content').style.display = 'flex';
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists()) {
-            document.getElementById('user-display').innerText = `${userDoc.data().nickname}님 환영합니다!`;
+        document.getElementById('app-content').style.display = 'block';
+        const docSnap = await getDoc(doc(db, "users", user.uid));
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            document.getElementById('user-display').innerText = `${data.nickname}님`;
+            const selector = document.getElementById('data-selector');
+            selector.innerHTML = data.selectedCourses.map(c => `<option value="${c}">${c}</option>`).join('');
+            loadData(data.selectedCourses[0]);
         }
-        initApp();
     } else {
         document.getElementById('auth-screen').style.display = 'flex';
         document.getElementById('app-content').style.display = 'none';
     }
 });
 
-// [메인 로직 복구]
-async function initApp() { loadData('nav_60.json'); }
+window.loadData = async (file) => {
+    const res = await fetch(`data/${file}`);
+    window.allVerses = await res.json();
+    const parts = [...new Set(window.allVerses.map(v => v.p))];
+    document.getElementById('part-container').innerHTML = parts.map(p => `<button class="part-btn" onclick="filterPart('${p}')">${p}</button>`).join('');
+    filterPart(parts[0]);
+};
 
-window.loadData = async (fileName) => {
-    try {
-        const response = await fetch('data/' + fileName);
-        window.allVerses = await response.json();
-        generatePartButtons();
-        filterPart('A'); 
-    } catch (e) { console.error("데이터 로드 실패", e); }
+window.filterPart = (p) => {
+    window.currentVerses = window.allVerses.filter(v => v.p === p);
+    window.currentIndex = 0; updateCard();
 };
 
 window.updateCard = () => {
@@ -114,30 +89,12 @@ window.updateCard = () => {
     document.getElementById('v-ref').innerText = v.ref;
     document.getElementById('v-content').innerText = v.content;
     document.getElementById('v-content').style.display = 'none';
-    document.getElementById('v-page').innerText = `${window.currentIndex + 1} / ${window.currentVerses.length}`;
-};
-
-function generatePartButtons() {
-    const container = document.getElementById('part-container');
-    const parts = [...new Set(window.allVerses.map(v => v.p))];
-    container.innerHTML = '';
-    parts.forEach(p => {
-        const btn = document.createElement('button');
-        btn.className = 'part-btn'; btn.innerText = p + "파트";
-        btn.onclick = () => filterPart(p);
-        container.appendChild(btn);
-    });
-}
-
-window.filterPart = (part) => {
-    window.currentVerses = window.allVerses.filter(v => v.p === part);
-    window.currentIndex = 0; updateCard();
+    document.getElementById('v-page').innerText = `${window.currentIndex+1}/${window.currentVerses.length}`;
 };
 
 window.handleCardClick = () => {
-    const content = document.getElementById('v-content');
-    content.style.display = (content.style.display === 'block') ? 'none' : 'block';
+    const el = document.getElementById('v-content');
+    el.style.display = el.style.display==='block'?'none':'block';
 };
-
-window.handleNext = () => { if (window.currentIndex < window.currentVerses.length - 1) { window.currentIndex++; updateCard(); } };
+window.handleNext = () => { if(window.currentIndex < window.currentVerses.length-1) { window.currentIndex++; updateCard(); } };
 window.prevVerse = () => { if(window.currentIndex > 0) { window.currentIndex--; updateCard(); } };
