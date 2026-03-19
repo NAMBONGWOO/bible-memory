@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyAPuQQcX0mT1fqAa97CPPbhTy9GWdG8_J0",
@@ -20,7 +20,7 @@ window.allVerses = [];
 window.currentVerses = [];
 window.currentIndex = 0;
 
-// [화면 전환 제어]
+// [UI 제어 함수]
 window.openSignupModal = () => {
     document.getElementById('login-card').style.display = 'none';
     document.getElementById('signup-card').style.display = 'block';
@@ -31,52 +31,76 @@ window.closeSignupModal = () => {
     document.getElementById('signup-card').style.display = 'none';
 };
 
-// [로그인 처리]
-window.handleLogin = () => {
-    const email = document.getElementById('login-email').value;
-    const pw = document.getElementById('login-pw').value;
-    if(!email || !pw) { alert("이메일과 비밀번호를 입력해주세요."); return; }
-    signInWithEmailAndPassword(auth, email, pw).catch(err => alert("로그인 실패: " + err.message));
+window.togglePw = (id) => {
+    const input = document.getElementById(id);
+    input.type = input.type === 'password' ? 'text' : 'password';
 };
 
-// [회원가입 처리]
+// [닉네임 실시간 중복 체크]
+let nickTimer;
+window.checkNickname = (val) => {
+    clearTimeout(nickTimer);
+    const msgEl = document.getElementById('nick-check-msg');
+    if (!val) { msgEl.innerText = ""; return; }
+    
+    nickTimer = setTimeout(async () => {
+        msgEl.innerText = "검사 중...";
+        msgEl.style.color = "gray";
+        try {
+            const q = query(collection(db, "users"), where("nickname", "==", val));
+            const snap = await getDocs(q);
+            if(!snap.empty) {
+                msgEl.innerText = "이미 사용 중인 닉네임입니다";
+                msgEl.style.color = "red";
+            } else {
+                msgEl.innerText = "사용 가능";
+                msgEl.style.color = "green";
+            }
+        } catch (e) {
+            msgEl.innerText = "확인 불가";
+        }
+    }, 500);
+};
+
+// [가입 및 로그인 처리]
 window.handleSignUpFinal = async () => {
     const email = document.getElementById('reg-email').value;
     const pw = document.getElementById('reg-pw').value;
     const pwConfirm = document.getElementById('reg-pw-confirm').value;
     const nickname = document.getElementById('reg-nickname').value;
-    
     const selectedCourses = [];
     document.querySelectorAll('input[name="course"]:checked').forEach(cb => selectedCourses.push(cb.value));
 
-    // 유효성 검사
-    if(!email.includes('@')) { alert("정확한 이메일 형식을 입력해주세요."); return; }
-    if(pw.length < 6) { alert("비밀번호를 6자 이상 입력해주세요."); return; }
+    if(!email.includes('@')) { alert("이메일 형식을 확인해주세요."); return; }
+    if(pw.length < 6) { alert("비밀번호는 6자 이상이어야 합니다."); return; }
     if(pw !== pwConfirm) { alert("비밀번호 확인이 일치하지 않습니다."); return; }
-    if(!nickname) { alert("활동하실 닉네임을 입력해주세요."); return; }
-    if(selectedCourses.length === 0) { alert("최소 하나 이상의 코스를 선택해주세요."); return; }
+    if(!nickname) { alert("닉네임을 입력해주세요."); return; }
 
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, pw);
         const user = userCredential.user;
-
         await setDoc(doc(db, "users", user.uid), {
             nickname: nickname,
             selectedCourses: selectedCourses,
             useOyo: true,
             joinDate: new Date(),
-            completedVerses: [] 
+            completedVerses: []
         });
-
-        alert("환영합니다! 가입이 완료되었습니다.");
+        alert("회원가입 성공!");
     } catch (err) {
-        alert("가입 오류: " + err.message);
+        alert("가입 실패: " + err.message);
     }
+};
+
+window.handleLogin = () => {
+    const email = document.getElementById('login-email').value;
+    const pw = document.getElementById('login-pw').value;
+    signInWithEmailAndPassword(auth, email, pw).catch(err => alert("로그인 실패: " + err.message));
 };
 
 window.handleLogout = () => signOut(auth);
 
-// [상태 감시 및 앱 시작]
+// [상태 감시]
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         document.getElementById('auth-screen').style.display = 'none';
@@ -92,6 +116,7 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
+// [메인 로직]
 async function initApp() { loadData('nav_60.json'); }
 
 window.loadData = async (fileName) => {
