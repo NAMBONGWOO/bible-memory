@@ -24,28 +24,25 @@
         </div>
 
         <div class="auth-card" id="auth-step-2" style="display:none;">
-            <h3 style="color:var(--main-blue);">회원정보 설정</h3>
-            <p style="font-size:13px; color:#666;">기본 정보와 암송 코스를 선택해주세요.</p>
-            
-            <input type="text" id="reg-nickname" class="test-input" placeholder="닉네임 (활동명)">
-            
-            <label style="display:block; text-align:left; font-size:12px; margin: 10px 0 5px 5px;">정규과정 선택:</label>
-            <select id="reg-course" class="test-input">
-                <option value="BB01" selected>주제별 60구절 (개역한글)</option>
-                <option value="BA01">기초 과정 (그리스도와의 새출발/동행)</option>
-                <option value="BC01">심화 180구절 세트</option>
-                <option value="BF10">DEP 242구절 세트</option>
-                <option value="BD03">어린이 암송카드</option>
-            </select>
+           <h3 style="color:var(--main-blue);">회원정보 설정</h3>
+<p style="font-size:13px; color:#666;">암송하고 싶은 과정을 모두 선택해주세요.</p>
 
-            <div style="text-align:left; font-size:13px; margin:10px 0;">
-                <input type="checkbox" id="reg-oyo" checked> <label for="reg-oyo">OYO(나만의 카드) 활성화</label>
-            </div>
+<input type="text" id="reg-nickname" class="test-input" placeholder="닉네임 (활동명)">
 
-            <div style="display:flex; gap:10px; margin-top:15px;">
-                <button class="btn" style="background:#eee;" onclick="closeRegisterPopup()">이전으로</button>
-                <button class="btn primary-btn" onclick="handleSignUpFinal()">가입 완료 및 시작</button>
-            </div>
+<label style="display:block; text-align:left; font-size:12px; margin: 10px 0 5px 5px; font-weight:bold;">암송 코스 선택 (중복 가능):</label>
+<div id="course-checkboxes" style="text-align:left; background:#f9f9f9; padding:10px; border-radius:8px; max-height:160px; overflow-y:auto; font-size:13px; border:1px solid #ddd;">
+    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BB01" checked> <label>주제별 60구절 (개역한글)</label></div>
+    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BA01"> <label>기초 과정 (새출발/동행)</label></div>
+    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BC01"> <label>심화 180구절 세트</label></div>
+    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BF10"> <label>DEP 242구절 세트</label></div>
+    <div style="margin-bottom:8px;"><input type="checkbox" name="course" value="BD03"> <label>어린이 암송카드</label></div>
+    <div style="margin-bottom:8px; color:var(--main-blue); font-weight:bold;"><input type="checkbox" id="reg-oyo" checked disabled> <label>OYO (나만의 카드 - 기본제공)</label></div>
+</div>
+
+<div style="display:flex; gap:10px; margin-top:15px;">
+    <button class="btn" style="background:#eee;" onclick="closeRegisterPopup()">이전으로</button>
+    <button class="btn primary-btn" onclick="handleSignUpFinal()">가입 완료 및 시작</button>
+</div>
         </div>
     </div>
 
