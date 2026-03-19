@@ -22,9 +22,11 @@
             <div id="user-display" style="font-weight:bold; font-size:22px; color:var(--dark-blue); margin-bottom:25px;">사용자님</div>
             <div class="menu-item" style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="setMode('practice')">📖 암송 연습</div>
             <div class="menu-item" style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="setMode('test')">✍️ 암송 테스트</div>
-            <div style="margin-top:30px; font-size:11px; color:#999; font-weight:bold;">데이터 세트 선택</div>
+            
+<div style="margin-top:30px; font-size:11px; color:#999; font-weight:bold;">데이터 세트 선택</div>
             <select id="data-select" class="test-input" onchange="loadData(this.value); toggleMenu();"></select>
-        </div>
+        
+</div>
 
 <main class="main-content">
     <div id="part-container"></div>
