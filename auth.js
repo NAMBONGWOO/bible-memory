@@ -23,7 +23,7 @@ document.addEventListener('input', async (e) => {
         const confirm = document.getElementById('reg-pw-confirm').value;
         const msg = document.getElementById('pw-match-msg');
         if (pw === confirm && pw !== "") { msg.innerText = "✓ 비밀번호 일치"; msg.style.color="green"; }
-        else { msg.innerText = "✕ 비밀번호 불일치"; msg.style.color="red"; }
+        else { msg.innerText = "✕ 불일치"; msg.style.color="red"; }
     }
     if (e.target.id === 'reg-nickname') {
         const nick = e.target.value.trim();
@@ -44,9 +44,9 @@ window.handleSignUpFinal = async () => {
     if(!window.isNickValid) { alert("닉네임 중복 확인이 필요합니다."); return; }
     const email = document.getElementById('reg-email').value;
     const pw = document.getElementById('reg-pw').value;
-    const nick = document.getElementById('reg-nickname').value;
+    const nick = document.getElementById('reg-nickname').value.trim();
     const courses = Array.from(document.querySelectorAll('input[name="course"]:checked')).map(cb => cb.value);
-    if(courses.length === 0) { alert("코스를 선택하세요."); return; }
+    if(courses.length === 0) { alert("최소 한 개의 코스를 선택하세요."); return; }
     try {
         const cred = await createUserWithEmailAndPassword(auth, email, pw);
         await setDoc(doc(db, "users", cred.user.uid), { nickname: nick, selectedCourses: courses });

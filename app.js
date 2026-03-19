@@ -11,18 +11,16 @@ onAuthStateChanged(auth, async (user) => {
         const docSnap = await getDoc(doc(db, "users", user.uid));
         if (docSnap.exists()) {
             const data = docSnap.data();
-            // [수정] 닉네임 표시
+            // 닉네임 및 사이드바 코스 채우기
             document.getElementById('user-display').innerText = `${data.nickname}님`;
-            
-            // [수정] 사이드바 셀렉트 박스 채우기
             const sel = document.getElementById('data-select');
             sel.innerHTML = data.selectedCourses.map(f => {
                 let label = f.replace('.json','').replace('series_180_s','시리즈 ').replace('dep_242_p','DEP ');
                 return `<option value="${f}">${label}</option>`;
             }).join('');
             
-            // 데이터 로드
-            loadData(data.selectedCourses[0]);
+            // 첫 번째 데이터 로드 및 UI 초기화
+            await loadData(data.selectedCourses[0]);
         }
     } else {
         authScreen.style.display = 'flex';
@@ -38,23 +36,39 @@ window.toggleMenu = () => {
 };
 
 window.loadData = async (f) => {
-    const res = await fetch(`data/${f}`);
-    window.allVerses = await res.json();
-    if(window.generatePartButtons) generatePartButtons();
-    // 데이터 로드 즉시 첫 구절 표시
-    if(window.filterPart) {
-        filterPart(window.allVerses[0].p);
-    } else {
-        window.updateCardUI(window.allVerses[0]);
+    try {
+        const res = await fetch(`data/${f}`);
+        window.allVerses = await res.json();
+        
+        // 연습 모드 필터 버튼 생성
+        if(window.generatePartButtons) generatePartButtons();
+        
+        // 파트 필터링 및 첫 구절 업데이트
+        const firstPart = window.allVerses[0].p;
+        if(window.filterPart) {
+            window.filterPart(firstPart);
+        } else {
+            window.currentIndex = 0;
+            window.updateCardUI(window.allVerses[0]);
+        }
+    } catch (e) {
+        console.error("데이터 로드 실패:", e);
     }
 };
 
+// [중요] 카드를 실제로 그리는 함수
 window.updateCardUI = (v) => {
     if(!v) return;
-    document.getElementById('v-id').innerText = v.id;
-    document.getElementById('v-theme').innerText = v.theme;
-    document.getElementById('v-ref').innerText = v.ref;
+    document.getElementById('v-id').innerText = v.id || "-";
+    document.getElementById('v-theme').innerText = v.theme || "제목 없음";
+    document.getElementById('v-ref').innerText = v.ref || "장절 정보 없음";
     const content = document.getElementById('v-content');
-    content.innerText = v.content;
-    content.style.display = 'none'; // 연습 모드 기본 숨김
+    content.innerText = v.content || "내용이 없습니다.";
+    content.style.display = 'none'; // 연습 모드이므로 처음엔 숨김
+
+    // 페이지 표시 업데이트
+    const pageInfo = document.getElementById('v-page');
+    if (window.verses && pageInfo) {
+        pageInfo.innerText = `${window.currentIndex + 1} / ${window.verses.length}`;
+    }
 };
