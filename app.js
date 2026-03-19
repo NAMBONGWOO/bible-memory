@@ -20,7 +20,7 @@ window.allVerses = [];
 window.currentVerses = [];
 window.currentIndex = 0;
 
-// --- [팝업 제어] ---
+// [팝업 제어]
 window.openRegisterPopup = () => {
     document.getElementById('auth-step-1').style.display = 'none';
     document.getElementById('auth-step-2').style.display = 'block';
@@ -31,26 +31,22 @@ window.closeRegisterPopup = () => {
     document.getElementById('auth-step-2').style.display = 'none';
 };
 
-// --- [가입 로직] ---
+// [가입 완료 및 시작 로직]
 window.handleSignUpFinal = async () => {
     const email = document.getElementById('auth-email').value;
     const pw = document.getElementById('auth-pw').value;
     const nickname = document.getElementById('reg-nickname').value;
-    
     const selectedCourses = [];
-    document.querySelectorAll('input[name="course"]:checked').forEach((checkbox) => {
-        selectedCourses.push(checkbox.value);
-    });
+    document.querySelectorAll('input[name="course"]:checked').forEach(cb => selectedCourses.push(cb.value));
 
-    if(!email || !email.includes('@')) { alert("이메일을 정확히 입력해주세요."); return; }
-    if(pw.length < 6) { alert("비밀번호를 6자 이상 입력해주세요."); return; }
+    if(!email || !email.includes('@')) { alert("메인 화면에서 이메일을 정확히 입력해주세요."); window.closeRegisterPopup(); return; }
+    if(pw.length < 6) { alert("비밀번호는 6자 이상이어야 합니다. 메인 화면에서 수정해주세요."); window.closeRegisterPopup(); return; }
     if(!nickname) { alert("닉네임을 입력해주세요."); return; }
     if(selectedCourses.length === 0) { alert("최소 하나 이상의 코스를 선택해주세요."); return; }
 
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, pw);
         const user = userCredential.user;
-
         await setDoc(doc(db, "users", user.uid), {
             nickname: nickname,
             selectedCourses: selectedCourses,
@@ -58,30 +54,29 @@ window.handleSignUpFinal = async () => {
             joinDate: new Date(),
             completedVerses: [] 
         });
-
         alert(`${nickname}님, 가입을 축하합니다!`);
     } catch (err) {
-        alert("가입 실패: " + err.message);
+        alert("가입 중 오류 발생: " + err.message);
     }
 };
 
 window.handleLogin = () => {
     const email = document.getElementById('auth-email').value;
     const pw = document.getElementById('auth-pw').value;
-    if(!email || !pw) { alert("정보를 입력하세요."); return; }
+    if(!email || !pw) { alert("이메일과 비밀번호를 입력하세요."); return; }
     signInWithEmailAndPassword(auth, email, pw).catch(err => alert("로그인 실패: " + err.message));
 };
 
 window.handleLogout = () => signOut(auth);
 
-// --- [인증 상태 감시] ---
+// [인증 상태 감시]
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('app-content').style.display = 'flex';
         const userDoc = await getDoc(doc(db, "users", user.uid));
         if (userDoc.exists()) {
-            document.getElementById('user-display').innerText = `안녕하세요, ${userDoc.data().nickname}님!`;
+            document.getElementById('user-display').innerText = `${userDoc.data().nickname}님, 암송을 시작합니다!`;
         }
         initApp();
     } else {
@@ -90,7 +85,6 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-// --- [메인 로직] ---
 async function initApp() { loadData('nav_60.json'); }
 
 window.loadData = async (fileName) => {
