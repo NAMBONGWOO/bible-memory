@@ -3,101 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>성경암송 매니저 Pro</title>
+    <title>성경암송 매니저</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="auth-screen" class="auth-overlay">
-        <div id="login-card" class="auth-card">
-            <h2 style="color:var(--main-blue); margin:0;">성경암송 매니저</h2>
-            <p style="font-size:14px; color:#666; margin-bottom:10px;">암송의 여정을 시작하세요.</p>
-            <input type="email" id="login-email" class="test-input" placeholder="이메일 주소">
-            <input type="password" id="login-pw" class="test-input" placeholder="비밀번호">
-            <button class="btn primary-btn" onclick="handleLogin()">로그인</button>
-            <p style="font-size:13px; margin-top:15px;">계정이 없으신가요? <a href="#" onclick="openSignupModal()" style="color:var(--main-blue); font-weight:bold; text-decoration:none;">회원가입 하기</a></p>
         </div>
 
-        <div id="signup-card" class="auth-card" style="display:none; max-height: 90vh; overflow-y: auto;">
-            <h3 style="color:var(--main-blue); margin:0;">새 계정 만들기</h3>
-            <div style="text-align:left; display:flex; flex-direction:column; gap:8px;">
-                <label style="font-size:12px; font-weight:bold;">이메일</label>
-                <input type="email" id="reg-email" class="test-input" placeholder="example@mail.com">
-                <label style="font-size:12px; font-weight:bold;">비밀번호 (6자 이상)</label>
-                <input type="password" id="reg-pw" class="test-input" placeholder="비밀번호 입력">
-                <input type="password" id="reg-pw-confirm" class="test-input" placeholder="비밀번호 확인">
-                <div id="pw-match-msg" class="check-msg"></div>
+    <div id="app-content" style="display:none; width:100%">
+        <header class="top-bar">
+            <button class="menu-btn" onclick="toggleMenu()" style="background:none; border:none; color:white; font-size:30px; cursor:pointer; padding:5px;">≡</button>
+            <div id="mode-title" style="font-weight:bold; font-size:18px;">암송 카드 (연습)</div>
+            <button onclick="handleLogout()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:6px 12px; border-radius:8px; font-size:12px;">로그아웃</button>
+        </header>
 
-                <label style="font-size:12px; font-weight:bold;">닉네임</label>
-                <input type="text" id="reg-nickname" class="test-input" placeholder="암송왕">
-                <div id="nick-match-msg" class="check-msg"></div>
-                
-               <label style="font-weight:bold; margin-top:10px;">암송 코스 선택</label>
-<div id="course-checkboxes" style="background:#f8fafc; padding:15px; border-radius:15px; border:1px solid #eee; color:#333; font-size:12px; text-align:left;">
-    <p style="margin:0 0 5px; font-weight:bold; color:var(--dark-blue);">[기본]</p>
-    <div><input type="checkbox" name="course" value="nav_60.json" checked> 주제별 60</div>
-    <div><input type="checkbox" name="course" value="nav_60_en.json"> 주제별 60 (EN)</div>
-    
-    <p style="margin:10px 0 5px; font-weight:bold; color:var(--dark-blue);">[시리즈 180]</p>
-    <div><input type="checkbox" name="course" value="series_180_s1.json"> 시리즈 1</div>
-    <div><input type="checkbox" name="course" value="series_180_s2.json"> 시리즈 2</div>
-    <div><input type="checkbox" name="course" value="series_180_s3.json"> 시리즈 3</div>
-    <div><input type="checkbox" name="course" value="series_180_s4.json"> 시리즈 4</div>
-    <div><input type="checkbox" name="course" value="series_180_s5.json"> 시리즈 5</div>
-
-    <p style="margin:10px 0 5px; font-weight:bold; color:var(--dark-blue);">[DEP 242]</p>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px;">
-        <div><input type="checkbox" name="course" value="dep_242_p1.json"> DEP 1</div>
-        <div><input type="checkbox" name="course" value="dep_242_p2.json"> DEP 2</div>
-        <div><input type="checkbox" name="course" value="dep_242_p3.json"> DEP 3</div>
-        <div><input type="checkbox" name="course" value="dep_242_p4.json"> DEP 4</div>
-        <div><input type="checkbox" name="course" value="dep_242_p5.json"> DEP 5</div>
-        <div><input type="checkbox" name="course" value="dep_242_p6.json"> DEP 6</div>
-        <div><input type="checkbox" name="course" value="dep_242_p7.json"> DEP 7</div>
-        <div><input type="checkbox" name="course" value="dep_242_p8.json"> DEP 8</div>
-    </div>
-</div>
-            </div>
-            <button class="btn primary-btn" style="margin-top:10px;" onclick="handleSignUpFinal()">가입 완료</button>
-            <button class="btn" style="background:#eee; color:#333;" onclick="closeSignupModal()">취소</button>
-        </div>
-    </div>
-
-<div id="app-content" style="display:none; width:100%">
-    <header class="top-bar">
-        <button class="menu-btn" onclick="toggleMenu()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">≡</button>
-        <div id="mode-title" style="font-weight:bold; font-size:18px;">암송 카드 (연습)</div>
-        <button onclick="handleLogout()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:5px 10px; border-radius:8px; font-size:12px;">로그아웃</button>
-    </header>
-
-    <div class="menu-overlay" id="overlay" onclick="toggleMenu()"></div>
-    <div class="side-menu" id="sideMenu">
-        <div class="menu-header" id="user-display">사용자님</div>
-        <div class="menu-item" onclick="setMode('practice'); toggleMenu();">📖 암송 카드 (연습)</div>
-        <div class="menu-item" onclick="setMode('test'); toggleMenu();">✍️ 암송 테스트 (시험)</div>
-        <div style="padding: 20px 10px 5px; font-size: 11px; color: #94a3b8; font-weight:bold;">데이터 세트 선택</div>
-        <div style="padding: 0 10px;">
-            <select id="data-select" class="test-input" onchange="loadData(this.value); toggleMenu();" style="width:100%; height:40px; font-size:14px;"></select>
-        </div>
-    </div>
-
-    <main class="main-content">
-        <div id="part-container"></div>
-
-        <div class="card" id="main-card" onclick="handleCardClick()">
-            <div id="v-id" style="color:var(--main-blue); font-weight:bold; font-size:14px; margin-bottom:8px;">-</div>
-            <div id="v-theme" style="font-size:20px; font-weight:bold; color:#1e293b; margin-bottom:10px;">제목</div>
-            <div id="v-ref" style="font-size:16px; color:#64748b; margin-bottom:15px;">장절</div>
-            <div id="v-content" style="font-size:18px; line-height:1.6; color:#334155; word-break:keep-all;">내용</div>
-        </div>
-
-        <div class="controls" style="display:flex; gap:15px; width:90%; max-width:400px;">
-            <button class="btn" style="background:#f1f5f9; color:#475569; flex:1;" onclick="prevVerse()">이전</button>
-            <button class="btn primary-btn" style="flex:1.5;" onclick="handleNext()">다음</button>
-        </div>
+        <div class="menu-overlay" id="overlay" onclick="toggleMenu()"></div>
         
-        <div id="v-page" style="margin-top:20px; color:rgba(255,255,255,0.7); font-size:13px;">0 / 0</div>
-    </main>
-</div>
+        <div class="side-menu" id="sideMenu">
+            <div style="font-size:22px; font-weight:bold; color:var(--dark-blue); margin-bottom:25px;" id="user-display">사용자님</div>
+            <nav style="flex:1;">
+                <div class="menu-item" onclick="setMode('practice'); toggleMenu();">📖 암송 연습</div>
+                <div class="menu-item" onclick="setMode('test'); toggleMenu();">✍️ 암송 테스트</div>
+                <div style="margin-top:40px; font-size:11px; color:#94a3b8; font-weight:bold; letter-spacing:1px; margin-bottom:10px;">데이터 세트 선택</div>
+                <select id="data-select" class="test-input" onchange="loadData(this.value); toggleMenu();" style="width:100%; height:45px; border-radius:10px; border:1px solid #ddd; padding:0 10px;"></select>
+            </nav>
+        </div>
+
+        <main class="main-content">
+            <div id="part-container"></div> <div class="card" id="main-card" onclick="handleCardClick()">
+                <div id="v-id" style="color:var(--main-blue); font-weight:bold; font-size:13px; margin-bottom:12px;">-</div>
+                <div id="v-theme" style="font-size:22px; font-weight:bold; margin-bottom:15px;">제목</div>
+                <div id="v-ref" style="font-size:16px; color:#64748b; margin-bottom:20px;">장절</div>
+                <div id="v-content" style="font-size:19px; line-height:1.7; word-break:keep-all;">내용</div>
+            </div>
+
+            <div class="controls" style="display:flex; gap:15px; width:90%; max-width:400px;">
+                <button class="btn" style="background:white; color:#475569; flex:1; border:1px solid #ddd;" onclick="prevVerse()">이전</button>
+                <button class="btn primary-btn" style="flex:1.5;" onclick="handleNext()">다음</button>
+            </div>
+            <div id="v-page" style="margin-top:25px; color:rgba(255,255,255,0.7); font-size:14px;">0 / 0</div>
+        </main>
+    </div>
 
     <script type="module" src="auth.js"></script>
     <script type="module" src="app.js"></script>
