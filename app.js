@@ -15,16 +15,11 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// 전역 상태
-window.allVerses = [];
-window.currentVerses = [];
-window.currentIndex = 0;
-window.currentMode = 'practice';
+window.allVerses = []; window.currentVerses = []; window.currentIndex = 0; window.currentMode = 'practice';
 
-// [1] 인증 상태 감시 (로그인 여부에 따라 화면 전환)
+// [1] 인증 상태 감시
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // 로그인 성공 시
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('app-content').style.display = 'block';
         
@@ -33,34 +28,32 @@ onAuthStateChanged(auth, async (user) => {
             const userData = docSnap.data();
             document.getElementById('user-display').innerText = `${userData.nickname}님 환영합니다!`;
             
-            // 사용자가 가입 시 선택한 코스들만 셀렉트 박스에 노출
             const selector = document.getElementById('data-select');
-            selector.innerHTML = userData.selectedCourses.map(file => {
-                let name = file.split('_')[0].toUpperCase();
-                return `<option value="${file}">${name} 과정</option>`;
-            }).join('');
-            
-            loadData(userData.selectedCourses[0]); // 첫 번째 코스 자동 로드
+            if (userData.selectedCourses && userData.selectedCourses.length > 0) {
+                selector.innerHTML = userData.selectedCourses.map(file => {
+                    let label = file.replace('.json', '').replace('_', ' ').toUpperCase();
+                    return `<option value="${file}">${label}</option>`;
+                }).join('');
+                loadData(userData.selectedCourses[0]);
+            }
         }
     } else {
-        // 로그아웃 상태 시 로그인 화면 노출
         document.getElementById('auth-screen').style.display = 'flex';
         document.getElementById('app-content').style.display = 'none';
     }
 });
 
-// [2] 데이터 로드 공통 함수
-window.loadData = async (fileName) => {
-    const response = await fetch('data/' + fileName);
-    window.allVerses = await response.json();
+// [2] 데이터 로드
+window.loadData = async (file) => {
+    const res = await fetch(`data/${file}`);
+    window.allVerses = await res.json();
     if(typeof generatePartButtons === 'function') generatePartButtons();
-    if(window.currentMode === 'practice') filterPart('A');
+    filterPart('A');
 };
 
-// [3] 로그인 / 회원가입 기능
+// [3] 로그인/가입/로그아웃
 window.handleLogin = () => {
-    signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pw').value)
-        .catch(err => alert("로그인 실패: " + err.message));
+    signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-pw').value).catch(e => alert(e.message));
 };
 
 window.handleSignUpFinal = async () => {
@@ -68,48 +61,27 @@ window.handleSignUpFinal = async () => {
     const pw = document.getElementById('reg-pw').value;
     const nick = document.getElementById('reg-nickname').value;
     const courses = Array.from(document.querySelectorAll('input[name="course"]:checked')).map(cb => cb.value);
-
-    if(!email || !pw || !nick || courses.length === 0) { alert("정보를 모두 입력해주세요."); return; }
-
     try {
         const cred = await createUserWithEmailAndPassword(auth, email, pw);
-        await setDoc(doc(db, "users", cred.user.uid), { 
-            nickname: nick, 
-            selectedCourses: courses,
-            joinDate: new Date()
-        });
-        alert("가입 성공! 로그인해주세요.");
-        closeSignupModal();
-    } catch (e) { alert("가입 실패: " + e.message); }
+        await setDoc(doc(db, "users", cred.user.uid), { nickname: nick, selectedCourses: courses });
+        alert("가입 성공!");
+    } catch (e) { alert(e.message); }
 };
 
 window.handleLogout = () => signOut(auth);
 
-// [4] UI 유틸리티
+// [4] UI 유틸
 window.toggleMenu = () => {
-    const side = document.getElementById('sideMenu');
-    const over = document.getElementById('overlay');
-    side.classList.toggle('open');
-    over.style.display = side.classList.contains('open') ? 'block' : 'none';
+    document.getElementById('sideMenu').classList.toggle('open');
+    document.getElementById('overlay').style.display = document.getElementById('sideMenu').classList.contains('open') ? 'block' : 'none';
 };
-window.openSignupModal = () => { document.getElementById('login-card').style.display='none'; document.getElementById('signup-card').style.display='block'; };
-window.closeSignupModal = () => { document.getElementById('login-card').style.display='block'; document.getElementById('signup-card').style.display='none'; };
-
-window.setMode = (mode) => {
-    window.currentMode = mode;
-    document.getElementById('mode-title').innerText = mode === 'practice' ? '암송 카드 (연습)' : '암송 테스트 (시험)';
-    // ... 연습/시험 모드 로직은 나중에 추가 가능 ...
-    toggleMenu();
-};
+window.openSignupModal = () => { document.getElementById('login-card').style.display='none'; document.getElementById('signup-card').style.display='flex'; };
+window.closeSignupModal = () => { document.getElementById('login-card').style.display='flex'; document.getElementById('signup-card').style.display='none'; };
 
 window.updateCardUI = (v) => {
-    const idEl = document.getElementById('v-id');
-    const themeEl = document.getElementById('v-theme');
-    idEl.innerText = v.id;
-    themeEl.innerText = v.theme;
+    document.getElementById('v-id').innerText = v.id;
+    document.getElementById('v-theme').innerText = v.theme;
     document.getElementById('v-ref').innerText = v.ref;
     document.getElementById('v-content').innerText = v.content;
     document.getElementById('v-content').style.display = 'none';
-    document.getElementById('result-view').style.display = 'none';
-    document.getElementById('score-text').style.display = 'none';
 };

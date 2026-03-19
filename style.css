@@ -1,60 +1,71 @@
 :root { 
     --main-blue: #0ea5e9; --dark-blue: #075985; --card-bg: #ffffff;
-    --text-main: #1e293b; --error-red: #f43f5e; --success-green: #10b981;
+    --text-main: #1e293b; --error-red: #f43f5e;
 }
 
 body { 
     background: radial-gradient(circle at top, var(--main-blue) 0%, var(--dark-blue) 100%);
     background-attachment: fixed; font-family: sans-serif; 
-    display: flex; flex-direction: column; align-items: center; 
-    margin: 0; padding: 0; min-height: 100vh; color: white; overflow-x: hidden;
+    margin: 0; padding: 0; min-height: 100vh; color: white;
+    display: flex; flex-direction: column; align-items: center;
 }
 
+/* [A] 인증 레이아웃 (로그인/가입) - 정중앙 배치 */
+.auth-overlay { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: radial-gradient(circle at top, var(--main-blue) 0%, var(--dark-blue) 100%);
+    z-index: 3000; display: flex; align-items: center; justify-content: center; 
+}
+
+.auth-card { 
+    background: white; padding: 35px; border-radius: 25px; width: 90%; max-width: 380px; 
+    color: #333; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    display: flex; flex-direction: column; gap: 12px; box-sizing: border-box;
+}
+
+/* [B] 상단 바 및 메인 레이아웃 */
 .top-bar { 
-    width: 100%; height: 65px; display: flex; align-items: center; padding: 0 15px; 
-    box-sizing: border-box; position: sticky; top: 0; z-index: 100;
-    background: rgba(7, 89, 133, 0.8); backdrop-filter: blur(10px);
+    width: 100%; height: 60px; display: flex; align-items: center; padding: 0 15px; 
+    position: fixed; top: 0; left: 0; z-index: 1000;
+    background: rgba(7, 89, 133, 0.9); backdrop-filter: blur(8px); box-sizing: border-box;
 }
-.menu-btn { font-size: 30px; cursor: pointer; background: none; border: none; color: white; padding: 5px 10px; }
-.header-title { flex-grow: 1; text-align: center; font-size: 18px; font-weight: 700; margin-right: 50px; }
+.menu-btn { font-size: 28px; cursor: pointer; background: none; border: none; color: white; padding: 5px; }
+.header-title { flex-grow: 1; text-align: center; font-size: 18px; font-weight: bold; margin-right: 40px; }
 
-.side-menu { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: #ffffff; color: #333; transition: 0.4s; z-index: 1000; box-shadow: 10px 0 30px rgba(0,0,0,0.4); }
-.side-menu.open { left: 0; }
-.menu-header { padding: 30px 20px; font-weight: 800; font-size: 20px; border-bottom: 2px solid var(--main-blue); color: var(--main-blue); background: #f8fafc; }
-.menu-item { padding: 16px 25px; font-size: 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; }
-.menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 999; }
-.set-select { width: 85%; margin: 10px 20px; padding: 12px; border-radius: 10px; border: 2px solid #e2e8f0; }
+.main-content { 
+    margin-top: 80px; width: 100%; display: flex; flex-direction: column; align-items: center; 
+}
 
-#part-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 20px 0; padding: 0 15px; width: 100%; max-width: 420px; }
-.part-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 10px; border-radius: 12px; cursor: pointer; font-size: 12px; flex: 1 1 calc(33% - 10px); }
-.part-btn.active { background: white; color: var(--dark-blue); font-weight: 800; }
-
-#test-setup { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-.setup-card { background: white; padding: 30px; border-radius: 25px; width: 300px; text-align: center; color: #333; }
-.setup-input { width: 80%; padding: 15px; font-size: 24px; text-align: center; border: 2px solid #ddd; border-radius: 15px; margin: 15px 0; outline: none; }
-
+/* [C] 카드 스타일 */
 .card { 
-    background: var(--card-bg); width: calc(100% - 30px); max-width: 380px; border-radius: 25px; padding: 30px; 
-    text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.4); min-height: 180px; 
-    display: flex; flex-direction: column; justify-content: center; position: relative; color: var(--text-main); box-sizing: border-box;
+    background: white; width: 90%; max-width: 380px; border-radius: 25px; padding: 30px; 
+    text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.3); min-height: 250px; 
+    display: flex; flex-direction: column; justify-content: center; color: var(--text-main);
+    box-sizing: border-box; margin: 20px 0;
 }
-.score-display { font-size: 32px; font-weight: 900; color: var(--error-red); margin-bottom: 10px; display: none; }
-.id-tag { color: var(--main-blue); font-weight: 800; font-size: 14px; margin-bottom: 8px; }
-.theme { color: var(--dark-blue); font-size: 24px; font-weight: 800; margin: 5px 0; }
+.theme { color: var(--dark-blue); font-size: 24px; font-weight: 800; margin: 10px 0; }
 .ref { color: #64748b; font-size: 20px; margin-bottom: 15px; }
-.content { color: #0f172a; font-size: 19px; line-height: 1.7; display: none; text-align: left; background: #f8fafc; padding: 20px; border-radius: 15px; word-break: keep-all; }
-.result-view { text-align: left; font-size: 17px; line-height: 1.6; margin-top: 15px; display: none; background: #fff1f2; padding: 15px; border-radius: 12px; color: #333; }
-.wrong { color: var(--error-red); text-decoration: underline; font-weight: bold; }
+.content { font-size: 19px; line-height: 1.7; background: #f8fafc; padding: 15px; border-radius: 12px; display: none; text-align: left; }
 
-#test-section { width: calc(100% - 30px); max-width: 380px; margin-top: 20px; display: none; }
-.input-label { font-size: 14px; font-weight: bold; margin-bottom: 8px; display: block; opacity: 0.9; }
-.test-input { width: 100%; border-radius: 12px; border: none; padding: 15px; font-size: 16px; box-sizing: border-box; outline: none; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-textarea.test-input { height: 110px; }
+/* [D] 입력창 및 버튼 (수직 정렬 핵심) */
+.test-input { 
+    width: 100%; height: 48px; border-radius: 12px; border: 1px solid #ddd; 
+    padding: 0 15px; font-size: 16px; box-sizing: border-box; outline: none; background: #f1f5f9;
+}
+.btn { border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s; }
+.primary-btn { background: var(--main-blue); color: white; }
 
-.controls { display: flex; gap: 12px; margin: 25px 0; width: calc(100% - 30px); max-width: 380px; }
-.btn { flex: 1; background: white; border: none; color: var(--dark-blue); padding: 16px; border-radius: 15px; font-weight: 800; cursor: pointer; font-size: 16px; box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
-.primary-btn { background: var(--main-blue); color: white; margin-top: 10px; }
-.check-btn { background: #fbbf24; color: #78350f; width: calc(100% - 30px); max-width: 380px; margin-top: 5px; font-weight: bold; display: none; }
+/* [E] 사이드 메뉴 */
+.side-menu { 
+    position: fixed; top: 0; left: -280px; width: 280px; height: 100%; 
+    background: white; color: #333; transition: 0.3s; z-index: 2000; padding: 20px; box-sizing: border-box;
+}
+.side-menu.open { left: 0; }
+.menu-header { font-weight: bold; font-size: 18px; color: var(--main-blue); margin-bottom: 20px; border-bottom: 2px solid #f1f5f9; padding-bottom: 10px; }
+.menu-item { padding: 15px 10px; border-bottom: 1px solid #f1f5f9; cursor: pointer; }
+.menu-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1500; }
 
-.status-panel { width: calc(100% - 30px); max-width: 380px; display: none; justify-content: space-between; margin-bottom: 10px; font-size: 14px; font-weight: bold; }
-.footer { margin-bottom: 50px; font-size: 14px; opacity: 0.8; background: rgba(0,0,0,0.2); padding: 6px 18px; border-radius: 20px; }
+/* 파트 버튼 */
+#part-container { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%; max-width: 400px; padding: 0 15px; box-sizing: border-box; }
+.part-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 10px; border-radius: 12px; cursor: pointer; flex: 1 1 calc(25% - 10px); font-size: 12px; }
+.part-btn.active { background: white; color: var(--dark-blue); font-weight: bold; }
