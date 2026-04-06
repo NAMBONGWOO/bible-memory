@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
 
@@ -12,7 +12,7 @@
     <div id="auth-screen" class="auth-overlay">
 
         <!-- 로그인 카드 -->
-        <div id="login-card" class="auth-card">
+        <div id="login-card" class="auth-card" style="display:flex; flex-direction:column; align-items:center;">
             <h2 style="color:var(--main-blue); margin-top:0;">성경암송 매니저</h2>
             <p style="font-size:14px; color:#666; margin-bottom:20px;">암송의 여정을 시작하세요.</p>
             <input type="email" id="login-email" class="test-input" placeholder="이메일 주소">
@@ -127,10 +127,10 @@
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js"></script>
-    <script src="test.js"></script>
-    <script type="module" src="auth.js"></script>
-    <script type="module" src="app.js"></script>
+    <script src="practice.js?v=2"></script>
+    <script src="test.js?v=2"></script>
+    <script type="module" src="auth.js?v=2"></script>
+    <script type="module" src="app.js?v=2"></script>
 
 </body>
 </html>

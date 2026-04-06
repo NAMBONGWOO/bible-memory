@@ -41,9 +41,8 @@ body {
     text-align: center;
 }
 
-/* [버그 수정] !important 제거 */
+/* display는 JS가 제어 — CSS에서 선언하지 않음 */
 #login-card {
-    display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;

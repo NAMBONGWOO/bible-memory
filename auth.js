@@ -152,7 +152,9 @@ window.openSignupModal = async () => {
 
 window.closeSignupModal = () => {
     document.getElementById('signup-card').style.display = 'none';
-    document.getElementById('login-card').style.display = 'flex';
+    const loginCard = document.getElementById('login-card');
+    loginCard.style.display = 'flex';
+    loginCard.style.flexDirection = 'column';
     // 입력값 초기화
     ['reg-email','reg-pw','reg-pw-confirm','reg-nickname'].forEach(id => {
         const el = document.getElementById(id);
