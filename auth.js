@@ -16,12 +16,13 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyAPuQQcX0mT1fqAa97CPPbhTy9GWdG8_J0",
+    apiKey: "AIzaSyBGj3sipp-JeXPx3vfiJaB4itznPTyNV9Y",
     authDomain: "bible-memory-app-4e246.firebaseapp.com",
     projectId: "bible-memory-app-4e246",
     storageBucket: "bible-memory-app-4e246.firebasestorage.app",
     messagingSenderId: "112274931775",
-    appId: "1:112274931775:web:e63478c296f7a702d6f88a"
+    appId: "1:112274931775:web:e63478c296f7a702d6f88a",
+    measurementId: "G-LXD25M9ER2"
 };
 
 const app = initializeApp(firebaseConfig);
