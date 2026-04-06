@@ -7,45 +7,60 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <!-- ① 인증 화면: 로그인 + 회원가입 -->
     <div id="auth-screen" class="auth-overlay">
+
+        <!-- 로그인 카드 -->
         <div id="login-card" class="auth-card">
             <h2 style="color:var(--main-blue); margin-top:0;">성경암송 매니저</h2>
             <p style="font-size:14px; color:#666; margin-bottom:20px;">암송의 여정을 시작하세요.</p>
             <input type="email" id="login-email" class="test-input" placeholder="이메일 주소">
             <input type="password" id="login-pw" class="test-input" placeholder="비밀번호">
             <button class="btn primary-btn" onclick="handleLogin()">로그인</button>
-            <p style="font-size:13px; margin-top:15px;">계정이 없으신가요? <a href="#" onclick="openSignupModal()" style="color:var(--main-blue); font-weight:bold; text-decoration:none;">회원가입 하기</a></p>
+            <p style="font-size:13px; margin-top:15px;">
+                계정이 없으신가요?
+                <a href="#" onclick="openSignupModal()" style="color:var(--main-blue); font-weight:bold; text-decoration:none;">회원가입 하기</a>
+            </p>
         </div>
 
-<div id="signup-card" class="auth-card" style="display:none;">
-    <h3 style="color:var(--main-blue); margin: 0 0 20px 0;">새 계정 만들기</h3>
-    
-    <div style="text-align:left; width: 100%;">
-        <label style="font-size:12px; font-weight:bold;">이메일</label>
-        <input type="email" id="reg-email" class="test-input" placeholder="이메일 입력">
-        
-        <label style="font-size:12px; font-weight:bold;">비밀번호</label>
-        <input type="password" id="reg-pw" class="test-input" placeholder="비밀번호">
-        <input type="password" id="reg-pw-confirm" class="test-input" placeholder="비밀번호 확인">
-        
-        <label style="font-size:12px; font-weight:bold;">닉네임</label>
-        <input type="text" id="reg-nickname" class="test-input" placeholder="닉네임">
-        
-        <label style="font-weight:bold; font-size:13px; margin-top:10px; display:block;">암송 코스 선택</label>
-        <div id="course-checkboxes" style="background:#f1f5f9; padding:10px; border-radius:10px; margin-top:5px; max-height:200px; overflow-y:auto;">
-            <div style="margin-bottom:5px;"><label><input type="checkbox" name="course" value="nav_60.json" checked> 주제별 60</label></div>
-            <div style="margin-bottom:5px;"><label><input type="checkbox" name="course" value="series_180_s1.json"> 시리즈 1</label></div>
+        <!-- 회원가입 카드 -->
+        <div id="signup-card" class="auth-card" style="display:none;">
+            <h3 style="color:var(--main-blue); margin: 0 0 20px 0; text-align:center;">새 계정 만들기</h3>
+
+            <div style="text-align:left; width:100%;">
+                <label style="font-size:12px; font-weight:bold;">이메일</label>
+                <input type="email" id="reg-email" class="test-input" placeholder="이메일 입력">
+
+                <label style="font-size:12px; font-weight:bold;">비밀번호</label>
+                <input type="password" id="reg-pw" class="test-input" placeholder="비밀번호 (6자 이상)">
+                <input type="password" id="reg-pw-confirm" class="test-input" placeholder="비밀번호 확인">
+                <!-- [버그 수정] pw-match-msg 추가 -->
+                <span id="pw-match-msg" class="check-msg"></span>
+
+                <label style="font-size:12px; font-weight:bold;">닉네임</label>
+                <input type="text" id="reg-nickname" class="test-input" placeholder="닉네임 (2자 이상)">
+                <!-- [버그 수정] nick-match-msg 추가 -->
+                <span id="nick-match-msg" class="check-msg"></span>
+
+                <label style="font-weight:bold; font-size:13px; margin-top:10px; display:block;">암송 코스 선택</label>
+                <!-- [개선] config.json에서 동적 로드하므로 빈 div로 유지 -->
+                <div id="course-checkboxes" style="background:#f1f5f9; padding:10px; border-radius:10px; margin-top:5px; max-height:200px; overflow-y:auto;">
+                    <p style="color:#888; font-size:13px; text-align:center; margin:0;">코스 목록 불러오는 중...</p>
+                </div>
             </div>
-    </div>
-    
-    <div style="width: 100%; margin-top: 15px;">
-        <button class="btn primary-btn" onclick="handleSignUpFinal()">가입 완료</button>
-        <button class="btn" style="background:#eee; color:#333;" onclick="closeSignupModal()">취소</button>
-    </div>
-</div>
+
+            <div style="width:100%; margin-top:15px;">
+                <button class="btn primary-btn" onclick="handleSignUpFinal()">가입 완료</button>
+                <button class="btn" style="background:#eee; color:#333;" onclick="closeSignupModal()">취소</button>
+            </div>
+        </div>
+
     </div>
 
-    <div id="app-content" style="display:none; width:100%">
+    <!-- ② 앱 본문: 로그인 성공 후 표시 -->
+    <div id="app-content" style="display:none; width:100%;">
+
         <header class="top-bar">
             <button onclick="toggleMenu()" style="background:none; border:none; color:white; font-size:30px; cursor:pointer;">≡</button>
             <div id="mode-title" style="font-weight:bold;">암송 카드 (연습)</div>
@@ -57,8 +72,9 @@
             <div id="user-display" style="font-weight:bold; font-size:22px; color:var(--dark-blue); margin-bottom:25px;">사용자님</div>
             <div class="menu-item" style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="setMode('practice')">📖 암송 연습</div>
             <div class="menu-item" style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="setMode('test')">✍️ 암송 테스트</div>
-            
+
             <div style="margin-top:30px; font-size:11px; color:#999; font-weight:bold;">데이터 세트 선택</div>
+            <!-- [개선] 내 코스 목록 -->
             <select id="data-select" class="test-input" onchange="loadData(this.value); toggleMenu();" style="margin-top:5px; height:40px;"></select>
         </div>
 
@@ -73,12 +89,14 @@
             <div class="card" id="main-card">
                 <div id="v-ref" style="font-size:18px; font-weight:bold; color:var(--main-blue); margin-bottom:15px;">장절 정보</div>
 
+                <!-- 테스트 시작 설정 -->
                 <div id="test-setup" style="display:none;">
                     <p style="color:#333;">테스트할 구절 수를 입력하세요.</p>
                     <input type="number" id="test-count-input" class="test-input" value="10" style="text-align:center; width:80px; margin-bottom:15px;">
                     <button class="btn primary-btn" onclick="startTestSession()">테스트 시작</button>
                 </div>
 
+                <!-- 테스트 입력/채점 영역 -->
                 <div id="test-section" style="display:none; width:100%;">
                     <input type="text" id="test-theme-input" class="test-input" placeholder="제목을 입력하세요">
                     <textarea id="test-content-input" class="test-input" style="height:120px; padding:15px;" placeholder="본문 내용을 입력하세요"></textarea>
@@ -86,6 +104,7 @@
                     <div id="test-result-view" style="display:none; font-size:14px; line-height:1.6; margin-top:15px; text-align:left;"></div>
                 </div>
 
+                <!-- 연습 카드 영역 (클릭 시 본문 토글) -->
                 <div id="practice-area" onclick="handleCardClick()" style="cursor:pointer; width:100%;">
                     <div id="v-id" style="font-size:12px; color:#94a3b8; margin-bottom:5px;">ID</div>
                     <div id="v-theme" style="font-size:22px; font-weight:bold; margin-bottom:10px; color:#333;">주제</div>
@@ -102,13 +121,16 @@
                     <button class="btn primary-btn" onclick="testNext()">다음 문제로</button>
                 </div>
             </div>
+
             <div id="v-page" style="margin-top:20px; color:rgba(255,255,255,0.7); font-size:14px;">0 / 0</div>
         </main>
     </div>
 
-    <script type="module" src="auth.js"></script>
-    <script type="module" src="app.js"></script>
+    <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
     <script src="practice.js"></script>
     <script src="test.js"></script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="app.js"></script>
+
 </body>
 </html>
