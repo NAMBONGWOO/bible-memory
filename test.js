@@ -10,7 +10,6 @@ window.startTestSession = () => {
         alert('데이터가 로드되지 않았습니다.');
         return;
     }
-
     const countInput = document.getElementById('test-count-input');
     const requested = parseInt(countInput?.value) || 10;
     testMaxSteps = Math.min(requested, window.allVerses.length);
@@ -22,7 +21,6 @@ window.startTestSession = () => {
     testCurrentStep  = 0;
     testTotalPenalty = 0;
     isCurrentChecked = false;
-
     window.verses       = testSessionVerses;
     window.currentIndex = 0;
 
@@ -36,7 +34,7 @@ window.startTestSession = () => {
     window.updateCardUI(window.verses[0]);
 };
 
-// ─── [2] 상태 표시 업데이트 ─────────────────────────────────────────────
+// ─── [2] 상태 업데이트 ──────────────────────────────────────────────────
 function updateStatus() {
     const prog  = document.getElementById('test-progress');
     const score = document.getElementById('test-total-score');
@@ -44,34 +42,40 @@ function updateStatus() {
     if (score) score.innerText = `누적 감점: ${testTotalPenalty}`;
 }
 
-// ─── [유틸] 구두점·공백 제거 ────────────────────────────────────────────
-function clean(text) {
-    return text.replace(/[.,·?!"'()\[\]]/g, '').trim();
+// ─── [유틸] 구두점 제거 (공백은 유지 — 단어 분리에 필요) ─────────────────
+function removePunct(text) {
+    return text.replace(/[.,·?!"'()\[\]]/g, '');
 }
 
-// ─── [유틸] LCS로 정답-입력 단어 매칭 ───────────────────────────────────
-// 연쇄 오답 방지: 단어를 위치 고정이 아닌 전체 흐름 기준으로 매칭
+// ─── [유틸] 음절 비교용: 구두점 + 공백 모두 제거 ───────────────────────
+// 띄어쓰기가 달라도 같은 내용이면 동일하게 처리하기 위한 핵심
+function toSyllable(text) {
+    return removePunct(text).replace(/\s+/g, '');
+}
+
+// ─── [유틸] LCS — 음절 기준으로 단어 매칭 ──────────────────────────────
+// origWords, inputWords 각 단어를 toSyllable로 변환 후 비교
+// → 띄어쓰기 차이를 무시하고 내용만 비교
 function lcsMatch(origWords, inputWords) {
     const n = origWords.length;
     const m = inputWords.length;
+    const oSyl = origWords.map(toSyllable);
+    const iSyl = inputWords.map(toSyllable);
 
     const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
     for (let i = 1; i <= n; i++) {
         for (let j = 1; j <= m; j++) {
-            if (clean(origWords[i-1]) === clean(inputWords[j-1])) {
-                dp[i][j] = dp[i-1][j-1] + 1;
-            } else {
-                dp[i][j] = Math.max(dp[i-1][j], dp[i][j-1]);
-            }
+            dp[i][j] = oSyl[i-1] === iSyl[j-1]
+                ? dp[i-1][j-1] + 1
+                : Math.max(dp[i-1][j], dp[i][j-1]);
         }
     }
 
     const origMatched  = new Array(n).fill(-1);
     const inputMatched = new Array(m).fill(-1);
-
     let i = n, j = m;
     while (i > 0 && j > 0) {
-        if (clean(origWords[i-1]) === clean(inputWords[j-1])) {
+        if (oSyl[i-1] === iSyl[j-1]) {
             origMatched[i-1]  = j-1;
             inputMatched[j-1] = i-1;
             i--; j--;
@@ -81,22 +85,18 @@ function lcsMatch(origWords, inputWords) {
             j--;
         }
     }
-
-    return { origMatched, inputMatched };
+    return { origMatched, inputMatched, oSyl, iSyl };
 }
 
 // ─── [유틸] 순서 뒤바뀜 감지 ─────────────────────────────────────────────
-// LCS 미매칭 단어 중 상대편에 동일 단어가 있으면 순서 오류로 처리
-function detectSwapped(origWords, inputWords, origMatched, inputMatched) {
+function detectSwapped(oSyl, iSyl, origMatched, inputMatched) {
     const swappedOrig  = new Set();
     const swappedInput = new Set();
-
-    for (let i = 0; i < origWords.length; i++) {
+    for (let i = 0; i < oSyl.length; i++) {
         if (origMatched[i] !== -1) continue;
-        const cw = clean(origWords[i]);
-        for (let j = 0; j < inputWords.length; j++) {
+        for (let j = 0; j < iSyl.length; j++) {
             if (inputMatched[j] !== -1) continue;
-            if (clean(inputWords[j]) === cw) {
+            if (oSyl[i] === iSyl[j]) {
                 swappedOrig.add(i);
                 swappedInput.add(j);
                 break;
@@ -106,10 +106,19 @@ function detectSwapped(origWords, inputWords, origMatched, inputMatched) {
     return { swappedOrig, swappedInput };
 }
 
-// ─── [3] 채점 로직 ──────────────────────────────────────────────────────
+// ─── [유틸] 띄어쓰기 오류 감지 ───────────────────────────────────────────
+// 단어 단위 매칭은 실패했지만, 음절 전체를 이어붙이면 동일한 경우
+// → "정하신것이요" vs "정하신 것이요" 같은 케이스
+function checkSpacingError(origWords, inputWords, origMatched, inputMatched) {
+    // 정답 전체 음절열과 입력 전체 음절열을 비교
+    const origFull  = origWords.map(toSyllable).join('');
+    const inputFull = inputWords.map(toSyllable).join('');
+    return origFull === inputFull; // 음절이 완전히 같으면 띄어쓰기만 다른 것
+}
+
+// ─── [3] 채점 ───────────────────────────────────────────────────────────
 window.runCheck = () => {
     if (isCurrentChecked) return;
-
     const v = window.verses[window.currentIndex];
     if (!v) return;
 
@@ -123,72 +132,103 @@ window.runCheck = () => {
     let details = [];
 
     // ── 제목 채점 ──────────────────────────────────────────────────────
-    let themeOk = false;
-    if (clean(themeInput) === clean(v.theme)) {
-        themeOk = true;
-    } else {
+    const themeOk = toSyllable(themeInput) === toSyllable(v.theme);
+    if (!themeOk) {
         penalty += 1;
         details.push('제목 오류 (-1점)');
     }
 
-    // ── 본문 채점: LCS 기반 ────────────────────────────────────────────
+    // ── 본문 채점 ─────────────────────────────────────────────────────
     let contentPenalty = 0;
     let resultHTML     = '';
 
     if (inputWords.length === 0) {
         contentPenalty = 5;
         resultHTML = origWords.map(w =>
-            `<span style="color:#ef4444; text-decoration:underline;">${w}</span> `
+            `<span style="color:#ef4444;">${w}<sup style="font-size:9px;">누락</sup></span> `
         ).join('');
         details.push('본문 미입력 (-5점 상한)');
+
     } else {
-        const { origMatched, inputMatched } = lcsMatch(origWords, inputWords);
-        const { swappedOrig, swappedInput } = detectSwapped(origWords, inputWords, origMatched, inputMatched);
+        // 먼저 전체 띄어쓰기 오류 여부 확인
+        const isSpacingOnlyError = checkSpacingError(origWords, inputWords, [], []);
+
+        const { origMatched, inputMatched, oSyl, iSyl } = lcsMatch(origWords, inputWords);
+        const { swappedOrig, swappedInput } = detectSwapped(oSyl, iSyl, origMatched, inputMatched);
 
         let swapPenaltyApplied = false;
 
-        // 정답 단어 순서대로 렌더링
+        // 정답 단어 기준 렌더링
         for (let i = 0; i < origWords.length; i++) {
             const word = origWords[i];
 
             if (origMatched[i] !== -1) {
-                // 정상 매칭
+                // ✅ 정상 매칭
                 resultHTML += `<span style="color:#16a34a;">${word}</span> `;
 
             } else if (swappedOrig.has(i)) {
-                // 순서 뒤바뀜 — 쌍 전체에 1점만 감점
+                // 🔄 순서 뒤바뀜 — 쌍 전체에 1점만
                 if (!swapPenaltyApplied) {
                     contentPenalty += 1;
-                    details.push('어절 순서 뒤바뀜 (-1점, 원고지 ↕ 표시)');
+                    details.push('어절 순서 뒤바뀜 (-1점, ↕ 표시)');
                     swapPenaltyApplied = true;
                 }
                 resultHTML += `<span style="color:#d97706;">${word}<sup style="font-size:9px;">↕순서</sup></span> `;
 
             } else {
-                // 누락 또는 오기입
-                contentPenalty += 1;
-                details.push(`'${word}' 누락/오기입 (-1점)`);
-                resultHTML += `<span style="color:#ef4444; text-decoration:underline;">___<sup style="font-size:9px;">누락</sup></span> `;
+                // ❌ 누락/오기입 — 단, 입력에서 음절이 인접 단어와 붙여쓴 경우 띄어쓰기 오류로 처리
+                // 인접 입력 단어들을 합쳤을 때 정답 단어 음절과 일치하는지 확인
+                let spacingFix = false;
+                const target = oSyl[i];
+                for (let j = 0; j < inputWords.length; j++) {
+                    if (inputMatched[j] !== -1) continue;
+                    // 인접 미매칭 단어 1~2개를 합쳐서 확인
+                    if (iSyl[j] === target) {
+                        spacingFix = true; break;
+                    }
+                    if (j+1 < inputWords.length && inputMatched[j+1] === -1) {
+                        if (iSyl[j] + iSyl[j+1] === target || target === iSyl[j].slice(0, target.length)) {
+                            spacingFix = true; break;
+                        }
+                    }
+                }
+
+                if (isSpacingOnlyError) {
+                    // 전체가 띄어쓰기만 다른 경우: 해당 단어를 주황으로 표시, 별도 감점 없음
+                    resultHTML += `<span style="color:#d97706;">${word}<sup style="font-size:9px;">띄어쓰기</sup></span> `;
+                } else {
+                    contentPenalty += 1;
+                    details.push(`'${word}' 누락/오기입 (-1점)`);
+                    resultHTML += `<span style="color:#ef4444; text-decoration:underline;">___<sup style="font-size:9px;">누락</sup></span> `;
+                }
             }
         }
 
-        // 정답에 없는 단어(추가 입력)
+        // 입력했지만 정답에 없는 단어 (순서 뒤바뀜 쌍 제외)
         for (let j = 0; j < inputWords.length; j++) {
             if (inputMatched[j] === -1 && !swappedInput.has(j)) {
-                contentPenalty += 1;
-                details.push(`'${inputWords[j]}' 정답에 없는 단어 (-1점)`);
-                resultHTML += `<span style="color:#7c3aed; text-decoration:line-through;">${inputWords[j]}<sup style="font-size:9px;">추가</sup></span> `;
+                if (!isSpacingOnlyError) {
+                    contentPenalty += 1;
+                    details.push(`'${inputWords[j]}' 정답에 없는 단어 (-1점)`);
+                    resultHTML += `<span style="color:#7c3aed; text-decoration:line-through;">${inputWords[j]}<sup style="font-size:9px;">추가</sup></span> `;
+                }
             }
+        }
+
+        // 전체가 띄어쓰기 오류만인 경우: 1점 감점
+        if (isSpacingOnlyError) {
+            contentPenalty += 1;
+            details.push('띄어쓰기 오류 (-1점, 내용은 정확)');
         }
     }
 
-    // ── 최종 감점 (문제당 최대 5점) ─────────────────────────────────
+    // ── 최종 감점 ────────────────────────────────────────────────────
     const totalRaw = penalty + contentPenalty;
     const capped   = Math.min(totalRaw, 5);
     testTotalPenalty += capped;
     isCurrentChecked = true;
 
-    // ── 감점 사유 목록 ────────────────────────────────────────────────
+    // ── 감점 상세 ────────────────────────────────────────────────────
     const detailsHTML = details.length > 0
         ? `<div style="font-size:11px; color:#555; margin-top:8px; line-height:1.9; padding:8px 10px; background:rgba(0,0,0,0.03); border-radius:8px;">
             <b style="font-size:11px;">감점 상세</b><br>
@@ -197,15 +237,14 @@ window.runCheck = () => {
            </div>`
         : '';
 
-    // ── 결과 카드 ─────────────────────────────────────────────────────
+    // ── 결과 카드 ────────────────────────────────────────────────────
     const isPerfect  = capped === 0;
     const bgColor    = isPerfect ? '#f0fdf4' : '#fef2f2';
     const bdColor    = isPerfect ? '#bbf7d0' : '#fee2e2';
     const scoreColor = isPerfect ? '#16a34a' : '#ef4444';
     const scoreMsg   = isPerfect ? '완벽합니다!' : `이번 감점: -${capped}점`;
 
-    const resultView = document.getElementById('test-result-view');
-    resultView.innerHTML = `
+    document.getElementById('test-result-view').innerHTML = `
         <div style="background:${bgColor}; padding:15px; border-radius:15px; border:1px solid ${bdColor}; margin-top:15px; text-align:left; font-size:14px;">
 
             <b style="color:${scoreColor}; font-size:16px;">${scoreMsg}</b>
@@ -222,14 +261,14 @@ window.runCheck = () => {
 
             <div style="margin-top:12px;">
                 <span style="font-size:12px; color:#888;">본문 분석</span><br>
-                <div style="margin-top:6px; line-height:2.2; word-break:keep-all;">
+                <div style="margin-top:6px; line-height:2.4; word-break:keep-all;">
                     ${resultHTML}
                 </div>
             </div>
 
-            <div style="margin-top:8px; font-size:11px; color:#999; display:flex; flex-wrap:wrap; gap:8px;">
+            <div style="margin-top:8px; font-size:11px; color:#888; display:flex; flex-wrap:wrap; gap:10px;">
                 <span><span style="color:#16a34a;">●</span> 정답</span>
-                <span><span style="color:#d97706;">●</span> 순서↕ (-1점/쌍)</span>
+                <span><span style="color:#d97706;">●</span> 순서↕·띄어쓰기 (-1점)</span>
                 <span><span style="color:#ef4444;">●</span> 누락 (-1점/개)</span>
                 <span><span style="color:#7c3aed;">●</span> 불필요 (-1점/개)</span>
             </div>
@@ -241,7 +280,7 @@ window.runCheck = () => {
             </div>
         </div>
     `;
-    resultView.style.display = 'block';
+    document.getElementById('test-result-view').style.display = 'block';
     updateStatus();
 };
 
