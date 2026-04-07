@@ -214,8 +214,7 @@ window.runCheck = () => {
         const isSpacingOnly = oSyl.join('') === iSyl.join('');
 
         if (isSpacingOnly) {
-            contentPenalty += 1;
-            details.push('띄어쓰기 오류 (-1점, 내용은 정확)');
+            // 띄어쓰기는 채점 기준에서 제외 — 감점 없음, 참고 표시만
             resultHTML = origWords.map((w, i) =>
                 oM[i] !== -1
                     ? `<span style="color:#16a34a;">${w}</span>`
@@ -281,7 +280,8 @@ window.runCheck = () => {
                 <div style="font-size:11px; color:#aaa; margin-top:2px;">
                     <span style="color:#16a34a;">●</span> 정답 &nbsp;
                     <span style="color:#ef4444;">●</span> 오기입(<s>입력</s>→정답) / 누락(___→정답) &nbsp;
-                    <span style="color:#7c3aed;">●</span> 추가(<s>입력</s>[추가])
+                    <span style="color:#7c3aed;">●</span> 추가(<s>입력</s>[추가]) &nbsp;
+                    <span style="color:#d97706;">●</span> 띄어쓰기 (감점없음)
                 </div>
                 <div style="margin-top:8px; line-height:2.4; word-break:keep-all; font-size:15px;">
                     ${resultHTML}
