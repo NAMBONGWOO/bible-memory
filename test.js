@@ -42,27 +42,25 @@ function updateStatus() {
     if (score) score.innerText = `누적 감점: ${testTotalPenalty}`;
 }
 
-// ─── [유틸] 구두점·공백 제거 → 음절 문자열 ──────────────────────────────
-function toSyl(text) {
-    return text.replace(/[.,·?!"'()\[\]]/g, '').replace(/\s+/g, '');
+// ─── [유틸] 구두점·공백 제거 → 순수 음절 문자열 ─────────────────────────
+function toSyl(t) {
+    return t.replace(/[.,·?!"'()\[\]]/g, '').replace(/\s+/g, '');
 }
 
-// ─── [유틸] 음절 단위 LCS 매칭 ──────────────────────────────────────────
-// 띄어쓰기를 완전히 무시하고 음절 내용만으로 비교
-function sylLCS(origSyl, inputSyl) {
-    const n = origSyl.length, m = inputSyl.length;
+// ─── [유틸] 음절 단위 LCS ───────────────────────────────────────────────
+// 띄어쓰기를 완전히 제거한 음절 문자열로 LCS → 띄어쓰기 무관 비교
+function sylLCS(oSyl, iSyl) {
+    const n = oSyl.length, m = iSyl.length;
     const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
     for (let i = 1; i <= n; i++)
         for (let j = 1; j <= m; j++)
-            dp[i][j] = origSyl[i-1] === inputSyl[j-1]
+            dp[i][j] = oSyl[i-1] === iSyl[j-1]
                 ? dp[i-1][j-1] + 1
                 : Math.max(dp[i-1][j], dp[i][j-1]);
-
-    const oM = new Array(n).fill(-1);
-    const iM = new Array(m).fill(-1);
+    const oM = new Array(n).fill(-1), iM = new Array(m).fill(-1);
     let i = n, j = m;
     while (i > 0 && j > 0) {
-        if (origSyl[i-1] === inputSyl[j-1]) { oM[i-1] = j-1; iM[j-1] = i-1; i--; j--; }
+        if (oSyl[i-1] === iSyl[j-1]) { oM[i-1]=j-1; iM[j-1]=i-1; i--; j--; }
         else if (dp[i-1][j] >= dp[i][j-1]) i--;
         else j--;
     }
@@ -71,96 +69,152 @@ function sylLCS(origSyl, inputSyl) {
 
 // ─── [유틸] 어절별 음절 범위 계산 ───────────────────────────────────────
 function getWordRanges(words) {
-    const ranges = [];
-    let pos = 0;
+    const r = []; let p = 0;
     words.forEach(w => {
         const s = toSyl(w);
-        if (s.length > 0) {
-            ranges.push({ word: w, start: pos, end: pos + s.length - 1 });
-            pos += s.length;
-        }
+        if (s.length > 0) { r.push({ word: w, start: p, end: p + s.length - 1 }); p += s.length; }
     });
-    return ranges;
+    return r;
 }
 
-// ─── [유틸] 어절별 채점 결과 생성 ───────────────────────────────────────
-// 채점 기준:
-//   correct : 어절의 모든 음절이 순서대로 매칭됨
-//   missing : 어절의 음절이 하나도 매칭 안됨 (누락)
-//   wrong   : 일부만 매칭 (오기입) → 입력한 내용 표시
-//   extra   : 정답에 없는 추가 입력 어절
-// ※ 띄어쓰기는 음절 변환 시 완전히 제거되므로 채점에 영향 없음
-function gradeWords(origWords, inputWords, oM, iM, inputSyl) {
-    const origRanges  = getWordRanges(origWords);
-    const inputRanges = getWordRanges(inputWords);
-    const result      = [];
+// ─── [유틸] 채점 토큰 생성 ──────────────────────────────────────────────
+// 토큰 타입:
+//   correct : 정답 어절
+//   wrong   : 오기입 (입력한 내용 → 정답)
+//   missing : 누락
+//   partial : 부분 오기입 (어절 일부만 틀림)
+//   extra   : 끼워넣기 (정답에 없는 음절/단어)
+function buildTokens(origWords, oSyl, iSyl, oM, iM) {
+    const origRanges = getWordRanges(origWords);
+    const usedJ = new Set();
+    const tokens = [];
 
-    origRanges.forEach(({ word, start, end }) => {
-        const sylLen    = end - start + 1;
-        const matchedJ  = [];
-        for (let i = start; i <= end; i++) {
-            if (oM[i] !== -1) matchedJ.push(oM[i]);
+    // 어절 wi의 앞 경계(이전 어절 마지막 매칭 j)
+    function prevLastJ(wi) {
+        for (let k = wi - 1; k >= 0; k--) {
+            const r = origRanges[k];
+            for (let i = r.end; i >= r.start; i--) if (oM[i] !== -1) return oM[i];
+        }
+        return -1;
+    }
+    // 어절 wi의 뒤 경계(다음 어절 첫 매칭 j)
+    function nextFirstJ(wi) {
+        for (let k = wi + 1; k < origRanges.length; k++) {
+            const r = origRanges[k];
+            for (let i = r.start; i <= r.end; i++) if (oM[i] !== -1) return oM[i];
+        }
+        return iSyl.length;
+    }
+
+    origRanges.forEach(({ word, start, end }, wi) => {
+        const sylLen   = end - start + 1;
+        const matchedJ = [];
+        for (let i = start; i <= end; i++) if (oM[i] !== -1) matchedJ.push(oM[i]);
+
+        const pLJ      = prevLastJ(wi);
+        const nFJ      = nextFirstJ(wi);
+        const myFirstJ = matchedJ.length > 0 ? Math.min(...matchedJ) : nFJ;
+        const myLastJ  = matchedJ.length > 0 ? Math.max(...matchedJ) : pLJ;
+
+        // 이 어절 앞 끼워넣기 (이전 어절 마지막 ~ 이 어절 첫 매칭 사이)
+        for (let j = pLJ + 1; j < myFirstJ; j++) {
+            if (iM[j] === -1 && !usedJ.has(j)) {
+                tokens.push({ type: 'extra', syls: iSyl[j] });
+                usedJ.add(j);
+            }
         }
 
         if (matchedJ.length === sylLen) {
-            // ✅ 전체 음절 매칭 → 정답
-            result.push({ type: 'correct', word });
+            // ✅ 완전 정답
+            matchedJ.forEach(j => usedJ.add(j));
+            tokens.push({ type: 'correct', word });
 
         } else if (matchedJ.length === 0) {
-            // ⬜ 하나도 매칭 안됨 → 누락
-            result.push({ type: 'missing', word });
+            // 이 어절 범위 안의 미매칭 입력 확인
+            const wrongSyls = [];
+            for (let j = pLJ + 1; j < nFJ; j++) {
+                if (iM[j] === -1 && !usedJ.has(j)) { wrongSyls.push(iSyl[j]); usedJ.add(j); }
+            }
+            if (wrongSyls.length > 0) {
+                // ❌ 완전 오기입
+                tokens.push({ type: 'wrong', word, inputStr: wrongSyls.join('') });
+            } else {
+                // ⬜ 누락
+                tokens.push({ type: 'missing', word });
+            }
 
         } else {
-            // ❌ 일부 매칭 → 오기입: 입력에서 해당 범위 어절 복원
-            const minJ = Math.min(...matchedJ);
-            const maxJ = Math.max(...matchedJ);
-            const coveredWords = inputRanges
-                .filter(r => r.start <= maxJ && r.end >= minJ)
-                .map(r => r.word);
-            result.push({ type: 'wrong', word, inputStr: coveredWords.join(' ') || '?' });
+            // ⚠️ 부분 매칭: 어절 내 일부 음절만 다름
+            // 입력에서 이 어절 범위에 해당하는 음절 추출
+            const inputSlice = [];
+            for (let j = pLJ + 1; j <= myLastJ; j++) {
+                if ((iM[j] >= start && iM[j] <= end) ||
+                    (iM[j] === -1 && !usedJ.has(j))) {
+                    inputSlice.push(iSyl[j]);
+                    if (iM[j] === -1) usedJ.add(j);
+                }
+            }
+            matchedJ.forEach(j => usedJ.add(j));
+            // 미매칭 정답 음절 (오기입된 자리)
+            const missedSyls = [];
+            for (let i = start; i <= end; i++) if (oM[i] === -1) missedSyls.push(oSyl[i]);
+            tokens.push({ type: 'partial', word, inputSlice: inputSlice.join(''), missedSyls: missedSyls.join('') });
         }
     });
 
-    // ➕ 정답에 매칭되지 않은 입력 어절 → 추가
-    const extraWords = inputRanges.filter(r => {
-        for (let j = r.start; j <= r.end; j++) {
-            if (iM[j] !== -1) return false;
-        }
-        return true;
-    }).map(r => r.word);
-
-    if (extraWords.length > 0) {
-        result.push({ type: 'extra', words: extraWords });
+    // 마지막 어절 이후 끼워넣기
+    const lastR = origRanges[origRanges.length - 1];
+    let lastJ = -1;
+    for (let i = lastR.start; i <= lastR.end; i++) if (oM[i] !== -1) lastJ = oM[i];
+    for (let j = lastJ + 1; j < iSyl.length; j++) {
+        if (iM[j] === -1 && !usedJ.has(j)) tokens.push({ type: 'extra', syls: iSyl[j] });
     }
 
-    return result;
+    return tokens;
 }
 
-// ─── [유틸] 채점 결과 → HTML ────────────────────────────────────────────
-function renderGrades(grades) {
-    return grades.map(g => {
-        switch (g.type) {
+// ─── [유틸] 토큰 → HTML ─────────────────────────────────────────────────
+function renderTokens(tokens) {
+    // 연속 extra 합치기
+    const merged = [];
+    tokens.forEach(t => {
+        if (t.type === 'extra' && merged.length > 0 && merged[merged.length-1].type === 'extra') {
+            merged[merged.length-1].syls += t.syls;
+        } else {
+            merged.push({ ...t });
+        }
+    });
+
+    return merged.map(t => {
+        switch (t.type) {
             case 'correct':
-                return `<span style="color:#16a34a;">${g.word}</span>`;
+                return `<span style="color:#16a34a;">${t.word}</span>`;
 
             case 'wrong':
                 return `<span style="color:#ef4444;">` +
-                    `<s style="opacity:0.65;">${g.inputStr}</s>` +
+                    `<s style="opacity:0.65;">${t.inputStr}</s>` +
                     `<sup style="font-size:10px; margin:0 2px;">→</sup>` +
-                    `<b>${g.word}</b></span>`;
+                    `<b>${t.word}</b></span>`;
 
             case 'missing':
                 return `<span style="color:#ef4444;">` +
                     `<span style="border-bottom:2px solid #ef4444; padding:0 3px; letter-spacing:2px;">___</span>` +
                     `<sup style="font-size:10px; margin:0 2px;">→</sup>` +
-                    `<b>${g.word}</b></span>`;
+                    `<b>${t.word}</b></span>`;
+
+            case 'partial':
+                // 부분 오기입: 입력 취소선 → 정답 + 오기입 음절 표시
+                return `<span style="color:#ef4444;">` +
+                    `<s style="opacity:0.65;">${t.inputSlice}</s>` +
+                    `<sup style="font-size:10px; margin:0 2px;">→</sup>` +
+                    `<b>${t.word}</b>` +
+                    `<sup style="font-size:9px; color:#f59e0b; margin-left:2px;">[오기입:${t.missedSyls}]</sup>` +
+                    `</span>`;
 
             case 'extra':
-                return g.words.map(w =>
-                    `<span style="color:#7c3aed;">` +
-                    `<s style="opacity:0.65;">${w}</s>` +
-                    `<sup style="font-size:10px; margin:0 2px;">[추가]</sup></span>`
-                ).join(' ');
+                return `<span style="color:#7c3aed;">` +
+                    `<s style="opacity:0.65;">${t.syls}</s>` +
+                    `<sup style="font-size:10px; margin:0 2px;">[추가]</sup></span>`;
 
             default: return '';
         }
@@ -182,7 +236,7 @@ window.runCheck = () => {
     let penalty = 0;
     let details = [];
 
-    // ── 제목 채점: 음절 기준 비교 ─────────────────────────────────────
+    // ── 제목 채점 (음절 기준, 띄어쓰기 무관) ─────────────────────────
     const themeOk = toSyl(themeInput) === toSyl(v.theme);
     if (!themeOk) { penalty += 1; details.push('제목 오류 (-1점)'); }
 
@@ -191,7 +245,6 @@ window.runCheck = () => {
     let resultHTML     = '';
 
     if (inputWords.length === 0) {
-        // 미입력
         contentPenalty = 5;
         resultHTML = origWords.map(w =>
             `<span style="color:#ef4444;">` +
@@ -201,29 +254,29 @@ window.runCheck = () => {
         details.push('본문 미입력 (-5점 상한)');
 
     } else {
-        // 음절 단위 LCS (띄어쓰기 완전 무시)
-        const origSyl  = toSyl(v.content).split('');
-        const inputSyl = toSyl(contentInput).split('');
-        const { oM, iM } = sylLCS(origSyl, inputSyl);
+        const oSyl = toSyl(v.content).split('');
+        const iSyl = toSyl(contentInput).split('');
+        const { oM, iM } = sylLCS(oSyl, iSyl);
+        const tokens = buildTokens(origWords, oSyl, iSyl, oM, iM);
+        resultHTML   = renderTokens(tokens);
 
-        const grades = gradeWords(origWords, inputWords, oM, iM, inputSyl);
-        resultHTML   = renderGrades(grades);
-
-        // 감점 계산
-        grades.forEach(g => {
-            if (g.type === 'wrong') {
+        // 감점 집계
+        tokens.forEach(t => {
+            if (t.type === 'wrong') {
                 contentPenalty += 1;
-                details.push(`'${g.word}' 자리 오기입 (-1점)`);
+                details.push(`'${t.word}' 오기입 (-1점)`);
             }
-            if (g.type === 'missing') {
+            if (t.type === 'missing') {
                 contentPenalty += 1;
-                details.push(`'${g.word}' 누락 (-1점)`);
+                details.push(`'${t.word}' 누락 (-1점)`);
             }
-            if (g.type === 'extra') {
-                g.words.forEach(w => {
-                    contentPenalty += 1;
-                    details.push(`'${w}' 불필요한 단어 (-1점)`);
-                });
+            if (t.type === 'partial') {
+                contentPenalty += 1;
+                details.push(`'${t.word}' 부분 오기입[${t.missedSyls}] (-1점)`);
+            }
+            if (t.type === 'extra') {
+                contentPenalty += 1;
+                details.push(`'${t.syls}' 끼워넣기 (-1점)`);
             }
         });
     }
@@ -274,8 +327,8 @@ window.runCheck = () => {
                 <div style="font-size:11px; color:#aaa; margin-top:2px; display:flex; flex-wrap:wrap; gap:8px;">
                     <span><span style="color:#16a34a;">●</span> 정답</span>
                     <span><span style="color:#ef4444;">●</span> 오기입(<s>입력</s>→정답) / 누락(___→정답)</span>
-                    <span><span style="color:#7c3aed;">●</span> 불필요한 단어</span>
-                    <span style="color:#aaa;">※ 띄어쓰기 무관</span>
+                    <span><span style="color:#7c3aed;">●</span> 끼워넣기(<s>추가음절</s>[추가])</span>
+                    <span style="color:#bbb;">※ 띄어쓰기 무관</span>
                 </div>
                 <div style="margin-top:8px; line-height:2.6; word-break:keep-all; font-size:15px;">
                     ${resultHTML}
