@@ -183,3 +183,41 @@ body {
     display: block;
     min-height: 14px;
 }
+
+/* [요청#1] 데이터 목록 select 옵션 줄바꿈 방지 */
+#data-select {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#data-select option {
+    white-space: nowrap;
+}
+
+/* [요청#4] 반투명 좌우 스와이프 화살표 */
+.swipe-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.55);
+    color: var(--dark-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    font-weight: bold;
+    line-height: 1;
+    z-index: 10;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: opacity 0.2s ease;
+}
+.swipe-arrow:active { background: rgba(255,255,255,0.85); }
+
+/* 카드가 드래그 중일 때 전환 애니메이션 없이 손가락을 따라가도록 */
+#main-card.dragging { transition: none; }
+#main-card { transition: transform 0.2s ease; }
