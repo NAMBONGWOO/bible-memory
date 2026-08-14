@@ -3,7 +3,8 @@ import {
     getAuth,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
-    signOut
+    signOut,
+    sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 import {
     getFirestore,
@@ -166,4 +167,48 @@ window.closeSignupModal = () => {
         if (el) el.innerText = '';
     });
     window.isNickValid = false;
+};
+
+// ─── 비밀번호 재설정 ─────────────────────────────────────────────────────
+window.openResetModal = () => {
+    document.getElementById('login-card').style.display = 'none';
+    document.getElementById('reset-card').style.display = 'flex';
+    document.getElementById('reset-email').value = '';
+    document.getElementById('reset-msg').innerText = '';
+};
+
+window.closeResetModal = () => {
+    document.getElementById('reset-card').style.display = 'none';
+    const loginCard = document.getElementById('login-card');
+    loginCard.style.display = 'flex';
+    loginCard.style.flexDirection = 'column';
+    document.getElementById('reset-email').value = '';
+    document.getElementById('reset-msg').innerText = '';
+};
+
+window.handleResetPassword = async () => {
+    const email = document.getElementById('reset-email').value.trim();
+    const msg   = document.getElementById('reset-msg');
+
+    if (!email) {
+        msg.innerText = '이메일을 입력해주세요.';
+        msg.style.color = 'red';
+        return;
+    }
+
+    try {
+        await sendPasswordResetEmail(auth, email);
+        msg.innerText = '✓ 재설정 메일을 보냈습니다. 메일함을 확인해주세요.';
+        msg.style.color = 'green';
+        // 3초 후 로그인 화면으로 자동 복귀
+        setTimeout(() => window.closeResetModal(), 3000);
+    } catch (e) {
+        const errMsg = e.code === 'auth/user-not-found'
+            ? '등록되지 않은 이메일입니다.'
+            : e.code === 'auth/invalid-email'
+            ? '올바른 이메일 형식이 아닙니다.'
+            : '오류가 발생했습니다. 다시 시도해주세요.';
+        msg.innerText = errMsg;
+        msg.style.color = 'red';
+    }
 };
