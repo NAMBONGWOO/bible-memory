@@ -261,6 +261,12 @@ window.runCheck = () => {
     testTotalPenalty += capped;
     isCurrentChecked  = true;
 
+    // ── 암송 기록 저장 (실패해도 채점 결과에는 영향 없음) ─────────────
+    if (window.logTestResult) {
+        const courseFile = document.getElementById('data-select')?.value || '';
+        window.logTestResult(v, capped, courseFile);
+    }
+
     // ── 감점 상세 ────────────────────────────────────────────────────
     const detailsHTML = details.length>0
         ? `<div style="font-size:11px; color:#555; margin-top:8px; line-height:1.9;

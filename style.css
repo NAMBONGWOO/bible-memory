@@ -221,3 +221,128 @@ body {
 /* 카드가 드래그 중일 때 전환 애니메이션 없이 손가락을 따라가도록 */
 #main-card.dragging { transition: none; }
 #main-card { transition: transform 0.2s ease; }
+
+/* ═══════════════════════════════════════════
+   암송 기록 화면
+   ═══════════════════════════════════════════ */
+#records-screen { min-height: 100vh; background: #f8fafc; }
+
+.records-tabs {
+    display: flex;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 60px;
+    z-index: 90;
+}
+.records-tab {
+    flex: 1;
+    text-align: center;
+    padding: 14px 0;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #94a3b8;
+    border-bottom: 2.5px solid transparent;
+    cursor: pointer;
+}
+.records-tab.active {
+    color: var(--main-blue);
+    border-bottom-color: var(--main-blue);
+}
+
+/* 진도율 카드 */
+.progress-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+.progress-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+.progress-title { font-size: 14px; font-weight: bold; color: #1e293b; }
+.progress-pct { font-size: 22px; font-weight: bold; color: var(--main-blue); }
+
+.course-progress-row { margin-bottom: 14px; }
+.course-progress-row:last-child { margin-bottom: 0; }
+.cp-label { display: flex; justify-content: space-between; font-size: 12.5px; color: #475569; margin-bottom: 6px; }
+.cp-bar-bg { height: 8px; background: #f1f5f9; border-radius: 20px; overflow: hidden; }
+.cp-bar-fill { height: 100%; background: linear-gradient(90deg, var(--main-blue), var(--dark-blue)); border-radius: 20px; }
+
+/* 요약 통계 */
+.stat-grid { display: flex; gap: 10px; }
+.stat-box {
+    flex: 1;
+    background: white;
+    border-radius: 14px;
+    padding: 14px 8px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+.stat-num { font-size: 19px; font-weight: bold; color: #1e293b; }
+.stat-label { font-size: 10px; color: #94a3b8; margin-top: 4px; }
+
+/* 감점 추이 그래프 */
+.chart-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+.chart-title { font-size: 14px; font-weight: bold; color: #1e293b; margin-bottom: 4px; }
+.chart-sub { font-size: 11.5px; color: #94a3b8; margin-bottom: 16px; }
+.chart-area {
+    height: 120px;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 0 4px;
+}
+.bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.bar {
+    width: 100%;
+    border-radius: 6px 6px 2px 2px;
+    background: linear-gradient(180deg, #7dd3fc, var(--main-blue));
+    min-height: 4px;
+}
+.bar-label { font-size: 10px; color: #cbd5e1; }
+.bar-value { font-size: 10px; color: #64748b; font-weight: 600; }
+
+/* 오답 노트 */
+.section-label {
+    font-size: 12.5px;
+    font-weight: bold;
+    color: #64748b;
+    margin: 4px 0 10px 2px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.practice-wrong-btn {
+    font-size: 11.5px;
+    background: var(--main-blue);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 600;
+}
+.wrong-item {
+    background: white;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+}
+.wrong-item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.wrong-ref { font-size: 12px; color: var(--main-blue); font-weight: bold; }
+.wrong-count-badge {
+    font-size: 10.5px;
+    background: #fee2e2;
+    color: #dc2626;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+.wrong-theme { font-size: 14px; color: #1e293b; font-weight: 500; margin-bottom: 4px; }
+.wrong-last-date { font-size: 10.5px; color: #cbd5e1; }
