@@ -158,7 +158,7 @@ window.openRecordsScreen = async () => {
 
 window.closeRecordsScreen = () => {
     document.getElementById('records-screen').style.display = 'none';
-    document.getElementById('app-main-view').style.display = 'block';
+    document.getElementById('app-main-view').style.display = 'flex';
 };
 
 // ─── 탭 전환 ─────────────────────────────────────────────────────────────

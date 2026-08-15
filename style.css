@@ -197,6 +197,20 @@ body {
     height: 18px;
 }
 
+/* [요청] 코스 전체선택/해제 버튼 */
+.course-bulk-btn {
+    flex: 1;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 8px 0;
+    border-radius: 8px;
+    border: 1px solid var(--main-blue);
+    background: white;
+    color: var(--main-blue);
+    cursor: pointer;
+}
+.course-bulk-btn:active { background: #e0f2fe; }
+
 /* [버그 수정] 비밀번호/닉네임 피드백 메시지 */
 .check-msg {
     font-size: 11px;

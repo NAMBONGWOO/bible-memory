@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=9">
+    <link rel="stylesheet" href="style.css?v=10">
 </head>
 <body>
 
@@ -280,6 +280,11 @@
         <div id="course-edit-overlay" class="settings-modal-overlay" style="display:none;">
             <div class="settings-modal">
                 <h3 style="margin-top:0; color:var(--main-blue);">암송 코스 관리</h3>
+                <!-- [요청] 전체선택/해제 -->
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <button class="course-bulk-btn" onclick="toggleAllCourses(true)">전체선택</button>
+                    <button class="course-bulk-btn" onclick="toggleAllCourses(false)">전체해제</button>
+                </div>
                 <div id="course-edit-checkboxes" style="background:#f1f5f9; padding:10px; border-radius:10px; max-height:280px; overflow-y:auto; text-align:left; margin-bottom:15px;"></div>
                 <button class="btn primary-btn" onclick="saveCourseEdit()">저장</button>
                 <button class="btn" style="background:#eee; color:#333;" onclick="closeCourseEdit()">취소</button>
@@ -303,12 +308,12 @@
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js?v=9"></script>
-    <script src="test.js?v=9"></script>
-    <script type="module" src="auth.js?v=9"></script>
-    <script type="module" src="records.js?v=9"></script>
-    <script type="module" src="settings.js?v=9"></script>
-    <script type="module" src="app.js?v=9"></script>
+    <script src="practice.js?v=10"></script>
+    <script src="test.js?v=10"></script>
+    <script type="module" src="auth.js?v=10"></script>
+    <script type="module" src="records.js?v=10"></script>
+    <script type="module" src="settings.js?v=10"></script>
+    <script type="module" src="app.js?v=10"></script>
 
 </body>
 </html>

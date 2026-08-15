@@ -20,7 +20,7 @@ window.openSettingsScreen = async () => {
 
 window.closeSettingsScreen = () => {
     document.getElementById('settings-screen').style.display = 'none';
-    document.getElementById('app-main-view').style.display = 'block';
+    document.getElementById('app-main-view').style.display = 'flex';
 };
 
 // ─── 현재 사용자 데이터 로드 & 화면 채우기 ───────────────────────────────
@@ -200,6 +200,13 @@ window.openCourseEdit = async () => {
 
 window.closeCourseEdit = () => {
     document.getElementById('course-edit-overlay').style.display = 'none';
+};
+
+// [요청] 코스 전체선택/해제
+window.toggleAllCourses = (checked) => {
+    document.querySelectorAll('input[name="course-edit"]').forEach(cb => {
+        cb.checked = checked;
+    });
 };
 
 window.saveCourseEdit = async () => {
