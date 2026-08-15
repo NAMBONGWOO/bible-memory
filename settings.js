@@ -44,19 +44,19 @@ async function loadSettingsData() {
     applyFontSizeSelection(savedSize);
 }
 
+// [요청] 알약 태그 나열 대신 개수 요약만 표시 — 실제 변경은 코스 관리 모달에서
 async function renderCourseTags(selectedCourses) {
-    const wrap = document.getElementById('settings-course-tags');
-    if (!wrap) return;
+    const sub = document.getElementById('settings-course-sub');
+    if (!sub) return;
     try {
         const res = await fetch('data/config.json');
         const allCourses = await res.json();
         const userCourses = allCourses.filter(c => selectedCourses.includes(c.file));
-        wrap.innerHTML = userCourses.length > 0
-            ? userCourses.map(c => `<span class="course-tag">${c.name}</span>`).join('')
-            : '<span style="font-size:12px; color:#94a3b8;">선택된 코스가 없습니다.</span>';
-        document.getElementById('settings-course-sub').innerText = `${userCourses.length}개 코스 진행 중`;
+        sub.innerText = userCourses.length > 0
+            ? `${userCourses.length}개 코스 진행 중`
+            : '선택된 코스가 없습니다';
     } catch (e) {
-        wrap.innerHTML = '<span style="font-size:12px; color:#94a3b8;">코스 정보를 불러올 수 없습니다.</span>';
+        sub.innerText = '코스 정보를 불러올 수 없습니다';
     }
 }
 
