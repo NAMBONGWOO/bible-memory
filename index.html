@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
 
@@ -92,6 +92,9 @@
             <div style="margin-top:30px; font-size:11px; color:#999; font-weight:bold;">데이터 세트 선택</div>
             <!-- [개선] 내 코스 목록 -->
             <select id="data-select" class="test-input" onchange="loadData(this.value); toggleMenu();" style="margin-top:5px; height:40px; white-space:nowrap; text-overflow:ellipsis;"></select>
+
+            <div style="flex:1;"></div>
+            <div class="menu-item" style="padding:15px 0; border-top:1px solid #eee; cursor:pointer; color:#888; font-size:14px;" onclick="openSettingsScreen()">⚙️ 설정</div>
         </div>
 
         <main class="main-content" id="app-main-view">
@@ -165,14 +168,145 @@
 
             <div id="records-body" style="padding:16px; max-width:450px; margin:0 auto;"></div>
         </div>
+
+        <!-- ④ 개인설정 화면 -->
+        <div id="settings-screen" style="display:none; width:100%;">
+            <header class="top-bar" style="position:sticky; top:0;">
+                <button onclick="closeSettingsScreen()" style="background:none; border:none; color:white; font-size:22px; cursor:pointer;">‹</button>
+                <div style="font-weight:bold;">개인설정</div>
+                <div style="width:22px;"></div>
+            </header>
+
+            <!-- 프로필 헤더 -->
+            <div class="settings-profile-header">
+                <div class="settings-avatar" id="settings-avatar">?</div>
+                <div class="settings-profile-info">
+                    <div class="settings-profile-nick" id="settings-nickname">닉네임</div>
+                    <div class="settings-profile-email" id="settings-email">이메일</div>
+                </div>
+                <button class="settings-edit-btn" onclick="openNicknameEdit()">닉네임 변경</button>
+            </div>
+
+            <!-- 계정 섹션 -->
+            <div class="settings-section">
+                <div class="settings-section-title">계정</div>
+
+                <div class="settings-row" onclick="openPasswordEdit()">
+                    <div class="settings-row-left">
+                        <div class="settings-row-icon icon-blue">🔒</div>
+                        <div class="settings-row-label">비밀번호 변경</div>
+                    </div>
+                    <div class="settings-chevron">›</div>
+                </div>
+
+                <div class="settings-row" onclick="openCourseEdit()">
+                    <div class="settings-row-left">
+                        <div class="settings-row-icon icon-purple">📖</div>
+                        <div>
+                            <div class="settings-row-label">암송 코스 관리</div>
+                            <div class="settings-row-sub" id="settings-course-sub">코스 정보 불러오는 중</div>
+                        </div>
+                    </div>
+                    <div class="settings-chevron">›</div>
+                </div>
+                <div class="settings-course-tags" id="settings-course-tags"></div>
+            </div>
+
+            <!-- 화면 설정 섹션 -->
+            <div class="settings-section">
+                <div class="settings-section-title">화면 설정</div>
+                <div class="settings-row" style="border-bottom:none; cursor:default;">
+                    <div class="settings-row-left">
+                        <div class="settings-row-icon icon-green">Aa</div>
+                        <div class="settings-row-label">본문 글자 크기</div>
+                    </div>
+                </div>
+                <div class="font-size-options">
+                    <div class="font-opt" data-size="small" onclick="setFontSizePref('small')">작게</div>
+                    <div class="font-opt selected" data-size="medium" onclick="setFontSizePref('medium')">보통</div>
+                    <div class="font-opt" data-size="large" onclick="setFontSizePref('large')">크게</div>
+                </div>
+            </div>
+
+            <!-- 계정 관리 섹션 -->
+            <div class="settings-section">
+                <div class="settings-section-title">계정 관리</div>
+                <div class="settings-row danger-row" onclick="handleLogoutFromSettings()">
+                    <div class="settings-row-left">
+                        <div class="settings-row-icon icon-red">🚪</div>
+                        <div class="settings-row-label">로그아웃</div>
+                    </div>
+                </div>
+                <div class="settings-row danger-row" onclick="openDeleteAccountConfirm()">
+                    <div class="settings-row-left">
+                        <div class="settings-row-icon icon-red">🗑️</div>
+                        <div class="settings-row-label">계정 삭제</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-version">성경암송 매니저 v1.0</div>
+        </div>
+
+        <!-- ── 개인설정 관련 오버레이 모달들 ─────────────────────────── -->
+
+        <!-- 닉네임 변경 -->
+        <div id="nickname-edit-overlay" class="settings-modal-overlay" style="display:none;">
+            <div class="settings-modal">
+                <h3 style="margin-top:0; color:var(--main-blue);">닉네임 변경</h3>
+                <input type="text" id="nickname-edit-input" class="test-input" placeholder="새 닉네임 (2자 이상)">
+                <span id="nickname-edit-msg" class="check-msg"></span>
+                <button class="btn primary-btn" onclick="saveNicknameEdit()">저장</button>
+                <button class="btn" style="background:#eee; color:#333;" onclick="closeNicknameEdit()">취소</button>
+            </div>
+        </div>
+
+        <!-- 비밀번호 변경 -->
+        <div id="password-edit-overlay" class="settings-modal-overlay" style="display:none;">
+            <div class="settings-modal">
+                <h3 style="margin-top:0; color:var(--main-blue);">비밀번호 변경</h3>
+                <input type="password" id="pw-edit-current" class="test-input" placeholder="현재 비밀번호">
+                <input type="password" id="pw-edit-new" class="test-input" placeholder="새 비밀번호 (6자 이상)">
+                <input type="password" id="pw-edit-confirm" class="test-input" placeholder="새 비밀번호 확인">
+                <span id="pw-edit-msg" class="check-msg"></span>
+                <button class="btn primary-btn" onclick="savePasswordEdit()">변경하기</button>
+                <button class="btn" style="background:#eee; color:#333;" onclick="closePasswordEdit()">취소</button>
+            </div>
+        </div>
+
+        <!-- 암송 코스 관리 -->
+        <div id="course-edit-overlay" class="settings-modal-overlay" style="display:none;">
+            <div class="settings-modal">
+                <h3 style="margin-top:0; color:var(--main-blue);">암송 코스 관리</h3>
+                <div id="course-edit-checkboxes" style="background:#f1f5f9; padding:10px; border-radius:10px; max-height:280px; overflow-y:auto; text-align:left; margin-bottom:15px;"></div>
+                <button class="btn primary-btn" onclick="saveCourseEdit()">저장</button>
+                <button class="btn" style="background:#eee; color:#333;" onclick="closeCourseEdit()">취소</button>
+            </div>
+        </div>
+
+        <!-- 계정 삭제 확인 -->
+        <div id="delete-account-overlay" class="settings-modal-overlay" style="display:none;">
+            <div class="settings-modal">
+                <h3 style="margin-top:0; color:#ef4444;">계정 삭제</h3>
+                <p style="font-size:13px; color:#666; line-height:1.6;">
+                    이 작업은 되돌릴 수 없습니다. 모든 암송 기록과 계정 정보가 삭제됩니다.<br><br>
+                    계속하려면 아래에 <b>계정삭제</b>를 입력해주세요.
+                </p>
+                <input type="text" id="delete-confirm-input" class="test-input" placeholder="계정삭제">
+                <span id="delete-confirm-msg" class="check-msg"></span>
+                <button class="btn" style="background:#ef4444; color:white;" onclick="confirmDeleteAccount()">영구 삭제</button>
+                <button class="btn" style="background:#eee; color:#333;" onclick="closeDeleteAccountConfirm()">취소</button>
+            </div>
+        </div>
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js?v=6"></script>
-    <script src="test.js?v=6"></script>
-    <script type="module" src="auth.js?v=6"></script>
-    <script type="module" src="records.js?v=6"></script>
-    <script type="module" src="app.js?v=6"></script>
+    <script src="practice.js?v=7"></script>
+    <script src="test.js?v=7"></script>
+    <script type="module" src="auth.js?v=7"></script>
+    <script type="module" src="records.js?v=7"></script>
+    <script type="module" src="settings.js?v=7"></script>
+    <script type="module" src="app.js?v=7"></script>
 
 </body>
 </html>

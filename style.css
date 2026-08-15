@@ -346,3 +346,126 @@ body {
 }
 .wrong-theme { font-size: 14px; color: #1e293b; font-weight: 500; margin-bottom: 4px; }
 .wrong-last-date { font-size: 10.5px; color: #cbd5e1; }
+
+/* ═══════════════════════════════════════════
+   개인설정 화면
+   ═══════════════════════════════════════════ */
+#settings-screen { min-height: 100vh; background: #f8fafc; }
+
+.settings-profile-header {
+    background: white;
+    padding: 24px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 8px solid #f1f5f9;
+}
+.settings-avatar {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--main-blue), var(--dark-blue));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 20px; font-weight: bold;
+    flex-shrink: 0;
+}
+.settings-profile-info { flex: 1; min-width: 0; }
+.settings-profile-nick { font-size: 17px; font-weight: bold; color: #1e293b; margin-bottom: 2px; }
+.settings-profile-email { font-size: 11.5px; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.settings-edit-btn {
+    font-size: 11.5px;
+    color: var(--main-blue);
+    border: 1px solid var(--main-blue);
+    background: white;
+    padding: 6px 11px;
+    border-radius: 20px;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.settings-section {
+    background: white;
+    margin-top: 8px;
+    padding: 4px 0;
+}
+.settings-section-title {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: bold;
+    padding: 16px 20px 8px;
+}
+.settings-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-row:active { background: #f8fafc; }
+.settings-row-left { display: flex; align-items: center; gap: 12px; }
+.settings-row-icon {
+    width: 32px; height: 32px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+.settings-row-icon.icon-blue { background: #e0f2fe; }
+.settings-row-icon.icon-purple { background: #ede9fe; }
+.settings-row-icon.icon-green { background: #dcfce7; }
+.settings-row-icon.icon-red { background: #fee2e2; }
+.settings-row-label { font-size: 14.5px; color: #1e293b; font-weight: 500; }
+.settings-row-sub { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.settings-chevron { color: #cbd5e1; font-size: 16px; }
+.settings-row.danger-row .settings-row-label { color: #ef4444; }
+
+.settings-course-tags { display: flex; flex-wrap: wrap; gap: 6px; padding: 0 20px 16px; }
+
+.font-size-options { display: flex; gap: 8px; padding: 0 20px 16px; }
+.font-opt {
+    flex: 1;
+    text-align: center;
+    padding: 10px 0;
+    border-radius: 10px;
+    border: 1.5px solid #e2e8f0;
+    color: #64748b;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 13px;
+}
+.font-opt.selected {
+    border-color: var(--main-blue);
+    background: #e0f2fe;
+    color: var(--main-blue);
+}
+
+.settings-version {
+    text-align: center;
+    color: #cbd5e1;
+    font-size: 11px;
+    padding: 24px 0 40px;
+}
+
+/* 설정 관련 모달 오버레이 (기존 auth-overlay와 별도, z-index 더 높게) */
+.settings-modal-overlay {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.45);
+    z-index: 6000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+.settings-modal {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    width: 100%;
+    max-width: 360px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    text-align: left;
+}

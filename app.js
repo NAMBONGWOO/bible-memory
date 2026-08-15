@@ -51,7 +51,8 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 // ─── config.json 기반으로 사용자 코스를 select에 채우기 ─────────────────
-async function populateDataSelect(selectedCourses) {
+// [설정 연동] settings.js의 코스 관리 저장 후 즉시 갱신하기 위해 window로 노출
+window.populateDataSelect = async function populateDataSelect(selectedCourses) {
     const sel = document.getElementById('data-select');
     if (!sel) return;
 
@@ -78,7 +79,7 @@ async function populateDataSelect(selectedCourses) {
             .map(f => `<option value="${f}">${f.replace('.json', '')}</option>`)
             .join('');
     }
-}
+};
 
 // ─── 모드 전환: 연습 ↔ 테스트 ────────────────────────────────────────────
 window.setMode = (mode) => {
