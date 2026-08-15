@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=7">
+    <link rel="stylesheet" href="style.css?v=8">
 </head>
 <body>
 
@@ -78,8 +78,8 @@
 
         <header class="top-bar">
             <button onclick="toggleMenu()" style="background:none; border:none; color:white; font-size:30px; cursor:pointer;">≡</button>
-            <div id="mode-title" style="font-weight:bold;">암송 카드 (연습)</div>
-            <button onclick="handleLogout()" style="background:none; border:none; color:white; font-size:12px; cursor:pointer;">로그아웃</button>
+            <div id="mode-title" style="font-weight:bold;">암송 연습</div>
+            <div style="width:30px;"></div>
         </header>
 
         <div class="menu-overlay" id="overlay" onclick="toggleMenu()"></div>
@@ -91,13 +91,16 @@
 
             <div style="margin-top:30px; font-size:11px; color:#999; font-weight:bold;">데이터 세트 선택</div>
             <!-- [개선] 내 코스 목록 -->
-            <select id="data-select" class="test-input" onchange="loadData(this.value); toggleMenu();" style="margin-top:5px; height:40px; white-space:nowrap; text-overflow:ellipsis;"></select>
+            <select id="data-select" class="test-input" onchange="loadData(this.value); syncDataSelects(this.value); toggleMenu();" style="margin-top:5px; height:40px; white-space:nowrap; text-overflow:ellipsis;"></select>
 
             <div style="flex:1;"></div>
             <div class="menu-item" style="padding:15px 0; border-top:1px solid #eee; cursor:pointer; color:#888; font-size:14px;" onclick="openSettingsScreen()">⚙️ 설정</div>
         </div>
 
         <main class="main-content" id="app-main-view">
+            <!-- [요청] 카드 상단에서 데이터 세트를 바로 전환할 수 있는 빠른 선택 -->
+            <select id="quick-data-select" class="quick-select" onchange="loadData(this.value); syncDataSelects(this.value);"></select>
+
             <div id="part-container" style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-bottom:20px; width:90%;"></div>
 
             <div id="status-panel" style="display:none; width:90%; max-width:450px; justify-content:space-between; margin-bottom:10px; color:white; font-size:14px; font-weight:bold;">
@@ -105,20 +108,20 @@
                 <span id="test-total-score">누적 감점: 0</span>
             </div>
 
-            <div id="card-swipe-wrap" style="position:relative; width:90%; max-width:450px;">
+            <div id="card-swipe-wrap" style="position:relative; width:96%; max-width:480px;">
                 <!-- [요청#4] 반투명 좌우 화살표 (연습 모드에서만 표시) -->
                 <div id="swipe-arrow-left" class="swipe-arrow" style="left:-6px;" onclick="prevVerse()">‹</div>
                 <div id="swipe-arrow-right" class="swipe-arrow" style="right:-6px;" onclick="handleNext()">›</div>
 
             <div class="card" id="main-card" style="position:relative; width:100%; max-width:none;">
-                <div id="v-ref" style="font-size:18px; font-weight:bold; color:var(--main-blue); margin-bottom:15px;">장절 정보</div>
+                <div id="v-ref" style="font-size:18px; font-weight:bold; color:var(--main-blue); margin-bottom:15px; text-align:left;">장절 정보</div>
                 <!-- [요청#2] 분류코드를 카드 우측 하단으로 이동 -->
                 <div id="v-id" style="position:absolute; right:16px; bottom:12px; font-size:11px; color:#c0c8d4;">ID</div>
 
                 <!-- 테스트 시작 설정 -->
-                <div id="test-setup" style="display:none;">
+                <div id="test-setup" style="display:none; width:100%; text-align:center; align-self:center;">
                     <p style="color:#333;">테스트할 구절 수를 입력하세요.</p>
-                    <input type="number" id="test-count-input" class="test-input" value="10" style="text-align:center; width:80px; margin-bottom:15px;">
+                    <input type="number" id="test-count-input" class="test-input" value="10" style="text-align:center; width:80px; margin:0 auto 15px;">
                     <button class="btn primary-btn" onclick="startTestSession()">테스트 시작</button>
                 </div>
 
@@ -132,9 +135,9 @@
 
                 <!-- 연습 카드 영역 (클릭 시 본문 토글) -->
                 <!-- [요청#4,5] 스와이프 지원 + 터치 영역 카드 전체로 확대 -->
-                <div id="practice-area" style="cursor:pointer; width:100%; min-height:180px; touch-action:pan-y;">
-                    <div id="v-theme" style="font-size:22px; font-weight:bold; margin-bottom:10px; color:#333;">주제</div>
-                    <div id="v-content" style="font-size:19px; line-height:1.6; display:none; word-break:keep-all; color:#444;">내용</div>
+                <div id="practice-area" style="cursor:pointer; width:100%; min-height:180px; touch-action:pan-y; text-align:left;">
+                    <div id="v-theme" style="font-size:22px; font-weight:bold; margin-bottom:10px; color:#333; text-align:left;">주제</div>
+                    <div id="v-content" style="font-size:19px; line-height:1.7; display:none; word-break:keep-all; color:#444; text-align:left;">내용</div>
                 </div>
             </div>
             </div><!-- /card-swipe-wrap -->
@@ -301,12 +304,12 @@
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js?v=7"></script>
-    <script src="test.js?v=7"></script>
-    <script type="module" src="auth.js?v=7"></script>
-    <script type="module" src="records.js?v=7"></script>
-    <script type="module" src="settings.js?v=7"></script>
-    <script type="module" src="app.js?v=7"></script>
+    <script src="practice.js?v=8"></script>
+    <script src="test.js?v=8"></script>
+    <script type="module" src="auth.js?v=8"></script>
+    <script type="module" src="records.js?v=8"></script>
+    <script type="module" src="settings.js?v=8"></script>
+    <script type="module" src="app.js?v=8"></script>
 
 </body>
 </html>

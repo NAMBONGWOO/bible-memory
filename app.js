@@ -31,6 +31,7 @@ onAuthStateChanged(auth, async (user) => {
                 // ④ 첫 번째 데이터 로드
                 const sel = document.getElementById('data-select');
                 if (sel && sel.value) {
+                    window.syncDataSelects(sel.value);
                     await window.loadData(sel.value);
                 }
             } else {
@@ -52,8 +53,10 @@ onAuthStateChanged(auth, async (user) => {
 
 // ─── config.json 기반으로 사용자 코스를 select에 채우기 ─────────────────
 // [설정 연동] settings.js의 코스 관리 저장 후 즉시 갱신하기 위해 window로 노출
+// [요청] 사이드메뉴 select + 카드 상단 quick select 두 곳 모두 채움
 window.populateDataSelect = async function populateDataSelect(selectedCourses) {
-    const sel = document.getElementById('data-select');
+    const sel      = document.getElementById('data-select');
+    const quickSel = document.getElementById('quick-data-select');
     if (!sel) return;
 
     try {
@@ -65,20 +68,35 @@ window.populateDataSelect = async function populateDataSelect(selectedCourses) {
         const userCourses = allCourses.filter(c => selectedCourses.includes(c.file));
 
         if (userCourses.length === 0) {
-            sel.innerHTML = '<option value="">코스 없음</option>';
+            const emptyHTML = '<option value="">코스 없음</option>';
+            sel.innerHTML = emptyHTML;
+            if (quickSel) quickSel.innerHTML = emptyHTML;
             return;
         }
 
-        sel.innerHTML = userCourses
+        const optionsHTML = userCourses
             .map(c => `<option value="${c.file}">${c.name}</option>`)
             .join('');
+
+        sel.innerHTML = optionsHTML;
+        if (quickSel) quickSel.innerHTML = optionsHTML;
     } catch (e) {
         // config.json 로드 실패 시 selectedCourses 파일명으로 표시 (fallback)
         console.warn('config.json 로드 실패, fallback 사용:', e);
-        sel.innerHTML = selectedCourses
+        const fallbackHTML = selectedCourses
             .map(f => `<option value="${f}">${f.replace('.json', '')}</option>`)
             .join('');
+        sel.innerHTML = fallbackHTML;
+        if (quickSel) quickSel.innerHTML = fallbackHTML;
     }
+};
+
+// ─── 두 데이터셋 선택 UI(사이드메뉴/카드상단) 값 동기화 ─────────────────
+window.syncDataSelects = (value) => {
+    const sel      = document.getElementById('data-select');
+    const quickSel = document.getElementById('quick-data-select');
+    if (sel)      sel.value      = value;
+    if (quickSel) quickSel.value = value;
 };
 
 // ─── 모드 전환: 연습 ↔ 테스트 ────────────────────────────────────────────
@@ -86,7 +104,7 @@ window.setMode = (mode) => {
     window.currentMode = mode;
     const isTest = (mode === 'test');
 
-    document.getElementById('mode-title').innerText = isTest ? '암송 테스트 (시험)' : '암송 카드 (연습)';
+    document.getElementById('mode-title').innerText = isTest ? '암송 테스트' : '암송 연습';
 
     document.getElementById('test-setup').style.display      = isTest ? 'block' : 'none';
     document.getElementById('practice-area').style.display   = isTest ? 'none'  : 'block';
@@ -95,6 +113,9 @@ window.setMode = (mode) => {
     document.getElementById('test-section').style.display    = 'none';
     document.getElementById('status-panel').style.display    = 'none';
     document.getElementById('part-container').style.display  = isTest ? 'none'  : 'flex';
+
+    const quickSel = document.getElementById('quick-data-select');
+    if (quickSel) quickSel.style.display = isTest ? 'none' : 'block';
 
     // 연습 모드로 돌아올 때 현재 데이터 다시 표시
     if (!isTest) {
