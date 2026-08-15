@@ -144,7 +144,7 @@ body {
 
 /* 파트 버튼 */
 .part-btn {
-    padding: 8px 15px;
+    padding: 8px 10px;
     border-radius: 20px;
     border: 1px solid rgba(255,255,255,0.3);
     background: rgba(255,255,255,0.1);
@@ -152,6 +152,7 @@ body {
     cursor: pointer;
     font-size: 12px;
     margin: 2px;
+    white-space: nowrap;
 }
 .part-btn.active { background: white; color: var(--dark-blue); font-weight: bold; }
 

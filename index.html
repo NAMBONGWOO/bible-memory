@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=10">
+    <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
 
@@ -101,7 +101,7 @@
             <!-- [요청] 카드 상단에서 데이터 세트를 바로 전환할 수 있는 빠른 선택 -->
             <select id="quick-data-select" class="quick-select" onchange="loadData(this.value); syncDataSelects(this.value);"></select>
 
-            <div id="part-container" style="display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin-bottom:20px; width:90%;"></div>
+            <div id="part-container" style="display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-bottom:20px; width:96%;"></div>
 
             <div id="status-panel" style="display:none; width:90%; max-width:450px; justify-content:space-between; margin-bottom:10px; color:white; font-size:14px; font-weight:bold;">
                 <span id="test-progress">진행: 1 / 10</span>
@@ -308,12 +308,12 @@
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js?v=10"></script>
-    <script src="test.js?v=10"></script>
-    <script type="module" src="auth.js?v=10"></script>
-    <script type="module" src="records.js?v=10"></script>
-    <script type="module" src="settings.js?v=10"></script>
-    <script type="module" src="app.js?v=10"></script>
+    <script src="practice.js?v=11"></script>
+    <script src="test.js?v=11"></script>
+    <script type="module" src="auth.js?v=11"></script>
+    <script type="module" src="records.js?v=11"></script>
+    <script type="module" src="settings.js?v=11"></script>
+    <script type="module" src="app.js?v=11"></script>
 
 </body>
 </html>
