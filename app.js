@@ -1,6 +1,6 @@
 import { auth, db } from './auth.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
 window.currentMode = 'practice';
 
@@ -28,11 +28,23 @@ onAuthStateChanged(auth, async (user) => {
                 // ③ 사이드바 코스 선택창: config.json 기준으로 사용자 코스 필터링
                 await populateDataSelect(userData.selectedCourses || []);
 
-                // ④ 첫 번째 데이터 로드
+                // ④ 마지막 위치(코스/파트/구절) 복원 — 없으면 첫 번째 코스로 시작
+                window._lastPosition = {
+                    courseFile: userData.lastCourseFile || null,
+                    part:       userData.lastPart       || null,
+                    verseId:    userData.lastVerseId     || null,
+                };
+
                 const sel = document.getElementById('data-select');
-                if (sel && sel.value) {
-                    window.syncDataSelects(sel.value);
-                    await window.loadData(sel.value);
+                const targetFile = (window._lastPosition.courseFile &&
+                                     userData.selectedCourses?.includes(window._lastPosition.courseFile))
+                    ? window._lastPosition.courseFile
+                    : sel?.value;
+
+                if (sel && targetFile) {
+                    sel.value = targetFile;
+                    window.syncDataSelects(targetFile);
+                    await window.loadData(targetFile);
                 }
             } else {
                 alert('사용자 설정 데이터가 없습니다. 다시 가입하거나 DB를 확인해주세요.');
@@ -117,10 +129,15 @@ window.setMode = (mode) => {
     const quickSel = document.getElementById('quick-data-select');
     if (quickSel) quickSel.style.display = isTest ? 'none' : 'block';
 
-    // 연습 모드로 돌아올 때 현재 데이터 다시 표시
+    // 연습 모드로 돌아올 때: 파트/구절은 그대로 유지하고 화면만 다시 표시
+    // (코스 자체를 바꾼 적이 없다면 데이터 재로드 불필요 — 세션 중 위치 유지)
     if (!isTest) {
-        const currentFile = document.getElementById('data-select').value;
-        if (currentFile) window.loadData(currentFile);
+        if (window.verses && window.verses.length > 0 && window.currentIndex != null) {
+            window.updateCardUI(window.verses[window.currentIndex]);
+        } else {
+            const currentFile = document.getElementById('data-select').value;
+            if (currentFile) window.loadData(currentFile);
+        }
     }
 
     window.toggleMenu();
@@ -136,19 +153,64 @@ window.loadData = async (f) => {
         if (window.generatePartButtons) window.generatePartButtons();
 
         if (window.allVerses && window.allVerses.length > 0) {
-            const firstPart = window.allVerses[0].p;
+            // [요청] 마지막으로 보던 코스와 일치하면 파트/구절 위치까지 복원
+            const last = window._lastPosition;
+            const isSameCourse = last && last.courseFile === f;
+
+            let targetPart = window.allVerses[0].p;
+            if (isSameCourse && last.part && window.allVerses.some(v => v.p === last.part)) {
+                targetPart = last.part;
+            }
+
             if (window.filterPart) {
-                window.filterPart(firstPart);
+                window.filterPart(targetPart);
+
+                // 파트 내에서 저장된 구절 인덱스로 이동
+                if (isSameCourse && last.verseId && window.verses) {
+                    const idx = window.verses.findIndex(v => v.id === last.verseId);
+                    if (idx >= 0) {
+                        window.currentIndex = idx;
+                        window.updateCardUI(window.verses[idx]);
+                    }
+                }
             } else {
                 window.verses = window.allVerses;
                 window.currentIndex = 0;
                 window.updateCardUI(window.verses[0]);
             }
+
+            // 복원은 1회만 적용 — 이후 이동은 사용자의 실제 탐색을 그대로 저장
+            window._lastPosition = null;
         }
     } catch (e) {
         console.error('JSON 로드 실패:', e);
         alert(`데이터 파일을 불러올 수 없습니다: ${f}`);
     }
+};
+
+// ─── [요청] 연습 모드 마지막 위치 저장 (디바운스) ────────────────────────
+// 매 카드 전환마다 즉시 쓰지 않고, 잠시 멈췄을 때 한 번만 Firestore에 반영
+let _saveTimer = null;
+window.saveLastPosition = (verse) => {
+    if (!verse) return;
+    const user = auth.currentUser;
+    if (!user) return;
+
+    const courseFile = document.getElementById('data-select')?.value;
+    if (!courseFile) return;
+
+    clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(async () => {
+        try {
+            await updateDoc(doc(db, 'users', user.uid), {
+                lastCourseFile: courseFile,
+                lastPart: verse.p || '',
+                lastVerseId: verse.id || '',
+            });
+        } catch (e) {
+            console.warn('마지막 위치 저장 실패 (사용에는 영향 없음):', e);
+        }
+    }, 800);
 };
 
 // ─── 사이드 메뉴 토글 ────────────────────────────────────────────────────

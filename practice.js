@@ -28,6 +28,11 @@ window.updateCardUI = (verse) => {
 
     // [요청#4] 첫/마지막 구절에서는 해당 방향 화살표 흐리게 처리
     updateSwipeArrows();
+
+    // [요청] 연습 모드에서 마지막 위치(코스/파트/구절) 저장 — 디바운스
+    if (window.currentMode === 'practice' && window.saveLastPosition) {
+        window.saveLastPosition(verse);
+    }
 };
 
 // ─── [요청#4] 화살표 활성/비활성 표시 ───────────────────────────────────
