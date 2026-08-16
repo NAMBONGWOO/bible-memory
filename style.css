@@ -3,11 +3,14 @@
     --dark-blue: #075985;
 }
 
+html, body {
+    height: 100%;
+    overflow: hidden;
+}
 body {
     background: radial-gradient(circle at top, var(--main-blue) 0%, var(--dark-blue) 100%);
     background-attachment: fixed;
     margin: 0; padding: 0;
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -83,6 +86,8 @@ body {
     transition: 0.3s ease;
     padding: 25px; box-sizing: border-box;
     color: #333; display: flex; flex-direction: column;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 .side-menu.open { left: 0; }
 
@@ -90,9 +95,13 @@ body {
 .main-content {
     margin-top: 80px;
     width: 100%;
+    height: calc(100vh - 80px);
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: flex-start;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
 /* 구절 카드 */
@@ -100,10 +109,11 @@ body {
     background: white;
     width: 90%;
     max-width: 450px;
-    min-height: 320px;
+    min-height: 260px;
+    height: 100%;
     border-radius: 30px;
-    padding: 28px 22px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    padding: 22px;
+    /* [요청] 카드 아래 그림자 삭제 */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -287,7 +297,7 @@ body {
 /* ═══════════════════════════════════════════
    암송 기록 화면
    ═══════════════════════════════════════════ */
-#records-screen { min-height: 100vh; background: #f8fafc; }
+#records-screen { height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #f8fafc; }
 
 .records-tabs {
     display: flex;
@@ -412,7 +422,7 @@ body {
 /* ═══════════════════════════════════════════
    개인설정 화면
    ═══════════════════════════════════════════ */
-#settings-screen { min-height: 100vh; background: #f8fafc; }
+#settings-screen { height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #f8fafc; }
 
 .settings-profile-header {
     background: white;
