@@ -87,17 +87,67 @@ window.filterPart = (p) => {
     }
 };
 
-// ─── 이전 / 다음 구절 ────────────────────────────────────────────────────
+// ─── 이전 / 다음 구절 — 카드 슬라이드 애니메이션 ────────────────────────
+// 방식: 현재 카드가 반대 방향으로 밀려나가며 사라지고,
+//       다음 콘텐츠로 교체된 카드가 진행 방향에서 밀려들어옴
+const SLIDE_DURATION = 260; // ms, style.css의 #main-card transition과 맞출 것
+let isSliding = false;
+
+function slideToVerse(nextIndex, direction) {
+    // direction: 'next' → 카드가 왼쪽으로 나가고 오른쪽에서 들어옴
+    //            'prev' → 카드가 오른쪽으로 나가고 왼쪽에서 들어옴
+    if (isSliding) return;
+    if (!window.verses || nextIndex < 0 || nextIndex >= window.verses.length) return;
+
+    const card = document.getElementById('main-card');
+    if (!card) {
+        // 카드 엘리먼트가 없으면 즉시 전환 (안전장치)
+        window.currentIndex = nextIndex;
+        window.updateCardUI(window.verses[nextIndex]);
+        return;
+    }
+
+    isSliding = true;
+    const outX = direction === 'next' ? '-100%' : '100%';
+    const inX  = direction === 'next' ? '100%'  : '-100%';
+
+    // 1) 현재 카드를 진행 방향으로 밀어내며 페이드아웃
+    card.style.transition = `transform ${SLIDE_DURATION}ms ease, opacity ${SLIDE_DURATION}ms ease`;
+    card.style.transform = `translateX(${outX})`;
+    card.style.opacity = '0';
+
+    setTimeout(() => {
+        // 2) 콘텐츠 교체 + 반대편에 즉시 배치 (애니메이션 없이)
+        window.currentIndex = nextIndex;
+        window.updateCardUI(window.verses[nextIndex]);
+
+        card.style.transition = 'none';
+        card.style.transform = `translateX(${inX})`;
+        card.style.opacity = '0';
+
+        // 강제 리플로우로 위 스타일을 즉시 반영시킨 뒤 애니메이션 시작
+        void card.offsetWidth;
+
+        // 3) 새 카드를 제자리로 밀어들어오며 페이드인
+        card.style.transition = `transform ${SLIDE_DURATION}ms ease, opacity ${SLIDE_DURATION}ms ease`;
+        card.style.transform = 'translateX(0)';
+        card.style.opacity = '1';
+
+        setTimeout(() => {
+            card.style.transition = '';
+            isSliding = false;
+        }, SLIDE_DURATION);
+    }, SLIDE_DURATION);
+}
+
 window.handleNext = () => {
     if (!window.verses || window.currentIndex >= window.verses.length - 1) return;
-    window.currentIndex++;
-    window.updateCardUI(window.verses[window.currentIndex]);
+    slideToVerse(window.currentIndex + 1, 'next');
 };
 
 window.prevVerse = () => {
     if (!window.verses || window.currentIndex <= 0) return;
-    window.currentIndex--;
-    window.updateCardUI(window.verses[window.currentIndex]);
+    slideToVerse(window.currentIndex - 1, 'prev');
 };
 
 // ─── [요청#4,5] 스와이프 + 탭 통합 터치 핸들러 ──────────────────────────
@@ -144,6 +194,7 @@ window.prevVerse = () => {
             isDragging = false;
             card.classList.remove('dragging');
             card.style.transform = '';
+            card.style.opacity = '';
 
             const t = e.changedTouches[0];
             const dx = t.clientX - startX;
@@ -155,7 +206,7 @@ window.prevVerse = () => {
                 // 탭: 본문 토글
                 window.handleCardClick();
             } else if (absDx > SWIPE_THRESHOLD && absDx > absDy) {
-                // 스와이프: 좌/우 전환
+                // 스와이프: 좌/우 전환 (카드 슬라이드 애니메이션 적용)
                 if (dx < 0) {
                     window.handleNext();   // 왼쪽으로 밀면 다음
                 } else {

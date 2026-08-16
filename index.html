@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=11">
+    <link rel="stylesheet" href="style.css?v=12">
 </head>
 <body>
 
@@ -113,6 +113,8 @@
                 <div id="swipe-arrow-left" class="swipe-arrow" style="left:-6px;" onclick="prevVerse()">‹</div>
                 <div id="swipe-arrow-right" class="swipe-arrow" style="right:-6px;" onclick="handleNext()">›</div>
 
+            <!-- [요청] 카드 슬라이드 전환 시 카드가 이 영역 밖으로 삐져나오지 않도록 클리핑 -->
+            <div id="card-clip" style="overflow:hidden; margin-bottom:25px; padding:14px 0;">
             <div class="card" id="main-card" style="position:relative; width:100%; max-width:none;">
                 <div id="v-ref" style="font-size:18px; font-weight:bold; color:var(--main-blue); margin-bottom:15px; text-align:left;">장절 정보</div>
                 <!-- [요청#2] 분류코드를 카드 우측 하단으로 이동 -->
@@ -140,6 +142,7 @@
                     <div id="v-content" style="font-size:19px; line-height:1.7; display:none; word-break:keep-all; color:#444; text-align:left;">내용</div>
                 </div>
             </div>
+            </div><!-- /card-clip -->
             </div><!-- /card-swipe-wrap -->
 
             <div class="controls" style="width:90%; max-width:450px;">
@@ -308,12 +311,12 @@
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js?v=11"></script>
-    <script src="test.js?v=11"></script>
-    <script type="module" src="auth.js?v=11"></script>
-    <script type="module" src="records.js?v=11"></script>
-    <script type="module" src="settings.js?v=11"></script>
-    <script type="module" src="app.js?v=11"></script>
+    <script src="practice.js?v=12"></script>
+    <script src="test.js?v=12"></script>
+    <script type="module" src="auth.js?v=12"></script>
+    <script type="module" src="records.js?v=12"></script>
+    <script type="module" src="settings.js?v=12"></script>
+    <script type="module" src="app.js?v=12"></script>
 
 </body>
 </html>
