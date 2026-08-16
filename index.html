@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=13">
+    <link rel="stylesheet" href="style.css?v=14">
 </head>
 <body>
 
@@ -76,7 +76,7 @@
     <!-- ② 앱 본문: 로그인 성공 후 표시 -->
     <div id="app-content" style="display:none; width:100%;">
 
-        <header class="top-bar">
+        <header class="top-bar" id="main-top-bar">
             <button onclick="toggleMenu()" style="background:none; border:none; color:white; font-size:30px; cursor:pointer;">≡</button>
             <div id="mode-title" style="font-weight:bold;">암송 연습</div>
             <div style="width:30px;"></div>
@@ -311,12 +311,12 @@
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js?v=13"></script>
-    <script src="test.js?v=13"></script>
-    <script type="module" src="auth.js?v=13"></script>
-    <script type="module" src="records.js?v=13"></script>
-    <script type="module" src="settings.js?v=13"></script>
-    <script type="module" src="app.js?v=13"></script>
+    <script src="practice.js?v=14"></script>
+    <script src="test.js?v=14"></script>
+    <script type="module" src="auth.js?v=14"></script>
+    <script type="module" src="records.js?v=14"></script>
+    <script type="module" src="settings.js?v=14"></script>
+    <script type="module" src="app.js?v=14"></script>
 
 </body>
 </html>

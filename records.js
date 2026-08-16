@@ -146,6 +146,9 @@ window.openRecordsScreen = async () => {
     window.toggleMenu();
     document.getElementById('records-screen').style.display = 'block';
     document.getElementById('app-main-view').style.display = 'none';
+    // [버그 수정] 메인 상단바가 기록 화면의 뒤로가기 헤더를 가리는 문제 → 함께 숨김
+    const mainTopBar = document.getElementById('main-top-bar');
+    if (mainTopBar) mainTopBar.style.display = 'none';
 
     const body = document.getElementById('records-body');
     body.innerHTML = '<p style="text-align:center; color:#94a3b8; padding:40px 0;">기록을 불러오는 중...</p>';
@@ -159,6 +162,8 @@ window.openRecordsScreen = async () => {
 window.closeRecordsScreen = () => {
     document.getElementById('records-screen').style.display = 'none';
     document.getElementById('app-main-view').style.display = 'flex';
+    const mainTopBar = document.getElementById('main-top-bar');
+    if (mainTopBar) mainTopBar.style.display = 'flex';
 };
 
 // ─── 탭 전환 ─────────────────────────────────────────────────────────────

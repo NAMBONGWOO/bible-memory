@@ -14,6 +14,9 @@ window.openSettingsScreen = async () => {
     window.toggleMenu();
     document.getElementById('settings-screen').style.display = 'block';
     document.getElementById('app-main-view').style.display = 'none';
+    // [버그 수정] 메인 상단바가 설정 화면의 뒤로가기 헤더를 가리는 문제 → 함께 숨김
+    const mainTopBar = document.getElementById('main-top-bar');
+    if (mainTopBar) mainTopBar.style.display = 'none';
 
     await loadSettingsData();
 };
@@ -21,6 +24,8 @@ window.openSettingsScreen = async () => {
 window.closeSettingsScreen = () => {
     document.getElementById('settings-screen').style.display = 'none';
     document.getElementById('app-main-view').style.display = 'flex';
+    const mainTopBar = document.getElementById('main-top-bar');
+    if (mainTopBar) mainTopBar.style.display = 'flex';
 };
 
 // ─── 현재 사용자 데이터 로드 & 화면 채우기 ───────────────────────────────
