@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=19">
+    <link rel="stylesheet" href="style.css?v=20">
 </head>
 <body>
 
@@ -276,19 +276,25 @@
 
                 <div style="font-size:11px; color:rgba(255,255,255,0.65); margin-bottom:8px;">길게 눌러 한/영 전환</div>
 
-                <div id="bilingual-card-clip" style="width:96%; max-width:450px; flex:1; min-height:0; overflow:hidden; perspective:1000px;">
-                    <div id="bilingual-card" class="bilingual-flip-card">
-                        <div class="bilingual-flip-face front">
-                            <div id="bl-ko-ref" class="bilingual-ref">장절</div>
-                            <div id="bl-ko-theme" class="bilingual-theme">제목</div>
-                            <div id="bl-ko-content" class="bilingual-content">내용</div>
-                            <div class="bilingual-lang-badge">한글</div>
-                        </div>
-                        <div class="bilingual-flip-face back">
-                            <div id="bl-en-ref" class="bilingual-ref">Ref</div>
-                            <div id="bl-en-theme" class="bilingual-theme">Theme</div>
-                            <div id="bl-en-content" class="bilingual-content">Content</div>
-                            <div class="bilingual-lang-badge">EN</div>
+                <!-- [요청] 암송연습1과 동일한 스와이프 화살표 + 슬라이드 클리핑 구조 -->
+                <div id="bilingual-swipe-wrap" style="position:relative; width:96%; max-width:450px; flex:1; min-height:0; display:flex; flex-direction:column;">
+                    <div id="bilingual-arrow-left" class="swipe-arrow" style="left:-6px;" onclick="prevBilingual()">‹</div>
+                    <div id="bilingual-arrow-right" class="swipe-arrow" style="right:-6px;" onclick="nextBilingual()">›</div>
+
+                    <div id="bilingual-card-clip" style="overflow:hidden; flex:1; min-height:0; display:flex; perspective:1000px;">
+                        <div id="bilingual-card" class="bilingual-flip-card">
+                            <div class="bilingual-flip-face front">
+                                <div id="bl-ko-ref" class="bilingual-ref">장절</div>
+                                <div id="bl-ko-theme" class="bilingual-theme">제목</div>
+                                <div id="bl-ko-content" class="bilingual-content">내용</div>
+                                <div class="bilingual-lang-badge">한글</div>
+                            </div>
+                            <div class="bilingual-flip-face back">
+                                <div id="bl-en-ref" class="bilingual-ref">Ref</div>
+                                <div id="bl-en-theme" class="bilingual-theme">Theme</div>
+                                <div id="bl-en-content" class="bilingual-content">Content</div>
+                                <div class="bilingual-lang-badge">EN</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -359,13 +365,13 @@
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js?v=19"></script>
-    <script src="test.js?v=19"></script>
-    <script src="bilingual.js?v=19"></script>
-    <script type="module" src="auth.js?v=19"></script>
-    <script type="module" src="records.js?v=19"></script>
-    <script type="module" src="settings.js?v=19"></script>
-    <script type="module" src="app.js?v=19"></script>
+    <script src="practice.js?v=20"></script>
+    <script src="test.js?v=20"></script>
+    <script src="bilingual.js?v=20"></script>
+    <script type="module" src="auth.js?v=20"></script>
+    <script type="module" src="records.js?v=20"></script>
+    <script type="module" src="settings.js?v=20"></script>
+    <script type="module" src="app.js?v=20"></script>
 
 </body>
 </html>

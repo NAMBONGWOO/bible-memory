@@ -152,21 +152,93 @@ function renderBilingualCard() {
     document.getElementById('bl-en-content').style.display = blRevealOn ? 'block' : 'none';
 
     document.getElementById('bilingual-page').innerText = `${blIndex + 1} / ${blKoVerses.length}`;
+
+    updateBilingualArrows();
+}
+
+// ─── [요청] 카드 슬라이드 애니메이션 — 암송연습1과 동일한 방식 ──────────
+// 뒤집기(rotateY)는 안쪽 bilingual-card가, 슬라이드(translateX)는
+// 바깥 bilingual-card-clip이 각각 담당해 두 transform이 충돌하지 않는다.
+const BL_SLIDE_DURATION = 260;
+let blIsSliding = false;
+let _blFlashTimer = null;
+
+function flashBilingualArrows() {
+    const leftArrow  = document.getElementById('bilingual-arrow-left');
+    const rightArrow = document.getElementById('bilingual-arrow-right');
+    if (!leftArrow || !rightArrow) return;
+
+    if (!leftArrow.classList.contains('disabled'))  leftArrow.classList.add('flash');
+    if (!rightArrow.classList.contains('disabled')) rightArrow.classList.add('flash');
+
+    clearTimeout(_blFlashTimer);
+    _blFlashTimer = setTimeout(() => {
+        leftArrow.classList.remove('flash');
+        rightArrow.classList.remove('flash');
+    }, BL_SLIDE_DURATION + 600);
+}
+
+function updateBilingualArrows() {
+    const leftArrow  = document.getElementById('bilingual-arrow-left');
+    const rightArrow = document.getElementById('bilingual-arrow-right');
+    if (!leftArrow || !rightArrow) return;
+    leftArrow.classList.toggle('disabled', blIndex <= 0);
+    rightArrow.classList.toggle('disabled', blIndex >= blKoVerses.length - 1);
+}
+
+function slideBilingualTo(nextIndex, direction) {
+    if (blIsSliding) return;
+    if (!blKoVerses.length || nextIndex < 0 || nextIndex >= blKoVerses.length) return;
+
+    flashBilingualArrows();
+
+    const clip = document.getElementById('bilingual-card-clip');
+    if (!clip) {
+        blIndex = nextIndex;
+        resetFlipState();
+        renderBilingualCard();
+        return;
+    }
+
+    blIsSliding = true;
+    const outX = direction === 'next' ? '-100%' : '100%';
+    const inX  = direction === 'next' ? '100%'  : '-100%';
+
+    clip.style.transition = `transform ${BL_SLIDE_DURATION}ms ease, opacity ${BL_SLIDE_DURATION}ms ease`;
+    clip.style.transform = `translateX(${outX})`;
+    clip.style.opacity = '0';
+
+    setTimeout(() => {
+        blIndex = nextIndex;
+        resetFlipState();
+        renderBilingualCard();
+
+        clip.style.transition = 'none';
+        clip.style.transform = `translateX(${inX})`;
+        clip.style.opacity = '0';
+
+        void clip.offsetWidth;
+
+        clip.style.transition = `transform ${BL_SLIDE_DURATION}ms ease, opacity ${BL_SLIDE_DURATION}ms ease`;
+        clip.style.transform = 'translateX(0)';
+        clip.style.opacity = '1';
+
+        setTimeout(() => {
+            clip.style.transition = '';
+            blIsSliding = false;
+        }, BL_SLIDE_DURATION);
+    }, BL_SLIDE_DURATION);
 }
 
 // ─── 이전 / 다음 ─────────────────────────────────────────────────────────
 window.nextBilingual = () => {
     if (blIndex >= blKoVerses.length - 1) return;
-    blIndex++;
-    resetFlipState();
-    renderBilingualCard();
+    slideBilingualTo(blIndex + 1, 'next');
 };
 
 window.prevBilingual = () => {
     if (blIndex <= 0) return;
-    blIndex--;
-    resetFlipState();
-    renderBilingualCard();
+    slideBilingualTo(blIndex - 1, 'prev');
 };
 
 // 카드 전환 시 항상 한글면(앞면)으로 리셋 — 매번 뒤집힌 채로 시작하면 헷갈림
@@ -189,30 +261,73 @@ function updateBilingualToggleUI() {
     if (toggleEl) toggleEl.classList.toggle('on', blRevealOn);
 }
 
-// ─── 길게 누르면 한/영 뒤집기 ────────────────────────────────────────────
-(function initLongPressFlip() {
-    const LONG_PRESS_MS = 400;
+// ─── [요청] 스와이프(좌우 이동) + 롱프레스(제자리 뒤집기) 통합 핸들러 ───
+// 규칙: 손가락이 거의 안 움직이고 400ms 이상 눌리면 → 뒤집기
+//       가로로 50px 이상 이동하면 → 스와이프로 페이지 전환 (뒤집기 취소)
+(function initTouchGestures() {
+    const LONG_PRESS_MS   = 400;
+    const MOVE_CANCEL_PX  = 12;   // 이 이상 움직이면 롱프레스 취소
+    const SWIPE_THRESHOLD = 50;
+
+    let startX = 0, startY = 0;
     let pressTimer = null;
+    let dragging = false;
 
     function attach() {
-        const card = document.getElementById('bilingual-card');
-        if (!card || card.dataset.flipBound) return;
-        card.dataset.flipBound = 'true';
+        const clip = document.getElementById('bilingual-card-clip');
+        if (!clip || clip.dataset.gestureBound) return;
+        clip.dataset.gestureBound = 'true';
 
-        const start = () => {
+        clip.addEventListener('touchstart', (e) => {
+            const t = e.touches[0];
+            startX = t.clientX;
+            startY = t.clientY;
+            dragging = true;
+
             pressTimer = setTimeout(() => {
+                if (!dragging) return; // 이미 스와이프로 취소된 경우
                 blFlipped = !blFlipped;
-                card.classList.toggle('flipped', blFlipped);
+                document.getElementById('bilingual-card').classList.toggle('flipped', blFlipped);
+                dragging = false;
             }, LONG_PRESS_MS);
-        };
-        const cancel = () => clearTimeout(pressTimer);
+        }, { passive: true });
 
-        card.addEventListener('touchstart', start, { passive: true });
-        card.addEventListener('touchend', cancel);
-        card.addEventListener('touchmove', cancel);
-        card.addEventListener('mousedown', start);
-        card.addEventListener('mouseup', cancel);
-        card.addEventListener('mouseleave', cancel);
+        clip.addEventListener('touchmove', (e) => {
+            if (!dragging) return;
+            const t = e.touches[0];
+            const dx = Math.abs(t.clientX - startX);
+            const dy = Math.abs(t.clientY - startY);
+            if (dx > MOVE_CANCEL_PX || dy > MOVE_CANCEL_PX) {
+                clearTimeout(pressTimer); // 움직였으니 뒤집기 취소, 스와이프로 처리
+            }
+        }, { passive: true });
+
+        clip.addEventListener('touchend', (e) => {
+            clearTimeout(pressTimer);
+            if (!dragging) { dragging = false; return; }
+            dragging = false;
+
+            const t = e.changedTouches[0];
+            const dx = t.clientX - startX;
+            const dy = t.clientY - startY;
+            if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
+                if (dx < 0) window.nextBilingual();
+                else window.prevBilingual();
+            }
+        });
+
+        // 데스크톱 마우스 지원 (길게 클릭 = 뒤집기)
+        clip.addEventListener('mousedown', () => {
+            dragging = true;
+            pressTimer = setTimeout(() => {
+                if (!dragging) return;
+                blFlipped = !blFlipped;
+                document.getElementById('bilingual-card').classList.toggle('flipped', blFlipped);
+                dragging = false;
+            }, LONG_PRESS_MS);
+        });
+        clip.addEventListener('mouseup', () => { clearTimeout(pressTimer); dragging = false; });
+        clip.addEventListener('mouseleave', () => { clearTimeout(pressTimer); dragging = false; });
     }
 
     if (document.readyState === 'loading') {
