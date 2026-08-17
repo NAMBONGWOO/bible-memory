@@ -464,21 +464,6 @@ body {
 /* ═══════════════════════════════════════════
    암송연습 2 — 한/영 통합 카드 뒤집기
    ═══════════════════════════════════════════ */
-.bilingual-toggle-btn {
-    font-size: 12px;
-    font-weight: 600;
-    padding: 7px 14px;
-    border-radius: 20px;
-    border: none;
-    background: rgba(255,255,255,0.2);
-    color: white;
-    cursor: pointer;
-}
-.bilingual-toggle-btn.on {
-    background: #4ade80;
-    color: #064e3b;
-}
-
 .bilingual-flip-card {
     position: relative;
     width: 100%;

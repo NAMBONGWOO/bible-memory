@@ -4,8 +4,10 @@
 // 기존 암송연습 1(practice.js)과 완전히 분리되어 서로 영향을 주지 않는다.
 
 let blPairs = [];      // config_bilingual.json 목록
-let blKoVerses = [];   // 현재 코스의 한글 배열
-let blEnVerses = [];   // 현재 코스의 영어 배열 (같은 인덱스가 같은 id)
+let blAllKo = [];      // 현재 코스 전체 한글 배열 (파트 필터 전)
+let blAllEn = [];      // 현재 코스 전체 영어 배열 (같은 인덱스가 같은 id)
+let blKoVerses = [];   // 현재 파트로 필터링된 한글 배열
+let blEnVerses = [];   // 현재 파트로 필터링된 영어 배열
 let blIndex = 0;
 let blRevealOn = localStorage.getItem('bilingualRevealOn') === 'true';
 let blFlipped = false;
@@ -23,7 +25,7 @@ window.openBilingualScreen = async () => {
     if (blPairs.length === 0) {
         await loadBilingualConfig();
     }
-    if (blKoVerses.length === 0 && blPairs.length > 0) {
+    if (blAllKo.length === 0 && blPairs.length > 0) {
         await loadBilingualCourse(blPairs[0].ko);
     } else {
         renderBilingualCard();
@@ -67,24 +69,68 @@ window.loadBilingualCourse = async (koFile) => {
         const enById = new Map(enData.map(v => [v.id, v]));
 
         // 한글 순서를 기준으로, 같은 id의 영어 항목을 나란히 정렬
-        blKoVerses = [];
-        blEnVerses = [];
+        blAllKo = [];
+        blAllEn = [];
         koData.forEach(ko => {
             const en = enById.get(ko.id);
             if (en) {
-                blKoVerses.push(ko);
-                blEnVerses.push(en);
+                blAllKo.push(ko);
+                blAllEn.push(en);
             }
         });
 
-        blIndex = 0;
-        blFlipped = false;
-        renderBilingualCard();
+        generateBilingualPartButtons();
+
+        // 첫 번째 파트로 시작 (파트 정보가 없으면 전체를 하나로 취급)
+        const firstPart = blAllKo.length > 0 ? blAllKo[0].p : null;
+        filterBilingualPart(firstPart);
     } catch (e) {
         console.error('한/영 데이터 로드 실패:', e);
         alert('데이터를 불러올 수 없습니다.');
     }
 };
+
+// ─── [요청] 소주제 파트 버튼 생성 (암송연습1의 generatePartButtons와 동일 방식) ─
+function generateBilingualPartButtons() {
+    const container = document.getElementById('bilingual-part-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const parts = [...new Set(blAllKo.map(v => v.p))];
+    if (parts.length <= 1) {
+        // 파트가 하나뿐이거나 없으면 버튼 자체를 표시하지 않음
+        container.style.display = 'none';
+        return;
+    }
+    container.style.display = 'flex';
+
+    parts.forEach(p => {
+        const btn = document.createElement('button');
+        btn.className = 'part-btn';
+        btn.innerText = p;
+        btn.onclick = () => filterBilingualPart(p);
+        container.appendChild(btn);
+    });
+}
+
+// ─── 파트 필터링 ─────────────────────────────────────────────────────────
+function filterBilingualPart(part) {
+    if (part) {
+        blKoVerses = blAllKo.filter(v => v.p === part);
+        blEnVerses = blAllEn.filter((_, i) => blAllKo[i].p === part);
+    } else {
+        blKoVerses = blAllKo;
+        blEnVerses = blAllEn;
+    }
+
+    document.querySelectorAll('#bilingual-part-container .part-btn').forEach(b =>
+        b.classList.toggle('active', b.innerText === part)
+    );
+
+    blIndex = 0;
+    blFlipped = false;
+    renderBilingualCard();
+}
 
 // ─── 카드 렌더링 ─────────────────────────────────────────────────────────
 function renderBilingualCard() {
@@ -130,7 +176,7 @@ function resetFlipState() {
     if (card) card.classList.remove('flipped');
 }
 
-// ─── 본문 보이기 토글 (탭) ───────────────────────────────────────────────
+// ─── 본문 보이기 토글 (헤더 스위치) ──────────────────────────────────────
 window.toggleBilingualReveal = () => {
     blRevealOn = !blRevealOn;
     localStorage.setItem('bilingualRevealOn', blRevealOn);
@@ -139,10 +185,8 @@ window.toggleBilingualReveal = () => {
 };
 
 function updateBilingualToggleUI() {
-    const btn = document.getElementById('bilingual-show-toggle');
-    if (!btn) return;
-    btn.classList.toggle('on', blRevealOn);
-    btn.innerText = blRevealOn ? '본문 숨기기' : '본문 보이기';
+    const toggleEl = document.getElementById('bilingual-reveal-toggle');
+    if (toggleEl) toggleEl.classList.toggle('on', blRevealOn);
 }
 
 // ─── 길게 누르면 한/영 뒤집기 ────────────────────────────────────────────

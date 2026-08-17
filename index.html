@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=18">
+    <link rel="stylesheet" href="style.css?v=19">
 </head>
 <body>
 
@@ -262,16 +262,19 @@
             <header class="top-bar" style="position:sticky; top:0;">
                 <button onclick="closeBilingualScreen()" style="background:none; border:none; color:white; font-size:22px; cursor:pointer;">‹</button>
                 <div style="font-weight:bold;">암송 연습 2</div>
-                <div style="width:22px;"></div>
+                <!-- [요청] 본문 자동 공개 토글 — 암송연습1과 동일한 스타일 -->
+                <div id="bilingual-reveal-toggle" class="auto-reveal-toggle" onclick="toggleBilingualReveal()" title="본문 자동 표시">
+                    <div class="auto-reveal-knob"></div>
+                </div>
             </header>
 
             <div style="flex:1; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding-top:14px; box-sizing:border-box; background:radial-gradient(circle at top, var(--main-blue) 0%, var(--dark-blue) 100%);">
                 <select id="bilingual-course-select" class="quick-select" onchange="loadBilingualCourse(this.value)" style="margin-bottom:8px;"></select>
 
-                <div style="display:flex; gap:8px; margin-bottom:10px;">
-                    <button class="bilingual-toggle-btn" id="bilingual-show-toggle" onclick="toggleBilingualReveal()">본문 보이기</button>
-                    <div style="font-size:11px; color:rgba(255,255,255,0.65); align-self:center;">길게 눌러 한/영 전환</div>
-                </div>
+                <!-- [요청] 소주제 파트 버튼 — 암송연습1과 동일한 위치/역할 -->
+                <div id="bilingual-part-container" style="display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-bottom:10px; width:96%; flex-shrink:0;"></div>
+
+                <div style="font-size:11px; color:rgba(255,255,255,0.65); margin-bottom:8px;">길게 눌러 한/영 전환</div>
 
                 <div id="bilingual-card-clip" style="width:96%; max-width:450px; flex:1; min-height:0; overflow:hidden; perspective:1000px;">
                     <div id="bilingual-card" class="bilingual-flip-card">
@@ -356,13 +359,13 @@
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js?v=18"></script>
-    <script src="test.js?v=18"></script>
-    <script src="bilingual.js?v=18"></script>
-    <script type="module" src="auth.js?v=18"></script>
-    <script type="module" src="records.js?v=18"></script>
-    <script type="module" src="settings.js?v=18"></script>
-    <script type="module" src="app.js?v=18"></script>
+    <script src="practice.js?v=19"></script>
+    <script src="test.js?v=19"></script>
+    <script src="bilingual.js?v=19"></script>
+    <script type="module" src="auth.js?v=19"></script>
+    <script type="module" src="records.js?v=19"></script>
+    <script type="module" src="settings.js?v=19"></script>
+    <script type="module" src="app.js?v=19"></script>
 
 </body>
 </html>
