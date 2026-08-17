@@ -37,13 +37,15 @@ window.updateCardUI = (verse) => {
 };
 
 // ─── [요청#4] 화살표 활성/비활성 표시 ───────────────────────────────────
+// [요청] opacity는 CSS .flash 클래스가 전담 (평소 숨김, 전환시 표시)
+// 여기서는 테스트 모드 여부와 첫/마지막 구절 여부만 관리
 function updateSwipeArrows() {
     const leftArrow  = document.getElementById('swipe-arrow-left');
     const rightArrow = document.getElementById('swipe-arrow-right');
     if (!leftArrow || !rightArrow) return;
 
     const isTest = window.currentMode === 'test';
-    // 테스트 모드에서는 화살표 숨김 (스와이프로 문제 넘기면 채점 누락 위험)
+    // 테스트 모드에서는 화살표 자체를 렌더링하지 않음 (스와이프로 문제 넘기면 채점 누락 위험)
     leftArrow.style.display  = isTest ? 'none' : 'flex';
     rightArrow.style.display = isTest ? 'none' : 'flex';
 
@@ -51,8 +53,8 @@ function updateSwipeArrows() {
 
     const idx = window.currentIndex || 0;
     const len = (window.verses || []).length;
-    leftArrow.style.opacity  = idx <= 0 ? '0.25' : '1';
-    rightArrow.style.opacity = idx >= len - 1 ? '0.25' : '1';
+    leftArrow.classList.toggle('disabled', idx <= 0);
+    rightArrow.classList.toggle('disabled', idx >= len - 1);
 }
 
 // ─── 연습 카드 클릭: 본문 토글 ───────────────────────────────────────────
@@ -123,12 +125,31 @@ window.filterPart = (p) => {
 //       다음 콘텐츠로 교체된 카드가 진행 방향에서 밀려들어옴
 const SLIDE_DURATION = 260; // ms, style.css의 #main-card transition과 맞출 것
 let isSliding = false;
+let _flashTimer = null;
+
+// [요청] 카드 이동하는 순간에만 화살표를 잠깐 보여주고 다시 흐리게
+function flashSwipeArrows() {
+    const leftArrow  = document.getElementById('swipe-arrow-left');
+    const rightArrow = document.getElementById('swipe-arrow-right');
+    if (!leftArrow || !rightArrow) return;
+
+    if (!leftArrow.classList.contains('disabled'))  leftArrow.classList.add('flash');
+    if (!rightArrow.classList.contains('disabled')) rightArrow.classList.add('flash');
+
+    clearTimeout(_flashTimer);
+    _flashTimer = setTimeout(() => {
+        leftArrow.classList.remove('flash');
+        rightArrow.classList.remove('flash');
+    }, SLIDE_DURATION + 600); // 전환 애니메이션 후 잠시 더 보이다 사라짐
+}
 
 function slideToVerse(nextIndex, direction) {
     // direction: 'next' → 카드가 왼쪽으로 나가고 오른쪽에서 들어옴
     //            'prev' → 카드가 오른쪽으로 나가고 왼쪽에서 들어옴
     if (isSliding) return;
     if (!window.verses || nextIndex < 0 || nextIndex >= window.verses.length) return;
+
+    flashSwipeArrows();
 
     const card = document.getElementById('main-card');
     if (!card) {

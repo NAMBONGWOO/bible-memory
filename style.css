@@ -299,6 +299,7 @@ body {
 .quick-select option { color: #333; }
 
 /* [요청#4] 반투명 좌우 스와이프 화살표 */
+/* [요청] 평소엔 아주 흐리게(터치는 가능), 카드 전환하는 순간에만 선명하게 표시 */
 .swipe-arrow {
     position: absolute;
     top: 50%;
@@ -318,9 +319,17 @@ body {
     cursor: pointer;
     user-select: none;
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    transition: opacity 0.2s ease;
+    transition: opacity 0.25s ease;
+    opacity: 0;
 }
-.swipe-arrow:active { background: rgba(255,255,255,0.85); }
+.swipe-arrow.flash {
+    opacity: 1;
+}
+.swipe-arrow.disabled {
+    opacity: 0 !important;
+    pointer-events: none;
+}
+.swipe-arrow:active { background: rgba(255,255,255,0.85); opacity: 1; }
 
 /* 카드가 드래그 중일 때 전환 애니메이션 없이 손가락을 따라가도록 */
 #main-card.dragging { transition: none; }
