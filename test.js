@@ -4,17 +4,84 @@ let testTotalPenalty  = 0;
 let testMaxSteps      = 10;
 let isCurrentChecked  = false;
 
+// ─── [요청] 테스트 설정 화면 열릴 때 파트 목록 채우기 ───────────────────
+// app.js의 setMode('test')에서 호출됨
+window.populateTestPartSelect = () => {
+    const sel = document.getElementById('test-part-select');
+    if (!sel || !window.allVerses) return;
+
+    const parts = [...new Set(window.allVerses.map(v => v.p))];
+
+    if (parts.length <= 1) {
+        // 파트가 하나뿐이거나 없으면 "전체"만 표시
+        sel.innerHTML = '<option value="">전체</option>';
+    } else {
+        sel.innerHTML = '<option value="">전체 파트</option>' +
+            parts.map(p => `<option value="${p}">${p}</option>`).join('');
+    }
+
+    onTestPartChange();
+};
+
+// ─── [요청] 파트 선택 시 번호 범위 기본값을 해당 파트 전체로 설정 ───────
+window.onTestPartChange = () => {
+    const partSel = document.getElementById('test-part-select');
+    const startInput = document.getElementById('test-range-start');
+    const endInput   = document.getElementById('test-range-end');
+    const hint       = document.getElementById('test-range-hint');
+    if (!partSel || !window.allVerses) return;
+
+    const selectedPart = partSel.value;
+    const scoped = selectedPart
+        ? window.allVerses.filter(v => v.p === selectedPart)
+        : window.allVerses;
+
+    startInput.value = 1;
+    endInput.value   = scoped.length;
+    startInput.min = 1;
+    endInput.min   = 1;
+    startInput.max = scoped.length;
+    endInput.max   = scoped.length;
+
+    hint.innerText = `${selectedPart ? `'${selectedPart}' 파트` : '전체'} — 총 ${scoped.length}구절 (1~${scoped.length})`;
+};
+
 // ─── [1] 테스트 시작 ────────────────────────────────────────────────────
 window.startTestSession = () => {
     if (!window.allVerses || window.allVerses.length === 0) {
         alert('데이터가 로드되지 않았습니다.');
         return;
     }
+
+    const partSel = document.getElementById('test-part-select');
+    const selectedPart = partSel?.value || '';
+
+    // [요청] 파트 필터 → 그 안에서 번호 범위로 잘라내기
+    const scoped = selectedPart
+        ? window.allVerses.filter(v => v.p === selectedPart)
+        : window.allVerses;
+
+    let rangeStart = parseInt(document.getElementById('test-range-start')?.value) || 1;
+    let rangeEnd   = parseInt(document.getElementById('test-range-end')?.value)   || scoped.length;
+
+    // 범위 값 보정 (역순 입력, 범위 초과 등 실수 방지)
+    rangeStart = Math.max(1, Math.min(rangeStart, scoped.length));
+    rangeEnd   = Math.max(1, Math.min(rangeEnd, scoped.length));
+    if (rangeStart > rangeEnd) { [rangeStart, rangeEnd] = [rangeEnd, rangeStart]; }
+
+    const rangedVerses = scoped.slice(rangeStart - 1, rangeEnd);
+
+    if (rangedVerses.length === 0) {
+        alert('선택한 범위에 구절이 없습니다.');
+        return;
+    }
+
     const countInput = document.getElementById('test-count-input');
     const requested  = parseInt(countInput?.value) || 10;
-    testMaxSteps = Math.min(requested, window.allVerses.length);
+    testMaxSteps = Math.min(requested, rangedVerses.length);
 
-    testSessionVerses = [...window.allVerses]
+    // [요청] 범위 내에서 랜덤으로 섞어서 출제
+    testSessionVerses = [...rangedVerses]
         .sort(() => Math.random() - 0.5)
         .slice(0, testMaxSteps);
 

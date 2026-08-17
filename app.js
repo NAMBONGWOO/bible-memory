@@ -126,6 +126,11 @@ window.setMode = (mode) => {
     document.getElementById('status-panel').style.display    = 'none';
     document.getElementById('part-container').style.display  = isTest ? 'none'  : 'flex';
 
+    // [요청] 테스트 설정 화면 진입 시 파트/범위 선택 UI 갱신
+    if (isTest && window.populateTestPartSelect) {
+        window.populateTestPartSelect();
+    }
+
     const quickSel = document.getElementById('quick-data-select');
     if (quickSel) quickSel.style.display = isTest ? 'none' : 'block';
 
