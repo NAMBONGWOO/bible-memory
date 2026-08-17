@@ -9,7 +9,10 @@ window.updateCardUI = (verse) => {
     const content = document.getElementById('v-content');
     content.innerText = verse.content || '';
 
-    if (window.currentMode === 'practice') {
+    // [변경] 암송연습2(bilingual)도 연습1과 동일한 카드 표시 로직을 사용
+    const isPracticeLike = (window.currentMode === 'practice' || window.currentMode === 'bilingual');
+
+    if (isPracticeLike) {
         // [요청] 자동 공개 토글이 켜져 있으면 카드 전환 즉시 내용까지 표시
         content.style.display = window.autoRevealOn ? 'block' : 'none';
         document.getElementById('test-section').style.display = 'none';
@@ -33,6 +36,11 @@ window.updateCardUI = (verse) => {
     // [요청] 연습 모드에서 마지막 위치(코스/파트/구절) 저장 — 디바운스
     if (window.currentMode === 'practice' && window.saveLastPosition) {
         window.saveLastPosition(verse);
+    }
+
+    // [요청] 암송연습2 — 카드 전환 시 언어 상태를 한글로 리셋
+    if (window.currentMode === 'bilingual' && window.onBilingualCardChanged) {
+        window.onBilingualCardChanged();
     }
 };
 
@@ -59,7 +67,7 @@ function updateSwipeArrows() {
 
 // ─── 연습 카드 클릭: 본문 토글 ───────────────────────────────────────────
 window.handleCardClick = () => {
-    if (window.currentMode === 'practice') {
+    if (window.currentMode === 'practice' || window.currentMode === 'bilingual') {
         const content = document.getElementById('v-content');
         if (content) {
             content.style.display = (content.style.display === 'none') ? 'block' : 'none';
@@ -80,7 +88,7 @@ window.toggleAutoReveal = () => {
     if (toggleEl) toggleEl.classList.toggle('on', window.autoRevealOn);
 
     // 지금 보고 있는 카드에도 즉시 반영
-    if (window.currentMode === 'practice' && window.verses && window.currentIndex != null) {
+    if ((window.currentMode === 'practice' || window.currentMode === 'bilingual') && window.verses && window.currentIndex != null) {
         const content = document.getElementById('v-content');
         if (content) content.style.display = window.autoRevealOn ? 'block' : 'none';
     }
@@ -221,7 +229,7 @@ window.prevVerse = () => {
         area.dataset.swipeBound = 'true';
 
         area.addEventListener('touchstart', (e) => {
-            if (window.currentMode !== 'practice') return;
+            if (window.currentMode !== 'practice' && window.currentMode !== 'bilingual') return;
             const t = e.touches[0];
             startX = t.clientX;
             startY = t.clientY;
@@ -231,7 +239,7 @@ window.prevVerse = () => {
         }, { passive: true });
 
         area.addEventListener('touchmove', (e) => {
-            if (!isDragging || window.currentMode !== 'practice') return;
+            if (!isDragging || (window.currentMode !== 'practice' && window.currentMode !== 'bilingual')) return;
             const t = e.touches[0];
             const dx = t.clientX - startX;
             const dy = t.clientY - startY;
@@ -242,7 +250,7 @@ window.prevVerse = () => {
         }, { passive: true });
 
         area.addEventListener('touchend', (e) => {
-            if (!isDragging || window.currentMode !== 'practice') return;
+            if (!isDragging || (window.currentMode !== 'practice' && window.currentMode !== 'bilingual')) return;
             isDragging = false;
             card.classList.remove('dragging');
             card.style.transform = '';

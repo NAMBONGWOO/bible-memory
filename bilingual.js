@@ -1,333 +1,150 @@
-// ─── 암송연습 2: 한/영 통합 카드 모듈 ────────────────────────────────────
-// 기존 nav_60.json(한글) / nav_60_en.json(영어)를 같은 id 기준으로 짝지어
-// 하나의 카드 양면(앞:한글, 뒤:영어)으로 보여준다.
-// 기존 암송연습 1(practice.js)과 완전히 분리되어 서로 영향을 주지 않는다.
+// ─── 암송연습 2: 한/영 통합 (경량 버전) ──────────────────────────────────
+// [리팩터링] 별도 화면을 만들지 않고 암송연습1(app-main-view)을 그대로 재사용한다.
+// window.currentMode === 'bilingual' 일 때:
+//   - window.verses에는 한글 데이터가 그대로 들어간다 (기존 슬라이드/화살표/
+//     스와이프/자동공개 토글 로직이 practice.js 그대로 작동)
+//   - 길게 누르면 같은 카드 안에서 언어만 한글⇄영어로 바꿔치기한다 (전환 애니메이션 없음,
+//     기존 카드 슬라이드/뒤집기 애니메이션과 충돌하지 않도록 텍스트만 교체)
+//   - 짝 코스 목록은 config_bilingual.json, id 매칭으로 영어 항목을 찾는다
 
-let blPairs = [];      // config_bilingual.json 목록
-let blAllKo = [];      // 현재 코스 전체 한글 배열 (파트 필터 전)
-let blAllEn = [];      // 현재 코스 전체 영어 배열 (같은 인덱스가 같은 id)
-let blKoVerses = [];   // 현재 파트로 필터링된 한글 배열
-let blEnVerses = [];   // 현재 파트로 필터링된 영어 배열
-let blIndex = 0;
-let blRevealOn = localStorage.getItem('bilingualRevealOn') === 'true';
-let blFlipped = false;
+let blPairs = [];          // config_bilingual.json 목록 [{name, ko, en}]
+let blEnByFile = {};       // { 'nav_60_en.json': [verse, ...] } 캐시
+let blCurrentEnFile = null;
+let blIsEnglish = false;   // 현재 뒤집혀서 영어를 보고 있는지
 
-// ─── 화면 열기 / 닫기 ────────────────────────────────────────────────────
-window.openBilingualScreen = async () => {
-    window.toggleMenu();
-    document.getElementById('bilingual-screen').style.display = 'flex';
-    document.getElementById('app-main-view').style.display = 'none';
-    const mainTopBar = document.getElementById('main-top-bar');
-    if (mainTopBar) mainTopBar.style.display = 'none';
-
-    updateBilingualToggleUI();
-
+// ─── 암송연습2 진입 시 초기화 — app.js의 setMode('bilingual')에서 호출 ──
+window.initBilingualMode = async () => {
     if (blPairs.length === 0) {
         await loadBilingualConfig();
     }
-    if (blAllKo.length === 0 && blPairs.length > 0) {
-        await loadBilingualCourse(blPairs[0].ko);
+    blIsEnglish = false;
+    updateLangBadge();
+
+    // 짝이 있는 코스인지 확인 — 현재 선택된 코스 파일 기준
+    const currentFile = document.getElementById('data-select')?.value;
+    const pair = blPairs.find(p => p.ko === currentFile);
+
+    if (pair) {
+        blCurrentEnFile = pair.en;
+        await ensureEnglishLoaded(pair.en);
+    } else if (blPairs.length > 0) {
+        // 현재 코스가 짝이 없으면, 짝이 있는 첫 코스로 전환
+        const sel = document.getElementById('data-select');
+        if (sel) {
+            sel.value = blPairs[0].ko;
+            window.syncDataSelects(blPairs[0].ko);
+            await window.loadData(blPairs[0].ko);
+        }
+        blCurrentEnFile = blPairs[0].en;
+        await ensureEnglishLoaded(blPairs[0].en);
     } else {
-        renderBilingualCard();
+        alert('한/영 짝 데이터가 없습니다.');
     }
 };
 
-window.closeBilingualScreen = () => {
-    document.getElementById('bilingual-screen').style.display = 'none';
-    document.getElementById('app-main-view').style.display = 'flex';
-    const mainTopBar = document.getElementById('main-top-bar');
-    if (mainTopBar) mainTopBar.style.display = 'flex';
-};
-
-// ─── 짝 목록(config_bilingual.json) 로드 → 코스 드롭다운 채우기 ──────────
 async function loadBilingualConfig() {
-    const sel = document.getElementById('bilingual-course-select');
     try {
         const res = await fetch('data/config_bilingual.json');
         blPairs = await res.json();
-        sel.innerHTML = blPairs.map(p => `<option value="${p.ko}">${p.name}</option>`).join('');
     } catch (e) {
         console.error('config_bilingual.json 로드 실패:', e);
-        sel.innerHTML = '<option value="">불러올 수 없음</option>';
+        blPairs = [];
     }
 }
 
-// ─── 선택한 코스의 한글/영어 파일을 각각 로드하고 id로 짝짓기 ───────────
-window.loadBilingualCourse = async (koFile) => {
-    const pair = blPairs.find(p => p.ko === koFile);
-    if (!pair) return;
-
+async function ensureEnglishLoaded(enFile) {
+    if (blEnByFile[enFile]) return;
     try {
-        const [koRes, enRes] = await Promise.all([
-            fetch(`data/${pair.ko}`),
-            fetch(`data/${pair.en}`)
-        ]);
-        const koData = await koRes.json();
-        const enData = await enRes.json();
-
-        // id 기준으로 영어 항목을 빠르게 찾기 위한 매핑
-        const enById = new Map(enData.map(v => [v.id, v]));
-
-        // 한글 순서를 기준으로, 같은 id의 영어 항목을 나란히 정렬
-        blAllKo = [];
-        blAllEn = [];
-        koData.forEach(ko => {
-            const en = enById.get(ko.id);
-            if (en) {
-                blAllKo.push(ko);
-                blAllEn.push(en);
-            }
-        });
-
-        generateBilingualPartButtons();
-
-        // 첫 번째 파트로 시작 (파트 정보가 없으면 전체를 하나로 취급)
-        const firstPart = blAllKo.length > 0 ? blAllKo[0].p : null;
-        filterBilingualPart(firstPart);
+        const res = await fetch(`data/${enFile}`);
+        blEnByFile[enFile] = await res.json();
     } catch (e) {
-        console.error('한/영 데이터 로드 실패:', e);
-        alert('데이터를 불러올 수 없습니다.');
+        console.error(`${enFile} 로드 실패:`, e);
+        blEnByFile[enFile] = [];
     }
-};
+}
 
-// ─── [요청] 소주제 파트 버튼 생성 (암송연습1의 generatePartButtons와 동일 방식) ─
-function generateBilingualPartButtons() {
-    const container = document.getElementById('bilingual-part-container');
-    if (!container) return;
-    container.innerHTML = '';
-
-    const parts = [...new Set(blAllKo.map(v => v.p))];
-    if (parts.length <= 1) {
-        // 파트가 하나뿐이거나 없으면 버튼 자체를 표시하지 않음
-        container.style.display = 'none';
+// ─── [요청] 코스를 바꿨을 때 영어 짝 파일 갱신 — app.js의 loadData에서 호출 ─
+window.syncBilingualPair = async (koFile) => {
+    if (blPairs.length === 0) await loadBilingualConfig();
+    const pair = blPairs.find(p => p.ko === koFile);
+    if (!pair) {
+        blCurrentEnFile = null;
         return;
     }
-    container.style.display = 'flex';
-
-    parts.forEach(p => {
-        const btn = document.createElement('button');
-        btn.className = 'part-btn';
-        btn.innerText = p;
-        btn.onclick = () => filterBilingualPart(p);
-        container.appendChild(btn);
-    });
-}
-
-// ─── 파트 필터링 ─────────────────────────────────────────────────────────
-function filterBilingualPart(part) {
-    if (part) {
-        blKoVerses = blAllKo.filter(v => v.p === part);
-        blEnVerses = blAllEn.filter((_, i) => blAllKo[i].p === part);
-    } else {
-        blKoVerses = blAllKo;
-        blEnVerses = blAllEn;
-    }
-
-    document.querySelectorAll('#bilingual-part-container .part-btn').forEach(b =>
-        b.classList.toggle('active', b.innerText === part)
-    );
-
-    blIndex = 0;
-    blFlipped = false;
-    renderBilingualCard();
-}
-
-// ─── 카드 렌더링 ─────────────────────────────────────────────────────────
-function renderBilingualCard() {
-    if (blKoVerses.length === 0) return;
-
-    const ko = blKoVerses[blIndex];
-    const en = blEnVerses[blIndex];
-
-    document.getElementById('bl-ko-ref').innerText    = ko.ref   || '';
-    document.getElementById('bl-ko-theme').innerText  = ko.theme || '';
-    document.getElementById('bl-ko-content').innerText = ko.content || '';
-
-    document.getElementById('bl-en-ref').innerText    = en.ref   || '';
-    document.getElementById('bl-en-theme').innerText  = en.theme || '';
-    document.getElementById('bl-en-content').innerText = en.content || '';
-
-    // [요청] 자동 본문보이기 토글에 따라 내용 표시 여부 결정
-    document.getElementById('bl-ko-content').style.display = blRevealOn ? 'block' : 'none';
-    document.getElementById('bl-en-content').style.display = blRevealOn ? 'block' : 'none';
-
-    document.getElementById('bilingual-page').innerText = `${blIndex + 1} / ${blKoVerses.length}`;
-
-    updateBilingualArrows();
-}
-
-// ─── [요청] 카드 슬라이드 애니메이션 — 암송연습1과 동일한 방식 ──────────
-// 뒤집기(rotateY)는 안쪽 bilingual-card가, 슬라이드(translateX)는
-// 바깥 bilingual-card-clip이 각각 담당해 두 transform이 충돌하지 않는다.
-const BL_SLIDE_DURATION = 260;
-let blIsSliding = false;
-let _blFlashTimer = null;
-
-function flashBilingualArrows() {
-    const leftArrow  = document.getElementById('bilingual-arrow-left');
-    const rightArrow = document.getElementById('bilingual-arrow-right');
-    if (!leftArrow || !rightArrow) return;
-
-    if (!leftArrow.classList.contains('disabled'))  leftArrow.classList.add('flash');
-    if (!rightArrow.classList.contains('disabled')) rightArrow.classList.add('flash');
-
-    clearTimeout(_blFlashTimer);
-    _blFlashTimer = setTimeout(() => {
-        leftArrow.classList.remove('flash');
-        rightArrow.classList.remove('flash');
-    }, BL_SLIDE_DURATION + 600);
-}
-
-function updateBilingualArrows() {
-    const leftArrow  = document.getElementById('bilingual-arrow-left');
-    const rightArrow = document.getElementById('bilingual-arrow-right');
-    if (!leftArrow || !rightArrow) return;
-    leftArrow.classList.toggle('disabled', blIndex <= 0);
-    rightArrow.classList.toggle('disabled', blIndex >= blKoVerses.length - 1);
-}
-
-function slideBilingualTo(nextIndex, direction) {
-    if (blIsSliding) return;
-    if (!blKoVerses.length || nextIndex < 0 || nextIndex >= blKoVerses.length) return;
-
-    flashBilingualArrows();
-
-    const clip = document.getElementById('bilingual-card-clip');
-    if (!clip) {
-        blIndex = nextIndex;
-        resetFlipState();
-        renderBilingualCard();
-        return;
-    }
-
-    blIsSliding = true;
-    const outX = direction === 'next' ? '-100%' : '100%';
-    const inX  = direction === 'next' ? '100%'  : '-100%';
-
-    clip.style.transition = `transform ${BL_SLIDE_DURATION}ms ease, opacity ${BL_SLIDE_DURATION}ms ease`;
-    clip.style.transform = `translateX(${outX})`;
-    clip.style.opacity = '0';
-
-    setTimeout(() => {
-        blIndex = nextIndex;
-        resetFlipState();
-        renderBilingualCard();
-
-        clip.style.transition = 'none';
-        clip.style.transform = `translateX(${inX})`;
-        clip.style.opacity = '0';
-
-        void clip.offsetWidth;
-
-        clip.style.transition = `transform ${BL_SLIDE_DURATION}ms ease, opacity ${BL_SLIDE_DURATION}ms ease`;
-        clip.style.transform = 'translateX(0)';
-        clip.style.opacity = '1';
-
-        setTimeout(() => {
-            clip.style.transition = '';
-            blIsSliding = false;
-        }, BL_SLIDE_DURATION);
-    }, BL_SLIDE_DURATION);
-}
-
-// ─── 이전 / 다음 ─────────────────────────────────────────────────────────
-window.nextBilingual = () => {
-    if (blIndex >= blKoVerses.length - 1) return;
-    slideBilingualTo(blIndex + 1, 'next');
+    blCurrentEnFile = pair.en;
+    await ensureEnglishLoaded(pair.en);
+    blIsEnglish = false;
+    updateLangBadge();
 };
 
-window.prevBilingual = () => {
-    if (blIndex <= 0) return;
-    slideBilingualTo(blIndex - 1, 'prev');
-};
-
-// 카드 전환 시 항상 한글면(앞면)으로 리셋 — 매번 뒤집힌 채로 시작하면 헷갈림
-function resetFlipState() {
-    blFlipped = false;
-    const card = document.getElementById('bilingual-card');
-    if (card) card.classList.remove('flipped');
+// ─── 현재 카드의 id로 영어 항목 찾기 ────────────────────────────────────
+function findEnglishVerse(koVerse) {
+    if (!blCurrentEnFile || !koVerse) return null;
+    const enList = blEnByFile[blCurrentEnFile] || [];
+    return enList.find(v => v.id === koVerse.id) || null;
 }
 
-// ─── 본문 보이기 토글 (헤더 스위치) ──────────────────────────────────────
-window.toggleBilingualReveal = () => {
-    blRevealOn = !blRevealOn;
-    localStorage.setItem('bilingualRevealOn', blRevealOn);
-    updateBilingualToggleUI();
-    renderBilingualCard();
-};
-
-function updateBilingualToggleUI() {
-    const toggleEl = document.getElementById('bilingual-reveal-toggle');
-    if (toggleEl) toggleEl.classList.toggle('on', blRevealOn);
+// ─── 언어 뱃지 표시/갱신 ─────────────────────────────────────────────────
+function updateLangBadge() {
+    const badge = document.getElementById('lang-badge');
+    if (!badge) return;
+    const isBilingual = window.currentMode === 'bilingual';
+    badge.style.display = isBilingual ? 'block' : 'none';
+    badge.innerText = blIsEnglish ? 'English' : '한글';
 }
 
-// ─── [요청] 스와이프(좌우 이동) + 롱프레스(제자리 뒤집기) 통합 핸들러 ───
-// 규칙: 손가락이 거의 안 움직이고 400ms 이상 눌리면 → 뒤집기
-//       가로로 50px 이상 이동하면 → 스와이프로 페이지 전환 (뒤집기 취소)
-(function initTouchGestures() {
-    const LONG_PRESS_MS   = 400;
-    const MOVE_CANCEL_PX  = 12;   // 이 이상 움직이면 롱프레스 취소
-    const SWIPE_THRESHOLD = 50;
+// ─── 카드가 갱신될 때마다(다음/이전/스와이프 등) 언어 상태 리셋 ─────────
+// practice.js의 updateCardUI 끝에서 호출된다 (아래 훅 참고)
+window.onBilingualCardChanged = () => {
+    if (window.currentMode !== 'bilingual') return;
+    blIsEnglish = false; // 카드 전환 시 항상 한글면부터 다시 시작
+    updateLangBadge();
+};
 
-    let startX = 0, startY = 0;
-    let pressTimer = null;
-    let dragging = false;
+// ─── 길게 누르면 언어 전환 ───────────────────────────────────────────────
+// practice-area에 이미 스와이프/탭 핸들러가 있으므로, 그 안에서 판단하지 않고
+// 여기서 독립적인 롱프레스 리스너를 추가로 붙인다 (탭/스와이프 판정과는 무관하게
+// "제자리에서 오래 누름"만 감지).
+(function initBilingualLongPress() {
+    const LONG_PRESS_MS  = 400;
+    const MOVE_CANCEL_PX = 12;
+    let startX = 0, startY = 0, pressTimer = null, active = false;
 
     function attach() {
-        const clip = document.getElementById('bilingual-card-clip');
-        if (!clip || clip.dataset.gestureBound) return;
-        clip.dataset.gestureBound = 'true';
+        const area = document.getElementById('practice-area');
+        if (!area || area.dataset.langPressBound) return;
+        area.dataset.langPressBound = 'true';
 
-        clip.addEventListener('touchstart', (e) => {
-            const t = e.touches[0];
-            startX = t.clientX;
-            startY = t.clientY;
-            dragging = true;
-
+        const start = (x, y) => {
+            if (window.currentMode !== 'bilingual') return;
+            startX = x; startY = y; active = true;
             pressTimer = setTimeout(() => {
-                if (!dragging) return; // 이미 스와이프로 취소된 경우
-                blFlipped = !blFlipped;
-                document.getElementById('bilingual-card').classList.toggle('flipped', blFlipped);
-                dragging = false;
+                if (!active) return;
+                toggleBilingualLanguage();
+                active = false;
             }, LONG_PRESS_MS);
-        }, { passive: true });
-
-        clip.addEventListener('touchmove', (e) => {
-            if (!dragging) return;
-            const t = e.touches[0];
-            const dx = Math.abs(t.clientX - startX);
-            const dy = Math.abs(t.clientY - startY);
-            if (dx > MOVE_CANCEL_PX || dy > MOVE_CANCEL_PX) {
-                clearTimeout(pressTimer); // 움직였으니 뒤집기 취소, 스와이프로 처리
+        };
+        const move = (x, y) => {
+            if (!active) return;
+            if (Math.abs(x - startX) > MOVE_CANCEL_PX || Math.abs(y - startY) > MOVE_CANCEL_PX) {
+                clearTimeout(pressTimer);
+                active = false;
             }
+        };
+        const cancel = () => { clearTimeout(pressTimer); active = false; };
+
+        area.addEventListener('touchstart', (e) => {
+            const t = e.touches[0]; start(t.clientX, t.clientY);
         }, { passive: true });
+        area.addEventListener('touchmove', (e) => {
+            const t = e.touches[0]; move(t.clientX, t.clientY);
+        }, { passive: true });
+        area.addEventListener('touchend', cancel);
 
-        clip.addEventListener('touchend', (e) => {
-            clearTimeout(pressTimer);
-            if (!dragging) { dragging = false; return; }
-            dragging = false;
-
-            const t = e.changedTouches[0];
-            const dx = t.clientX - startX;
-            const dy = t.clientY - startY;
-            if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
-                if (dx < 0) window.nextBilingual();
-                else window.prevBilingual();
-            }
-        });
-
-        // 데스크톱 마우스 지원 (길게 클릭 = 뒤집기)
-        clip.addEventListener('mousedown', () => {
-            dragging = true;
-            pressTimer = setTimeout(() => {
-                if (!dragging) return;
-                blFlipped = !blFlipped;
-                document.getElementById('bilingual-card').classList.toggle('flipped', blFlipped);
-                dragging = false;
-            }, LONG_PRESS_MS);
-        });
-        clip.addEventListener('mouseup', () => { clearTimeout(pressTimer); dragging = false; });
-        clip.addEventListener('mouseleave', () => { clearTimeout(pressTimer); dragging = false; });
+        area.addEventListener('mousedown', (e) => start(e.clientX, e.clientY));
+        area.addEventListener('mousemove', (e) => move(e.clientX, e.clientY));
+        area.addEventListener('mouseup', cancel);
+        area.addEventListener('mouseleave', cancel);
     }
 
     if (document.readyState === 'loading') {
@@ -336,3 +153,21 @@ function updateBilingualToggleUI() {
         attach();
     }
 })();
+
+// ─── 언어 전환 실행 ──────────────────────────────────────────────────────
+function toggleBilingualLanguage() {
+    if (!window.verses || window.currentIndex == null) return;
+    const koVerse = window.verses[window.currentIndex];
+    const enVerse = findEnglishVerse(koVerse);
+    if (!enVerse) return;
+
+    blIsEnglish = !blIsEnglish;
+    const showVerse = blIsEnglish ? enVerse : koVerse;
+
+    // 기존 카드 요소들에 텍스트만 교체 — 슬라이드/뒤집기 애니메이션과 무관
+    document.getElementById('v-ref').innerText   = showVerse.ref   || '';
+    document.getElementById('v-theme').innerText = showVerse.theme || '';
+    document.getElementById('v-content').innerText = showVerse.content || '';
+
+    updateLangBadge();
+}

@@ -111,12 +111,23 @@ window.syncDataSelects = (value) => {
     if (quickSel) quickSel.value = value;
 };
 
-// ─── 모드 전환: 연습 ↔ 테스트 ────────────────────────────────────────────
+// ─── [변경] 헤더의 자동공개 토글 — practice/bilingual 모두 동일한 토글 사용 ─
+window.toggleCurrentReveal = () => {
+    if (window.toggleAutoReveal) window.toggleAutoReveal();
+};
+
+// ─── 모드 전환: 연습 / 테스트 / 연습2(한영) ──────────────────────────────
+// [리팩터링] bilingual은 별도 화면이 아니라 practice와 같은 app-main-view를
+// 그대로 사용한다. 카드 표시/슬라이드/화살표/토글 로직은 practice.js 그대로,
+// 여기서는 초기화 시점에 bilingual.js의 데이터 준비 함수만 추가로 호출한다.
 window.setMode = (mode) => {
     window.currentMode = mode;
-    const isTest = (mode === 'test');
+    const isTest      = (mode === 'test');
+    const isBilingual = (mode === 'bilingual');
+    const isPracticeLike = !isTest; // practice, bilingual 모두 같은 카드뷰 사용
 
-    document.getElementById('mode-title').innerText = isTest ? '암송 테스트' : '암송 연습';
+    const titles = { practice: '암송 연습', test: '암송 테스트', bilingual: '암송 연습 2 (한/영)' };
+    document.getElementById('mode-title').innerText = titles[mode] || '암송 연습';
 
     document.getElementById('test-setup').style.display      = isTest ? 'block' : 'none';
     document.getElementById('practice-area').style.display   = isTest ? 'none'  : 'block';
@@ -132,26 +143,33 @@ window.setMode = (mode) => {
     }
 
     const quickSel = document.getElementById('quick-data-select');
-    if (quickSel) quickSel.style.display = isTest ? 'none' : 'block';
+    if (quickSel) quickSel.style.display = isPracticeLike ? 'block' : 'none';
 
-    // [요청] 연습 모드 전용 - 자동 공개 토글은 테스트 모드에서 숨김
+    // 자동 공개 토글은 연습1/연습2에서 보이고, 테스트에서는 숨김
     const autoRevealToggle = document.getElementById('auto-reveal-toggle');
-    if (autoRevealToggle) autoRevealToggle.style.visibility = isTest ? 'hidden' : 'visible';
+    if (autoRevealToggle) {
+        autoRevealToggle.style.visibility = isTest ? 'hidden' : 'visible';
+        autoRevealToggle.classList.toggle('on', window.autoRevealOn);
+    }
 
     // [버그 수정] 테스트 모드에서는 채점 결과가 길어질 수 있으므로
     // 카드 내부 정렬을 상단(flex-start)으로 바꿔 스크롤이 자연스럽게 시작되도록 함
     const mainCard = document.getElementById('main-card');
     if (mainCard) mainCard.style.justifyContent = isTest ? 'flex-start' : 'center';
 
-    // 연습 모드로 돌아올 때: 파트/구절은 그대로 유지하고 화면만 다시 표시
-    // (코스 자체를 바꾼 적이 없다면 데이터 재로드 불필요 — 세션 중 위치 유지)
-    if (!isTest) {
+    if (isPracticeLike) {
+        // 세션 중 이미 로드된 데이터가 있으면 그대로 재사용, 없으면 새로 로드
         if (window.verses && window.verses.length > 0 && window.currentIndex != null) {
             window.updateCardUI(window.verses[window.currentIndex]);
         } else {
             const currentFile = document.getElementById('data-select').value;
             if (currentFile) window.loadData(currentFile);
         }
+    }
+
+    // [요청] 암송연습2 진입 시 — 짝 언어(en) 데이터 준비
+    if (isBilingual && window.initBilingualMode) {
+        window.initBilingualMode();
     }
 
     window.toggleMenu();
@@ -199,6 +217,11 @@ window.loadData = async (f) => {
     } catch (e) {
         console.error('JSON 로드 실패:', e);
         alert(`데이터 파일을 불러올 수 없습니다: ${f}`);
+    }
+
+    // [요청] 암송연습2 모드에서 코스를 바꾸면 영어 짝 데이터도 함께 갱신
+    if (window.currentMode === 'bilingual' && window.syncBilingualPair) {
+        window.syncBilingualPair(f);
     }
 };
 

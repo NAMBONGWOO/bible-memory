@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=21">
+    <link rel="stylesheet" href="style.css?v=23">
 </head>
 <body>
 
@@ -79,8 +79,8 @@
         <header class="top-bar" id="main-top-bar">
             <button onclick="toggleMenu()" style="background:none; border:none; color:white; font-size:30px; cursor:pointer;">≡</button>
             <div id="mode-title" style="font-weight:bold;">암송 연습</div>
-            <!-- [요청] 연습 모드 전용: 내용 자동 공개 토글 -->
-            <div id="auto-reveal-toggle" class="auto-reveal-toggle" onclick="toggleAutoReveal()" title="내용 자동 표시">
+            <!-- [변경] 암송연습1/2 공용 - 내용 자동 공개 토글, 현재 모드에 맞게 동작 -->
+            <div id="auto-reveal-toggle" class="auto-reveal-toggle" onclick="toggleCurrentReveal()" title="내용 자동 표시">
                 <div class="auto-reveal-knob"></div>
             </div>
         </header>
@@ -89,7 +89,7 @@
         <div class="side-menu" id="sideMenu">
             <div id="user-display" style="font-weight:bold; font-size:22px; color:var(--dark-blue); margin-bottom:25px;">사용자님</div>
             <div class="menu-item" style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="setMode('practice')">📖 암송 연습</div>
-            <div class="menu-item" style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="openBilingualScreen()">🔄 암송 연습 2 (한/영)</div>
+            <div class="menu-item" style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="setMode('bilingual')">🔄 암송 연습 2 (한/영)</div>
             <div class="menu-item" style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="setMode('test')">✍️ 암송 테스트</div>
             <div class="menu-item" style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="openRecordsScreen()">📊 암송 기록</div>
 
@@ -158,6 +158,8 @@
                 <!-- 연습 카드 영역 (클릭 시 본문 토글) -->
                 <!-- [요청#4,5] 스와이프 지원 + 터치 영역 카드 전체로 확대 -->
                 <div id="practice-area" style="cursor:pointer; width:100%; min-height:180px; touch-action:pan-y; text-align:left;">
+                    <!-- [요청] 한/영 통합 모드에서만 표시 — 현재 언어 뱃지 -->
+                    <div id="lang-badge" style="display:none; font-size:11px; color:var(--main-blue); font-weight:bold; margin-bottom:6px;">한글</div>
                     <div id="v-theme" style="font-size:22px; font-weight:bold; margin-bottom:10px; color:#333; text-align:left;">주제</div>
                     <div id="v-content" style="font-size:19px; line-height:1.7; display:none; word-break:keep-all; color:#444; text-align:left;">내용</div>
                 </div>
@@ -273,56 +275,6 @@
             <div class="settings-version">성경암송 매니저 v1.0</div>
         </div>
 
-        <!-- ⑤ 암송연습 2: 한/영 통합 카드 (길게 누르면 뒤집힘) -->
-        <div id="bilingual-screen" style="display:none; width:100%; height:100vh; overflow:hidden; display:flex; flex-direction:column;">
-            <header class="top-bar" style="position:sticky; top:0;">
-                <button onclick="closeBilingualScreen()" style="background:none; border:none; color:white; font-size:22px; cursor:pointer;">‹</button>
-                <div style="font-weight:bold;">암송 연습 2</div>
-                <!-- [요청] 본문 자동 공개 토글 — 암송연습1과 동일한 스타일 -->
-                <div id="bilingual-reveal-toggle" class="auto-reveal-toggle" onclick="toggleBilingualReveal()" title="본문 자동 표시">
-                    <div class="auto-reveal-knob"></div>
-                </div>
-            </header>
-
-            <div style="flex:1; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding-top:14px; box-sizing:border-box; background:radial-gradient(circle at top, var(--main-blue) 0%, var(--dark-blue) 100%);">
-                <select id="bilingual-course-select" class="quick-select" onchange="loadBilingualCourse(this.value)" style="margin-bottom:8px;"></select>
-
-                <!-- [요청] 소주제 파트 버튼 — 암송연습1과 동일한 위치/역할 -->
-                <div id="bilingual-part-container" style="display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-bottom:10px; width:96%; flex-shrink:0;"></div>
-
-                <div style="font-size:11px; color:rgba(255,255,255,0.65); margin-bottom:8px;">길게 눌러 한/영 전환</div>
-
-                <!-- [요청] 암송연습1과 동일한 스와이프 화살표 + 슬라이드 클리핑 구조 -->
-                <div id="bilingual-swipe-wrap" style="position:relative; width:96%; max-width:450px; flex:1; min-height:0; display:flex; flex-direction:column;">
-                    <div id="bilingual-arrow-left" class="swipe-arrow" style="left:-6px;" onclick="prevBilingual()">‹</div>
-                    <div id="bilingual-arrow-right" class="swipe-arrow" style="right:-6px;" onclick="nextBilingual()">›</div>
-
-                    <div id="bilingual-card-clip" style="overflow:hidden; flex:1; min-height:0; display:flex; perspective:1000px;">
-                        <div id="bilingual-card" class="bilingual-flip-card">
-                            <div class="bilingual-flip-face front">
-                                <div id="bl-ko-ref" class="bilingual-ref">장절</div>
-                                <div id="bl-ko-theme" class="bilingual-theme">제목</div>
-                                <div id="bl-ko-content" class="bilingual-content">내용</div>
-                                <div class="bilingual-lang-badge">한글</div>
-                            </div>
-                            <div class="bilingual-flip-face back">
-                                <div id="bl-en-ref" class="bilingual-ref">Ref</div>
-                                <div id="bl-en-theme" class="bilingual-theme">Theme</div>
-                                <div id="bl-en-content" class="bilingual-content">Content</div>
-                                <div class="bilingual-lang-badge">EN</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div style="width:90%; max-width:450px; display:flex; gap:12px; margin-top:14px; flex-shrink:0;">
-                    <button class="btn" style="background:white; color:#333; flex:1; border:1px solid #ddd;" onclick="prevBilingual()">이전</button>
-                    <button class="btn primary-btn" style="flex:1;" onclick="nextBilingual()">다음</button>
-                </div>
-                <div id="bilingual-page" style="margin:10px 0; color:rgba(255,255,255,0.7); font-size:14px; flex-shrink:0;">0 / 0</div>
-            </div>
-        </div>
-
         <!-- ── 개인설정 관련 오버레이 모달들 ─────────────────────────── -->
 
         <!-- 닉네임 변경 -->
@@ -381,13 +333,13 @@
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js?v=21"></script>
-    <script src="test.js?v=21"></script>
-    <script src="bilingual.js?v=21"></script>
-    <script type="module" src="auth.js?v=21"></script>
-    <script type="module" src="records.js?v=21"></script>
-    <script type="module" src="settings.js?v=21"></script>
-    <script type="module" src="app.js?v=21"></script>
+    <script src="practice.js?v=23"></script>
+    <script src="test.js?v=23"></script>
+    <script src="bilingual.js?v=23"></script>
+    <script type="module" src="auth.js?v=23"></script>
+    <script type="module" src="records.js?v=23"></script>
+    <script type="module" src="settings.js?v=23"></script>
+    <script type="module" src="app.js?v=23"></script>
 
 </body>
 </html>
