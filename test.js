@@ -323,6 +323,10 @@ window.runCheck = () => {
     `;
     document.getElementById('test-result-view').style.display = 'block';
     updateStatus();
+
+    // [버그 수정] 채점 결과가 카드보다 길어질 때, 결과가 잘 보이도록 카드 스크롤을 맨 위로
+    const mainCardEl = document.getElementById('main-card');
+    if (mainCardEl) mainCardEl.scrollTop = 0;
 };
 
 // ─── [4] 다음 문제 ───────────────────────────────────────────────────────
@@ -339,6 +343,10 @@ window.testNext = () => {
         document.getElementById('test-result-view').style.display = 'none';
         window.updateCardUI(window.verses[window.currentIndex]);
         updateStatus();
+
+        // [버그 수정] 새 문제 시작 시 이전 스크롤 위치가 남지 않도록 초기화
+        const mainCardEl = document.getElementById('main-card');
+        if (mainCardEl) mainCardEl.scrollTop = 0;
     } else {
         const avg = (testTotalPenalty/testMaxSteps).toFixed(1);
         alert(`테스트 완료!\n총 ${testMaxSteps}구절\n누적 감점: ${testTotalPenalty}점\n평균 감점: ${avg}점/구절\n\n연습 모드로 돌아갑니다.`);
