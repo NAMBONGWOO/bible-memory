@@ -129,6 +129,10 @@ window.setMode = (mode) => {
     const quickSel = document.getElementById('quick-data-select');
     if (quickSel) quickSel.style.display = isTest ? 'none' : 'block';
 
+    // [요청] 연습 모드 전용 - 자동 공개 토글은 테스트 모드에서 숨김
+    const autoRevealToggle = document.getElementById('auto-reveal-toggle');
+    if (autoRevealToggle) autoRevealToggle.style.visibility = isTest ? 'hidden' : 'visible';
+
     // [버그 수정] 테스트 모드에서는 채점 결과가 길어질 수 있으므로
     // 카드 내부 정렬을 상단(flex-start)으로 바꿔 스크롤이 자연스럽게 시작되도록 함
     const mainCard = document.getElementById('main-card');

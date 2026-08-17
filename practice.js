@@ -10,7 +10,8 @@ window.updateCardUI = (verse) => {
     content.innerText = verse.content || '';
 
     if (window.currentMode === 'practice') {
-        content.style.display = 'none';
+        // [요청] 자동 공개 토글이 켜져 있으면 카드 전환 즉시 내용까지 표시
+        content.style.display = window.autoRevealOn ? 'block' : 'none';
         document.getElementById('test-section').style.display = 'none';
         document.getElementById('practice-area').style.display = 'block';
     } else {
@@ -63,6 +64,31 @@ window.handleCardClick = () => {
         }
     }
 };
+
+// ─── [요청] 연습 모드 - 내용 자동 공개 토글 ─────────────────────────────
+// ON: 카드 전환 시 내용이 즉시 보임 (빠르게 훑어보기)
+// OFF: 기존처럼 터치해야 내용이 보임
+window.autoRevealOn = localStorage.getItem('autoRevealOn') === 'true';
+
+window.toggleAutoReveal = () => {
+    window.autoRevealOn = !window.autoRevealOn;
+    localStorage.setItem('autoRevealOn', window.autoRevealOn);
+
+    const toggleEl = document.getElementById('auto-reveal-toggle');
+    if (toggleEl) toggleEl.classList.toggle('on', window.autoRevealOn);
+
+    // 지금 보고 있는 카드에도 즉시 반영
+    if (window.currentMode === 'practice' && window.verses && window.currentIndex != null) {
+        const content = document.getElementById('v-content');
+        if (content) content.style.display = window.autoRevealOn ? 'block' : 'none';
+    }
+};
+
+// 페이지 로드 시 저장된 토글 상태를 스위치 모양에 반영
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleEl = document.getElementById('auto-reveal-toggle');
+    if (toggleEl) toggleEl.classList.toggle('on', window.autoRevealOn);
+});
 
 // ─── 파트 버튼 생성 ──────────────────────────────────────────────────────
 window.generatePartButtons = () => {

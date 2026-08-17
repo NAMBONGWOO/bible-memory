@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=15">
+    <link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
 
@@ -79,7 +79,10 @@
         <header class="top-bar" id="main-top-bar">
             <button onclick="toggleMenu()" style="background:none; border:none; color:white; font-size:30px; cursor:pointer;">≡</button>
             <div id="mode-title" style="font-weight:bold;">암송 연습</div>
-            <div style="width:30px;"></div>
+            <!-- [요청] 연습 모드 전용: 내용 자동 공개 토글 -->
+            <div id="auto-reveal-toggle" class="auto-reveal-toggle" onclick="toggleAutoReveal()" title="내용 자동 표시">
+                <div class="auto-reveal-knob"></div>
+            </div>
         </header>
 
         <div class="menu-overlay" id="overlay" onclick="toggleMenu()"></div>
@@ -311,12 +314,12 @@
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js?v=15"></script>
-    <script src="test.js?v=15"></script>
-    <script type="module" src="auth.js?v=15"></script>
-    <script type="module" src="records.js?v=15"></script>
-    <script type="module" src="settings.js?v=15"></script>
-    <script type="module" src="app.js?v=15"></script>
+    <script src="practice.js?v=16"></script>
+    <script src="test.js?v=16"></script>
+    <script type="module" src="auth.js?v=16"></script>
+    <script type="module" src="records.js?v=16"></script>
+    <script type="module" src="settings.js?v=16"></script>
+    <script type="module" src="app.js?v=16"></script>
 
 </body>
 </html>
