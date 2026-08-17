@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=17">
+    <link rel="stylesheet" href="style.css?v=18">
 </head>
 <body>
 
@@ -89,6 +89,7 @@
         <div class="side-menu" id="sideMenu">
             <div id="user-display" style="font-weight:bold; font-size:22px; color:var(--dark-blue); margin-bottom:25px;">사용자님</div>
             <div class="menu-item" style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="setMode('practice')">📖 암송 연습</div>
+            <div class="menu-item" style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="openBilingualScreen()">🔄 암송 연습 2 (한/영)</div>
             <div class="menu-item" style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="setMode('test')">✍️ 암송 테스트</div>
             <div class="menu-item" style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="openRecordsScreen()">📊 암송 기록</div>
 
@@ -256,6 +257,47 @@
             <div class="settings-version">성경암송 매니저 v1.0</div>
         </div>
 
+        <!-- ⑤ 암송연습 2: 한/영 통합 카드 (길게 누르면 뒤집힘) -->
+        <div id="bilingual-screen" style="display:none; width:100%; height:100vh; overflow:hidden; display:flex; flex-direction:column;">
+            <header class="top-bar" style="position:sticky; top:0;">
+                <button onclick="closeBilingualScreen()" style="background:none; border:none; color:white; font-size:22px; cursor:pointer;">‹</button>
+                <div style="font-weight:bold;">암송 연습 2</div>
+                <div style="width:22px;"></div>
+            </header>
+
+            <div style="flex:1; display:flex; flex-direction:column; align-items:center; overflow:hidden; padding-top:14px; box-sizing:border-box; background:radial-gradient(circle at top, var(--main-blue) 0%, var(--dark-blue) 100%);">
+                <select id="bilingual-course-select" class="quick-select" onchange="loadBilingualCourse(this.value)" style="margin-bottom:8px;"></select>
+
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <button class="bilingual-toggle-btn" id="bilingual-show-toggle" onclick="toggleBilingualReveal()">본문 보이기</button>
+                    <div style="font-size:11px; color:rgba(255,255,255,0.65); align-self:center;">길게 눌러 한/영 전환</div>
+                </div>
+
+                <div id="bilingual-card-clip" style="width:96%; max-width:450px; flex:1; min-height:0; overflow:hidden; perspective:1000px;">
+                    <div id="bilingual-card" class="bilingual-flip-card">
+                        <div class="bilingual-flip-face front">
+                            <div id="bl-ko-ref" class="bilingual-ref">장절</div>
+                            <div id="bl-ko-theme" class="bilingual-theme">제목</div>
+                            <div id="bl-ko-content" class="bilingual-content">내용</div>
+                            <div class="bilingual-lang-badge">한글</div>
+                        </div>
+                        <div class="bilingual-flip-face back">
+                            <div id="bl-en-ref" class="bilingual-ref">Ref</div>
+                            <div id="bl-en-theme" class="bilingual-theme">Theme</div>
+                            <div id="bl-en-content" class="bilingual-content">Content</div>
+                            <div class="bilingual-lang-badge">EN</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="width:90%; max-width:450px; display:flex; gap:12px; margin-top:14px; flex-shrink:0;">
+                    <button class="btn" style="background:white; color:#333; flex:1; border:1px solid #ddd;" onclick="prevBilingual()">이전</button>
+                    <button class="btn primary-btn" style="flex:1;" onclick="nextBilingual()">다음</button>
+                </div>
+                <div id="bilingual-page" style="margin:10px 0; color:rgba(255,255,255,0.7); font-size:14px; flex-shrink:0;">0 / 0</div>
+            </div>
+        </div>
+
         <!-- ── 개인설정 관련 오버레이 모달들 ─────────────────────────── -->
 
         <!-- 닉네임 변경 -->
@@ -314,12 +356,13 @@
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js?v=17"></script>
-    <script src="test.js?v=17"></script>
-    <script type="module" src="auth.js?v=17"></script>
-    <script type="module" src="records.js?v=17"></script>
-    <script type="module" src="settings.js?v=17"></script>
-    <script type="module" src="app.js?v=17"></script>
+    <script src="practice.js?v=18"></script>
+    <script src="test.js?v=18"></script>
+    <script src="bilingual.js?v=18"></script>
+    <script type="module" src="auth.js?v=18"></script>
+    <script type="module" src="records.js?v=18"></script>
+    <script type="module" src="settings.js?v=18"></script>
+    <script type="module" src="app.js?v=18"></script>
 
 </body>
 </html>
