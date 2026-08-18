@@ -263,8 +263,13 @@ window.prevVerse = () => {
             const absDy = Math.abs(dy);
 
             if (absDx < TAP_THRESHOLD && absDy < TAP_THRESHOLD) {
-                // 탭: 본문 토글
-                window.handleCardClick();
+                // 탭: 싱글탭/더블탭 판정은 onTapGesture가 담당
+                // (bilingual 모드가 아니면 항상 싱글탭과 동일하게 즉시 본문 토글)
+                if (window.onTapGesture) {
+                    window.onTapGesture();
+                } else {
+                    window.handleCardClick();
+                }
             } else if (absDx > SWIPE_THRESHOLD && absDx > absDy) {
                 // 스와이프: 좌/우 전환 (카드 슬라이드 애니메이션 적용)
                 if (dx < 0) {

@@ -101,58 +101,35 @@ window.onBilingualCardChanged = () => {
     updateLangBadge();
 };
 
-// ─── 길게 누르면 언어 전환 ───────────────────────────────────────────────
-// practice-area에 이미 스와이프/탭 핸들러가 있으므로, 그 안에서 판단하지 않고
-// 여기서 독립적인 롱프레스 리스너를 추가로 붙인다 (탭/스와이프 판정과는 무관하게
-// "제자리에서 오래 누름"만 감지).
-(function initBilingualLongPress() {
-    const LONG_PRESS_MS  = 400;
-    const MOVE_CANCEL_PX = 12;
-    let startX = 0, startY = 0, pressTimer = null, active = false;
+// ─── [변경] 롱프레스 대신 더블탭으로 언어 전환 ──────────────────────────
+// iOS는 길게 누르면 텍스트 선택 팝업이 뜨는 문제가 있어 더블탭 방식으로 변경.
+// 싱글탭 = 본문 토글(기존 handleCardClick), 더블탭 = 언어 전환(bilingual 모드에서만)
+// 첫 탭 직후 바로 실행하지 않고 짧게 대기해 두 번째 탭이 오는지 확인한다.
+const DOUBLE_TAP_DELAY = 260; // ms
+let _tapTimer = null;
+let _tapCount = 0;
 
-    function attach() {
-        const area = document.getElementById('practice-area');
-        if (!area || area.dataset.langPressBound) return;
-        area.dataset.langPressBound = 'true';
-
-        const start = (x, y) => {
-            if (window.currentMode !== 'bilingual') return;
-            startX = x; startY = y; active = true;
-            pressTimer = setTimeout(() => {
-                if (!active) return;
-                toggleBilingualLanguage();
-                active = false;
-            }, LONG_PRESS_MS);
-        };
-        const move = (x, y) => {
-            if (!active) return;
-            if (Math.abs(x - startX) > MOVE_CANCEL_PX || Math.abs(y - startY) > MOVE_CANCEL_PX) {
-                clearTimeout(pressTimer);
-                active = false;
-            }
-        };
-        const cancel = () => { clearTimeout(pressTimer); active = false; };
-
-        area.addEventListener('touchstart', (e) => {
-            const t = e.touches[0]; start(t.clientX, t.clientY);
-        }, { passive: true });
-        area.addEventListener('touchmove', (e) => {
-            const t = e.touches[0]; move(t.clientX, t.clientY);
-        }, { passive: true });
-        area.addEventListener('touchend', cancel);
-
-        area.addEventListener('mousedown', (e) => start(e.clientX, e.clientY));
-        area.addEventListener('mousemove', (e) => move(e.clientX, e.clientY));
-        area.addEventListener('mouseup', cancel);
-        area.addEventListener('mouseleave', cancel);
+window.onTapGesture = () => {
+    // bilingual 모드가 아니면 더블탭 판정 없이 항상 즉시 본문 토글
+    if (window.currentMode !== 'bilingual') {
+        window.handleCardClick();
+        return;
     }
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', attach);
-    } else {
-        attach();
+    _tapCount++;
+    if (_tapCount === 1) {
+        _tapTimer = setTimeout(() => {
+            // 대기 시간 안에 두 번째 탭이 없었음 → 싱글탭 확정
+            window.handleCardClick();
+            _tapCount = 0;
+        }, DOUBLE_TAP_DELAY);
+    } else if (_tapCount === 2) {
+        // 두 번째 탭 도착 → 더블탭 확정, 싱글탭 동작(본문토글) 취소
+        clearTimeout(_tapTimer);
+        _tapCount = 0;
+        toggleBilingualLanguage();
     }
-})();
+};
 
 // ─── 언어 전환 실행 ──────────────────────────────────────────────────────
 function toggleBilingualLanguage() {
