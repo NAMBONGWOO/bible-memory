@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=23">
+    <link rel="stylesheet" href="style.css?v=24">
 </head>
 <body>
 
@@ -157,7 +157,7 @@
 
                 <!-- 연습 카드 영역 (클릭 시 본문 토글) -->
                 <!-- [요청#4,5] 스와이프 지원 + 터치 영역 카드 전체로 확대 -->
-                <div id="practice-area" style="cursor:pointer; width:100%; min-height:180px; touch-action:pan-y; text-align:left;">
+                <div id="practice-area" style="cursor:pointer; width:100%; min-height:180px; touch-action:pan-y; text-align:left; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none;">
                     <!-- [요청] 한/영 통합 모드에서만 표시 — 현재 언어 뱃지 -->
                     <div id="lang-badge" style="display:none; font-size:11px; color:var(--main-blue); font-weight:bold; margin-bottom:6px;">한글</div>
                     <div id="v-theme" style="font-size:22px; font-weight:bold; margin-bottom:10px; color:#333; text-align:left;">주제</div>
@@ -333,13 +333,13 @@
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js?v=23"></script>
-    <script src="test.js?v=23"></script>
-    <script src="bilingual.js?v=23"></script>
-    <script type="module" src="auth.js?v=23"></script>
-    <script type="module" src="records.js?v=23"></script>
-    <script type="module" src="settings.js?v=23"></script>
-    <script type="module" src="app.js?v=23"></script>
+    <script src="practice.js?v=24"></script>
+    <script src="test.js?v=24"></script>
+    <script src="bilingual.js?v=24"></script>
+    <script type="module" src="auth.js?v=24"></script>
+    <script type="module" src="records.js?v=24"></script>
+    <script type="module" src="settings.js?v=24"></script>
+    <script type="module" src="app.js?v=24"></script>
 
 </body>
 </html>
