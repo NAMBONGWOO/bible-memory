@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=27">
+    <link rel="stylesheet" href="style.css?v=28">
 </head>
 <body>
 
@@ -128,6 +128,10 @@
                 <div id="test-setup" style="display:none; width:100%; text-align:center; align-self:center;">
                     <p style="color:#333; font-weight:bold; margin-bottom:10px;">테스트 범위를 선택하세요</p>
 
+                    <!-- [요청] 암송 코스 선택 -->
+                    <label style="display:block; font-size:12px; color:#888; text-align:left; margin-bottom:4px;">암송 코스</label>
+                    <select id="test-course-select" class="test-input" onchange="onTestCourseChange(this.value)" style="margin-bottom:12px;"></select>
+
                     <!-- [요청] 파트 선택 -->
                     <label style="display:block; font-size:12px; color:#888; text-align:left; margin-bottom:4px;">파트</label>
                     <select id="test-part-select" class="test-input" onchange="onTestPartChange()" style="margin-bottom:12px;"></select>
@@ -139,7 +143,7 @@
                         <span style="color:#888;">~</span>
                         <input type="number" id="test-range-end" class="test-input" style="text-align:center; margin-bottom:0;">
                     </div>
-                    <div id="test-range-hint" style="font-size:11px; color:#aaa; margin:-6px 0 14px;">선택한 파트 전체 범위</div>
+                    <div id="test-range-hint" style="font-size:11px; color:#aaa; margin:-6px 0 14px;">코스와 파트를 먼저 선택하세요</div>
 
                     <label style="display:block; font-size:12px; color:#888; text-align:left; margin-bottom:4px;">문제 수</label>
                     <input type="number" id="test-count-input" class="test-input" value="10" style="text-align:center; width:80px; margin:0 auto 15px;">
@@ -333,13 +337,13 @@
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js?v=27"></script>
-    <script src="test.js?v=27"></script>
-    <script src="bilingual.js?v=27"></script>
-    <script type="module" src="auth.js?v=27"></script>
-    <script type="module" src="records.js?v=27"></script>
-    <script type="module" src="settings.js?v=27"></script>
-    <script type="module" src="app.js?v=27"></script>
+    <script src="practice.js?v=28"></script>
+    <script src="test.js?v=28"></script>
+    <script src="bilingual.js?v=28"></script>
+    <script type="module" src="auth.js?v=28"></script>
+    <script type="module" src="records.js?v=28"></script>
+    <script type="module" src="settings.js?v=28"></script>
+    <script type="module" src="app.js?v=28"></script>
 
 </body>
 </html>

@@ -4,21 +4,68 @@ let testTotalPenalty  = 0;
 let testMaxSteps      = 10;
 let isCurrentChecked  = false;
 
-// ─── [요청] 테스트 설정 화면 열릴 때 파트 목록 채우기 ───────────────────
-// app.js의 setMode('test')에서 호출됨
-window.populateTestPartSelect = () => {
-    const sel = document.getElementById('test-part-select');
-    if (!sel || !window.allVerses) return;
+// [요청] 테스트는 현재 연습 중인 코스와 완전히 독립적으로 동작한다.
+// window.allVerses(연습 화면 상태)를 참조하지 않고, 테스트 전용 상태를 따로 둔다.
+let testAllVerses = [];       // 테스트용으로 선택된 코스의 전체 구절
+let testCourseList = [];      // config.json 코스 목록 캐시
 
-    const parts = [...new Set(window.allVerses.map(v => v.p))];
+// ─── [요청] 테스트 화면 진입 시 — 코스 목록만 채우고 나머지는 비워둠 ───
+// app.js의 setMode('test')에서 호출됨. 사용자가 코스부터 직접 선택해야 함.
+window.populateTestPartSelect = async () => {
+    const courseSel = document.getElementById('test-course-select');
+    const partSel    = document.getElementById('test-part-select');
+    if (!courseSel) return;
 
+    // 코스 목록이 아직 없으면 config.json에서 로드
+    if (testCourseList.length === 0) {
+        try {
+            const res = await fetch('data/config.json');
+            testCourseList = await res.json();
+        } catch (e) {
+            console.error('config.json 로드 실패:', e);
+            testCourseList = [];
+        }
+    }
+
+    // [요청] 아무것도 선택 안 된 빈 상태로 시작 — 사용자가 직접 코스부터 선택
+    courseSel.innerHTML = '<option value="">코스를 선택하세요</option>' +
+        testCourseList.map(c => `<option value="${c.file}">${c.name}</option>`).join('');
+    courseSel.value = '';
+
+    // 코스 선택 전이므로 파트/범위도 비활성 초기화
+    testAllVerses = [];
+    if (partSel) partSel.innerHTML = '<option value="">코스를 먼저 선택하세요</option>';
+    resetTestRangeInputs();
+};
+
+// ─── [요청] 코스를 선택하면 해당 코스 데이터를 불러오고 파트 목록 구성 ──
+window.onTestCourseChange = async (file) => {
+    const partSel = document.getElementById('test-part-select');
+    if (!file) {
+        testAllVerses = [];
+        if (partSel) partSel.innerHTML = '<option value="">코스를 먼저 선택하세요</option>';
+        resetTestRangeInputs();
+        return;
+    }
+
+    try {
+        const res = await fetch(`data/${file}`);
+        testAllVerses = await res.json();
+    } catch (e) {
+        console.error(`${file} 로드 실패:`, e);
+        alert('코스 데이터를 불러올 수 없습니다.');
+        testAllVerses = [];
+        return;
+    }
+
+    const parts = [...new Set(testAllVerses.map(v => v.p))];
     if (parts.length <= 1) {
-        // 파트가 하나뿐이거나 없으면 "전체"만 표시
-        sel.innerHTML = '<option value="">전체</option>';
+        partSel.innerHTML = '<option value="">전체</option>';
     } else {
-        sel.innerHTML = '<option value="">전체 파트</option>' +
+        partSel.innerHTML = '<option value="">전체 파트</option>' +
             parts.map(p => `<option value="${p}">${p}</option>`).join('');
     }
+    partSel.value = '';
 
     onTestPartChange();
 };
@@ -26,15 +73,19 @@ window.populateTestPartSelect = () => {
 // ─── [요청] 파트 선택 시 번호 범위 기본값을 해당 파트 전체로 설정 ───────
 window.onTestPartChange = () => {
     const partSel = document.getElementById('test-part-select');
-    const startInput = document.getElementById('test-range-start');
-    const endInput   = document.getElementById('test-range-end');
-    const hint       = document.getElementById('test-range-hint');
-    if (!partSel || !window.allVerses) return;
+    if (!partSel || testAllVerses.length === 0) {
+        resetTestRangeInputs();
+        return;
+    }
 
     const selectedPart = partSel.value;
     const scoped = selectedPart
-        ? window.allVerses.filter(v => v.p === selectedPart)
-        : window.allVerses;
+        ? testAllVerses.filter(v => v.p === selectedPart)
+        : testAllVerses;
+
+    const startInput = document.getElementById('test-range-start');
+    const endInput   = document.getElementById('test-range-end');
+    const hint       = document.getElementById('test-range-hint');
 
     startInput.value = 1;
     endInput.value   = scoped.length;
@@ -46,10 +97,19 @@ window.onTestPartChange = () => {
     hint.innerText = `${selectedPart ? `'${selectedPart}' 파트` : '전체'} — 총 ${scoped.length}구절 (1~${scoped.length})`;
 };
 
+function resetTestRangeInputs() {
+    const startInput = document.getElementById('test-range-start');
+    const endInput   = document.getElementById('test-range-end');
+    const hint       = document.getElementById('test-range-hint');
+    if (startInput) startInput.value = '';
+    if (endInput)   endInput.value   = '';
+    if (hint)       hint.innerText   = '코스와 파트를 먼저 선택하세요';
+}
+
 // ─── [1] 테스트 시작 ────────────────────────────────────────────────────
 window.startTestSession = () => {
-    if (!window.allVerses || window.allVerses.length === 0) {
-        alert('데이터가 로드되지 않았습니다.');
+    if (testAllVerses.length === 0) {
+        alert('먼저 암송 코스를 선택해주세요.');
         return;
     }
 
@@ -58,8 +118,8 @@ window.startTestSession = () => {
 
     // [요청] 파트 필터 → 그 안에서 번호 범위로 잘라내기
     const scoped = selectedPart
-        ? window.allVerses.filter(v => v.p === selectedPart)
-        : window.allVerses;
+        ? testAllVerses.filter(v => v.p === selectedPart)
+        : testAllVerses;
 
     let rangeStart = parseInt(document.getElementById('test-range-start')?.value) || 1;
     let rangeEnd   = parseInt(document.getElementById('test-range-end')?.value)   || scoped.length;
