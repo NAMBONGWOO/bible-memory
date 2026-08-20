@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=28">
+    <link rel="stylesheet" href="style.css?v=29">
 </head>
 <body>
 
@@ -125,28 +125,27 @@
                 <div id="v-id" style="position:absolute; right:16px; bottom:12px; font-size:11px; color:#c0c8d4;">ID</div>
 
                 <!-- 테스트 시작 설정 -->
-                <div id="test-setup" style="display:none; width:100%; text-align:center; align-self:center;">
-                    <p style="color:#333; font-weight:bold; margin-bottom:10px;">테스트 범위를 선택하세요</p>
+                <!-- [확정 스펙] 트리형 체크박스 — 코스 체크 시 전체 파트 자동체크, 펼침화살표로 개별조정 -->
+                <div id="test-setup" style="display:none; width:100%; text-align:left; align-self:center;">
+                    <p style="color:#333; font-weight:bold; margin-bottom:10px; text-align:center;">테스트할 코스를 선택하세요</p>
 
-                    <!-- [요청] 암송 코스 선택 -->
-                    <label style="display:block; font-size:12px; color:#888; text-align:left; margin-bottom:4px;">암송 코스</label>
-                    <select id="test-course-select" class="test-input" onchange="onTestCourseChange(this.value)" style="margin-bottom:12px;"></select>
+                    <div id="test-tree-list" style="background:#f8fafc; border-radius:12px; overflow:hidden; margin-bottom:14px; border:1px solid #eef1f5;"></div>
 
-                    <!-- [요청] 파트 선택 -->
-                    <label style="display:block; font-size:12px; color:#888; text-align:left; margin-bottom:4px;">파트</label>
-                    <select id="test-part-select" class="test-input" onchange="onTestPartChange()" style="margin-bottom:12px;"></select>
-
-                    <!-- [요청] 파트 내 번호 범위 -->
-                    <label style="display:block; font-size:12px; color:#888; text-align:left; margin-bottom:4px;">번호 범위</label>
-                    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-                        <input type="number" id="test-range-start" class="test-input" style="text-align:center; margin-bottom:0;">
-                        <span style="color:#888;">~</span>
-                        <input type="number" id="test-range-end" class="test-input" style="text-align:center; margin-bottom:0;">
+                    <div id="test-summary-card" style="background:#eef6fc; border-radius:12px; padding:12px 16px; margin-bottom:14px; font-size:13px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                            <span style="color:#64748b;">선택한 코스</span>
+                            <span id="test-summary-courses" style="font-weight:bold; color:#333;">0개</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="color:#64748b;">합산 범위</span>
+                            <span id="test-summary-total" style="font-weight:bold; color:#333;">총 0구절</span>
+                        </div>
                     </div>
-                    <div id="test-range-hint" style="font-size:11px; color:#aaa; margin:-6px 0 14px;">코스와 파트를 먼저 선택하세요</div>
 
-                    <label style="display:block; font-size:12px; color:#888; text-align:left; margin-bottom:4px;">문제 수</label>
-                    <input type="number" id="test-count-input" class="test-input" value="10" style="text-align:center; width:80px; margin:0 auto 15px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; background:white; border:1px solid #eef1f5; border-radius:12px; padding:10px 16px; margin-bottom:14px;">
+                        <label style="font-size:13px; color:#333; font-weight:bold;">문제 수</label>
+                        <input type="number" id="test-count-input" value="10" style="width:70px; height:34px; text-align:center; border-radius:8px; border:1px solid #e2e8f0; font-size:13.5px;">
+                    </div>
 
                     <button class="btn primary-btn" onclick="startTestSession()">테스트 시작</button>
                 </div>
@@ -337,13 +336,13 @@
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js?v=28"></script>
-    <script src="test.js?v=28"></script>
-    <script src="bilingual.js?v=28"></script>
-    <script type="module" src="auth.js?v=28"></script>
-    <script type="module" src="records.js?v=28"></script>
-    <script type="module" src="settings.js?v=28"></script>
-    <script type="module" src="app.js?v=28"></script>
+    <script src="practice.js?v=29"></script>
+    <script src="test.js?v=29"></script>
+    <script src="bilingual.js?v=29"></script>
+    <script type="module" src="auth.js?v=29"></script>
+    <script type="module" src="records.js?v=29"></script>
+    <script type="module" src="settings.js?v=29"></script>
+    <script type="module" src="app.js?v=29"></script>
 
 </body>
 </html>

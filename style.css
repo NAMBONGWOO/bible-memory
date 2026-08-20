@@ -155,6 +155,21 @@ body {
     -webkit-overflow-scrolling: touch;
 }
 
+/* [버그 수정] 길게 눌러 한/영 전환할 때 iOS 텍스트 선택 팝업이 뜨는 문제
+   — card 및 모든 자손에 강하게 적용, 입력 요소(테스트 답안 입력창)만 예외 */
+.card, .card * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+.card input, .card textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+}
+
 /* 입력창 공통 */
 .test-input {
     width: 100%; height: 45px;
@@ -460,6 +475,69 @@ body {
 }
 .wrong-theme { font-size: 14px; color: #1e293b; font-weight: 500; margin-bottom: 4px; }
 .wrong-last-date { font-size: 10.5px; color: #cbd5e1; }
+
+/* ═══════════════════════════════════════════
+   암송 테스트 — 트리형 코스/소주제 체크박스
+   ═══════════════════════════════════════════ */
+.test-course-node { border-bottom: 1px solid #eef1f5; background: white; }
+.test-course-node:last-child { border-bottom: none; }
+
+.test-course-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    cursor: pointer;
+}
+.test-cb {
+    width: 19px; height: 19px;
+    border-radius: 5px;
+    border: 1.5px solid #cbd5e1;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+.test-cb.checked { background: var(--main-blue); border-color: var(--main-blue); }
+.test-cb.partial { background: var(--main-blue); border-color: var(--main-blue); position: relative; }
+.test-cb.partial::after {
+    content: '';
+    width: 8px; height: 2px;
+    background: white;
+    border-radius: 1px;
+}
+.test-course-name { font-size: 13px; color: #334155; flex: 1; }
+.test-course-name.on { color: #1e293b; font-weight: bold; }
+.test-course-count { font-size: 10.5px; color: #b0bac6; margin-right: 2px; }
+.test-expand-arrow {
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    color: #94a3b8;
+    font-size: 10px;
+    cursor: pointer;
+    transition: transform 0.15s;
+}
+.test-expand-arrow.open { transform: rotate(180deg); color: var(--main-blue); }
+
+.test-part-list { background: #f8fafc; padding: 2px 12px 8px 42px; display: none; }
+.test-part-list.show { display: block; }
+.test-part-row { display: flex; align-items: center; gap: 9px; padding: 6px 0; cursor: pointer; }
+.test-part-cb {
+    width: 17px; height: 17px;
+    border-radius: 4px;
+    border: 1.5px solid #cbd5e1;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: white; font-weight: bold;
+    cursor: pointer;
+}
+.test-part-cb.checked { background: var(--main-blue); border-color: var(--main-blue); }
+.test-part-label { font-size: 12.5px; color: #475569; flex: 1; }
+.test-part-count { font-size: 10px; color: #b0bac6; }
 
 /* ═══════════════════════════════════════════
    개인설정 화면

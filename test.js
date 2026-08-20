@@ -4,19 +4,18 @@ let testTotalPenalty  = 0;
 let testMaxSteps      = 10;
 let isCurrentChecked  = false;
 
-// [요청] 테스트는 현재 연습 중인 코스와 완전히 독립적으로 동작한다.
-// window.allVerses(연습 화면 상태)를 참조하지 않고, 테스트 전용 상태를 따로 둔다.
-let testAllVerses = [];       // 테스트용으로 선택된 코스의 전체 구절
-let testCourseList = [];      // config.json 코스 목록 캐시
+// [확정 스펙] 트리형 체크박스 — 코스/소주제를 여러 개 동시 선택해서
+// 그 범위를 전부 합친 풀에서 랜덤 출제한다. 연습 중인 코스와는 완전히 독립적.
+let testCourseList = [];   // config.json 코스 목록
+let testCourseData = {};   // { file: [verse, ...] } 로드된 코스 데이터 캐시
+let testTreeState  = [];   // 코스별 UI 상태: { expanded, parts: [bool,...] | checked: bool }
 
-// ─── [요청] 테스트 화면 진입 시 — 코스 목록만 채우고 나머지는 비워둠 ───
-// app.js의 setMode('test')에서 호출됨. 사용자가 코스부터 직접 선택해야 함.
+// ─── [요청] 테스트 화면 진입 시 — 코스 목록을 트리로 렌더링 ──────────────
+// app.js의 setMode('test')에서 호출됨. 매번 빈 선택 상태로 시작.
 window.populateTestPartSelect = async () => {
-    const courseSel = document.getElementById('test-course-select');
-    const partSel    = document.getElementById('test-part-select');
-    if (!courseSel) return;
+    const treeEl = document.getElementById('test-tree-list');
+    if (!treeEl) return;
 
-    // 코스 목록이 아직 없으면 config.json에서 로드
     if (testCourseList.length === 0) {
         try {
             const res = await fetch('data/config.json');
@@ -27,121 +26,197 @@ window.populateTestPartSelect = async () => {
         }
     }
 
-    // [요청] 아무것도 선택 안 된 빈 상태로 시작 — 사용자가 직접 코스부터 선택
-    courseSel.innerHTML = '<option value="">코스를 선택하세요</option>' +
-        testCourseList.map(c => `<option value="${c.file}">${c.name}</option>`).join('');
-    courseSel.value = '';
+    // [요청] 매번 빈 선택 상태로 초기화
+    testTreeState = testCourseList.map(() => ({ expanded: false, parts: null, checked: false }));
+    testCourseData = {};
 
-    // 코스 선택 전이므로 파트/범위도 비활성 초기화
-    testAllVerses = [];
-    if (partSel) partSel.innerHTML = '<option value="">코스를 먼저 선택하세요</option>';
-    resetTestRangeInputs();
+    renderTestTree();
+    updateTestSummary();
 };
 
-// ─── [요청] 코스를 선택하면 해당 코스 데이터를 불러오고 파트 목록 구성 ──
-window.onTestCourseChange = async (file) => {
-    const partSel = document.getElementById('test-part-select');
-    if (!file) {
-        testAllVerses = [];
-        if (partSel) partSel.innerHTML = '<option value="">코스를 먼저 선택하세요</option>';
-        resetTestRangeInputs();
-        return;
-    }
+// ─── 코스 데이터를 최초 1회만 로드(지연 로드) ────────────────────────────
+async function ensureCourseLoaded(idx) {
+    const course = testCourseList[idx];
+    if (testCourseData[course.file]) return testCourseData[course.file];
 
     try {
-        const res = await fetch(`data/${file}`);
-        testAllVerses = await res.json();
+        const res = await fetch(`data/${course.file}`);
+        const data = await res.json();
+        testCourseData[course.file] = data;
+        return data;
     } catch (e) {
-        console.error(`${file} 로드 실패:`, e);
-        alert('코스 데이터를 불러올 수 없습니다.');
-        testAllVerses = [];
-        return;
+        console.error(`${course.file} 로드 실패:`, e);
+        testCourseData[course.file] = [];
+        return [];
     }
-
-    const parts = [...new Set(testAllVerses.map(v => v.p))];
-    if (parts.length <= 1) {
-        partSel.innerHTML = '<option value="">전체</option>';
-    } else {
-        partSel.innerHTML = '<option value="">전체 파트</option>' +
-            parts.map(p => `<option value="${p}">${p}</option>`).join('');
-    }
-    partSel.value = '';
-
-    onTestPartChange();
-};
-
-// ─── [요청] 파트 선택 시 번호 범위 기본값을 해당 파트 전체로 설정 ───────
-window.onTestPartChange = () => {
-    const partSel = document.getElementById('test-part-select');
-    if (!partSel || testAllVerses.length === 0) {
-        resetTestRangeInputs();
-        return;
-    }
-
-    const selectedPart = partSel.value;
-    const scoped = selectedPart
-        ? testAllVerses.filter(v => v.p === selectedPart)
-        : testAllVerses;
-
-    const startInput = document.getElementById('test-range-start');
-    const endInput   = document.getElementById('test-range-end');
-    const hint       = document.getElementById('test-range-hint');
-
-    startInput.value = 1;
-    endInput.value   = scoped.length;
-    startInput.min = 1;
-    endInput.min   = 1;
-    startInput.max = scoped.length;
-    endInput.max   = scoped.length;
-
-    hint.innerText = `${selectedPart ? `'${selectedPart}' 파트` : '전체'} — 총 ${scoped.length}구절 (1~${scoped.length})`;
-};
-
-function resetTestRangeInputs() {
-    const startInput = document.getElementById('test-range-start');
-    const endInput   = document.getElementById('test-range-end');
-    const hint       = document.getElementById('test-range-hint');
-    if (startInput) startInput.value = '';
-    if (endInput)   endInput.value   = '';
-    if (hint)       hint.innerText   = '코스와 파트를 먼저 선택하세요';
 }
 
-// ─── [1] 테스트 시작 ────────────────────────────────────────────────────
-window.startTestSession = () => {
-    if (testAllVerses.length === 0) {
-        alert('먼저 암송 코스를 선택해주세요.');
-        return;
+// ─── [요청] 코스 체크박스 클릭 — 전체 파트 자동 체크/해제 ───────────────
+window.toggleTestCourse = async (idx) => {
+    const verses = await ensureCourseLoaded(idx);
+    const parts = [...new Set(verses.map(v => v.p))];
+    const s = testTreeState[idx];
+
+    if (parts.length <= 1) {
+        // 파트가 하나뿐인 코스 — 코스 체크박스 하나로 전체 포함
+        s.checked = !s.checked;
+        s.parts = null;
+    } else {
+        // 현재 전체선택 상태인지 확인해서 토글
+        const allChecked = s.parts && s.parts.length === parts.length && s.parts.every(x => x);
+        s.parts = parts.map(() => !allChecked);
     }
 
-    const partSel = document.getElementById('test-part-select');
-    const selectedPart = partSel?.value || '';
+    renderTestTree();
+    updateTestSummary();
+};
 
-    // [요청] 파트 필터 → 그 안에서 번호 범위로 잘라내기
-    const scoped = selectedPart
-        ? testAllVerses.filter(v => v.p === selectedPart)
-        : testAllVerses;
+// ─── [요청] 개별 파트 체크 — 코스 체크박스는 부분선택(대시) 상태로 전환 ──
+window.toggleTestPart = (idx, partIdx) => {
+    const s = testTreeState[idx];
+    if (!s.parts) return;
+    s.parts[partIdx] = !s.parts[partIdx];
+    renderTestTree();
+    updateTestSummary();
+};
 
-    let rangeStart = parseInt(document.getElementById('test-range-start')?.value) || 1;
-    let rangeEnd   = parseInt(document.getElementById('test-range-end')?.value)   || scoped.length;
+// ─── [요청] 펼침 화살표 — 체크 여부와 무관하게 파트 목록만 표시/숨김 ────
+window.toggleTestExpand = async (idx) => {
+    const s = testTreeState[idx];
+    if (!s.expanded) {
+        // 처음 펼칠 때 데이터 로드 및 parts 배열 초기화
+        const verses = await ensureCourseLoaded(idx);
+        const parts = [...new Set(verses.map(v => v.p))];
+        if (!s.parts) {
+            s.parts = parts.map(() => false);
+        }
+    }
+    s.expanded = !s.expanded;
+    renderTestTree();
+};
 
-    // 범위 값 보정 (역순 입력, 범위 초과 등 실수 방지)
-    rangeStart = Math.max(1, Math.min(rangeStart, scoped.length));
-    rangeEnd   = Math.max(1, Math.min(rangeEnd, scoped.length));
-    if (rangeStart > rangeEnd) { [rangeStart, rangeEnd] = [rangeEnd, rangeStart]; }
+// ─── 트리 렌더링 ─────────────────────────────────────────────────────────
+function renderTestTree() {
+    const treeEl = document.getElementById('test-tree-list');
+    if (!treeEl) return;
 
-    const rangedVerses = scoped.slice(rangeStart - 1, rangeEnd);
+    treeEl.innerHTML = testCourseList.map((course, idx) => {
+        const s = testTreeState[idx];
+        const verses = testCourseData[course.file];
+        const parts = verses ? [...new Set(verses.map(v => v.p))] : null;
+        const hasMultipleParts = parts && parts.length > 1;
 
-    if (rangedVerses.length === 0) {
-        alert('선택한 범위에 구절이 없습니다.');
+        let cbClass = 'test-cb';
+        let countLabel = '';
+
+        if (hasMultipleParts && s.parts) {
+            const checkedCount = s.parts.filter(x => x).length;
+            if (checkedCount === parts.length && checkedCount > 0) cbClass = 'test-cb checked';
+            else if (checkedCount > 0) cbClass = 'test-cb partial';
+            if (checkedCount > 0) countLabel = `${checkedCount}/${parts.length}`;
+        } else {
+            cbClass = s.checked ? 'test-cb checked' : 'test-cb';
+            if (s.checked && verses) countLabel = `${verses.length}구절`;
+        }
+
+        const nameClass = countLabel ? 'test-course-name on' : 'test-course-name';
+
+        const arrowHtml = (!parts || hasMultipleParts)
+            ? `<div class="test-expand-arrow ${s.expanded ? 'open' : ''}" onclick="event.stopPropagation(); toggleTestExpand(${idx})">&#9662;</div>`
+            : `<div style="width:22px;"></div>`;
+
+        let partsHtml = '';
+        if (s.expanded && parts && hasMultipleParts) {
+            const partCounts = parts.map(p => verses.filter(v => v.p === p).length);
+            partsHtml = `<div class="test-part-list show">` +
+                parts.map((p, pi) => `
+                    <div class="test-part-row" onclick="toggleTestPart(${idx},${pi})">
+                        <div class="test-part-cb ${s.parts[pi] ? 'checked' : ''}">${s.parts[pi] ? '&#10003;' : ''}</div>
+                        <div class="test-part-label">${p}</div>
+                        <div class="test-part-count">${partCounts[pi]}구절</div>
+                    </div>
+                `).join('') +
+                `</div>`;
+        }
+
+        return `
+            <div class="test-course-node">
+                <div class="test-course-row" onclick="toggleTestCourse(${idx})">
+                    <div class="${cbClass}" onclick="event.stopPropagation(); toggleTestCourse(${idx})">${cbClass.includes('checked') ? '&#10003;' : ''}</div>
+                    <div class="${nameClass}">${course.name}</div>
+                    <div class="test-course-count">${countLabel}</div>
+                    ${arrowHtml}
+                </div>
+                ${partsHtml}
+            </div>
+        `;
+    }).join('');
+}
+
+// ─── 선택 현황 요약 (선택 코스 수 / 합산 구절수) ─────────────────────────
+function updateTestSummary() {
+    let courseCount = 0;
+    let total = 0;
+
+    testCourseList.forEach((course, idx) => {
+        const s = testTreeState[idx];
+        const verses = testCourseData[course.file];
+        if (!verses) return;
+
+        const parts = [...new Set(verses.map(v => v.p))];
+        const hasMultipleParts = parts.length > 1;
+
+        if (hasMultipleParts && s.parts) {
+            const checkedParts = parts.filter((p, pi) => s.parts[pi]);
+            if (checkedParts.length > 0) {
+                courseCount++;
+                total += verses.filter(v => checkedParts.includes(v.p)).length;
+            }
+        } else if (s.checked) {
+            courseCount++;
+            total += verses.length;
+        }
+    });
+
+    const courseEl = document.getElementById('test-summary-courses');
+    const totalEl  = document.getElementById('test-summary-total');
+    if (courseEl) courseEl.innerText = `${courseCount}개`;
+    if (totalEl)  totalEl.innerText  = `총 ${total}구절`;
+}
+
+// ─── [1] 테스트 시작 — 선택된 모든 코스·파트의 구절을 합쳐서 랜덤 출제 ───
+window.startTestSession = () => {
+    let pool = [];
+
+    testCourseList.forEach((course, idx) => {
+        const s = testTreeState[idx];
+        const verses = testCourseData[course.file];
+        if (!verses) return;
+
+        const parts = [...new Set(verses.map(v => v.p))];
+        const hasMultipleParts = parts.length > 1;
+
+        if (hasMultipleParts && s.parts) {
+            const checkedParts = parts.filter((p, pi) => s.parts[pi]);
+            if (checkedParts.length > 0) {
+                pool = pool.concat(verses.filter(v => checkedParts.includes(v.p)));
+            }
+        } else if (s.checked) {
+            pool = pool.concat(verses);
+        }
+    });
+
+    if (pool.length === 0) {
+        alert('테스트할 코스를 하나 이상 선택해주세요.');
         return;
     }
 
     const countInput = document.getElementById('test-count-input');
     const requested  = parseInt(countInput?.value) || 10;
-    testMaxSteps = Math.min(requested, rangedVerses.length);
+    testMaxSteps = Math.min(requested, pool.length);
 
-    // [요청] 범위 내에서 랜덤으로 섞어서 출제
-    testSessionVerses = [...rangedVerses]
+    // [요청] 합산 범위 내에서 랜덤으로 섞어서 출제
+    testSessionVerses = [...pool]
         .sort(() => Math.random() - 0.5)
         .slice(0, testMaxSteps);
 
