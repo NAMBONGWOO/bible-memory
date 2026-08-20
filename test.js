@@ -95,6 +95,45 @@ window.toggleTestExpand = async (idx) => {
     renderTestTree();
 };
 
+// ─── [요청] 전체선택 — 모든 코스를 한 번에 체크/해제 ─────────────────────
+window.toggleTestSelectAll = async () => {
+    // 현재 하나라도 선택 안 된 코스가 있으면 → 전체 체크, 전부 선택된 상태면 → 전체 해제
+    const allSelected = testCourseList.every((course, idx) => isCourseFullySelected(idx));
+    const turnOn = !allSelected;
+
+    // 모든 코스 데이터를 병렬로 로드
+    await Promise.all(testCourseList.map((_, idx) => ensureCourseLoaded(idx)));
+
+    testCourseList.forEach((course, idx) => {
+        const verses = testCourseData[course.file] || [];
+        const parts = [...new Set(verses.map(v => v.p))];
+        const s = testTreeState[idx];
+
+        if (parts.length <= 1) {
+            s.checked = turnOn;
+            s.parts = null;
+        } else {
+            s.parts = parts.map(() => turnOn);
+        }
+    });
+
+    renderTestTree();
+    updateTestSummary();
+};
+
+// 코스 하나가 "완전히" 선택된 상태인지 (전체 파트 체크 또는 단일코스 체크)
+function isCourseFullySelected(idx) {
+    const s = testTreeState[idx];
+    const course = testCourseList[idx];
+    const verses = testCourseData[course.file];
+    if (!verses) return false;
+    const parts = [...new Set(verses.map(v => v.p))];
+    if (parts.length > 1) {
+        return s.parts && s.parts.length === parts.length && s.parts.every(x => x);
+    }
+    return !!s.checked;
+}
+
 // ─── 트리 렌더링 ─────────────────────────────────────────────────────────
 function renderTestTree() {
     const treeEl = document.getElementById('test-tree-list');
@@ -151,6 +190,28 @@ function renderTestTree() {
             </div>
         `;
     }).join('');
+
+    // [요청] 전체선택 체크박스 상태 갱신 (모두 선택됐으면 체크, 일부만이면 부분선택)
+    const selectAllCb = document.getElementById('test-select-all-cb');
+    if (selectAllCb) {
+        const loadedIdxs = testCourseList.map((_, idx) => idx).filter(idx => testCourseData[testCourseList[idx].file]);
+        const fullyCount = loadedIdxs.filter(idx => isCourseFullySelected(idx)).length;
+        const anyChecked = testCourseList.some((course, idx) => {
+            const s = testTreeState[idx];
+            return (s.parts && s.parts.some(x => x)) || s.checked;
+        });
+
+        if (fullyCount === testCourseList.length && testCourseList.length > 0) {
+            selectAllCb.className = 'test-cb checked';
+            selectAllCb.innerHTML = '&#10003;';
+        } else if (anyChecked) {
+            selectAllCb.className = 'test-cb partial';
+            selectAllCb.innerHTML = '';
+        } else {
+            selectAllCb.className = 'test-cb';
+            selectAllCb.innerHTML = '';
+        }
+    }
 }
 
 // ─── 선택 현황 요약 (선택 코스 수 / 합산 구절수) ─────────────────────────
@@ -231,6 +292,10 @@ window.startTestSession = () => {
     document.getElementById('status-panel').style.display   = 'flex';
     document.getElementById('test-controls').style.display  = 'block';
     document.getElementById('practice-controls').style.display = 'none';
+
+    // [버그 수정] 코스 선택 중 숨겼던 v-ref(장절)를 채점 화면에서는 다시 표시
+    const vRef = document.getElementById('v-ref');
+    if (vRef) vRef.style.display = 'block';
 
     updateStatus();
     window.updateCardUI(window.verses[0]);

@@ -137,6 +137,14 @@ window.setMode = (mode) => {
     document.getElementById('status-panel').style.display    = 'none';
     document.getElementById('part-container').style.display  = isTest ? 'none'  : 'flex';
 
+    // [버그 수정] test-setup(코스 선택 화면)이 열릴 때, 카드 상단에 고정된
+    // v-ref(장절)·v-id(분류코드)가 practice-area 밖에 있어서 안 숨겨지고
+    // 이전 연습 카드 내용이 그대로 비치던 문제 — 코스선택 중에는 함께 숨김
+    const vRef = document.getElementById('v-ref');
+    const vId  = document.getElementById('v-id');
+    if (vRef) vRef.style.display = isTest ? 'none' : 'block';
+    if (vId)  vId.style.display  = isTest ? 'none' : 'block';
+
     // [요청] 테스트 설정 화면 진입 시 파트/범위 선택 UI 갱신
     if (isTest && window.populateTestPartSelect) {
         window.populateTestPartSelect();
