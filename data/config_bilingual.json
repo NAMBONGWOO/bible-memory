@@ -1,3 +1,5 @@
 [
-  { "name": "주제별 60구절", "ko": "nav_60.json", "en": "nav_60_en.json" }
+  { "name": "주제별 60구절", "ko": "nav_60.json", "en": "nav_60_en.json" },
+  { "name": "5 확신", "ko": "assurance_5.json", "en": "assurance_5_en.json" },
+  { "name": "8 생활지침", "ko": "living_guide_8.json", "en": "living_guide_8_en.json" }
 ]
