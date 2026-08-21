@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=30">
+    <link rel="stylesheet" href="style.css?v=31">
 </head>
 <body>
 
@@ -105,7 +105,12 @@
             <!-- [요청] 카드 상단에서 데이터 세트를 바로 전환할 수 있는 빠른 선택 -->
             <select id="quick-data-select" class="quick-select" onchange="loadData(this.value); syncDataSelects(this.value);" style="margin-bottom:8px;"></select>
 
-            <div id="part-container" style="display:flex; flex-wrap:wrap; justify-content:center; gap:6px; margin-bottom:10px; width:96%; flex-shrink:0;"></div>
+            <!-- [요청] 소주제명이 길어져도 줄바꿈 없이 가로 스크롤 + 양끝 페이드 처리 -->
+            <div id="part-scroll-wrap" style="position:relative; width:96%; flex-shrink:0; margin-bottom:10px;">
+                <div id="part-container" style="display:flex; flex-wrap:nowrap; gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding:2px 4px;"></div>
+                <div class="part-fade part-fade-left"></div>
+                <div class="part-fade part-fade-right"></div>
+            </div>
 
             <div id="status-panel" style="display:none; width:90%; max-width:450px; justify-content:space-between; margin-bottom:10px; color:white; font-size:14px; font-weight:bold; flex-shrink:0;">
                 <span id="test-progress">진행: 1 / 10</span>
@@ -342,13 +347,13 @@
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js?v=30"></script>
-    <script src="test.js?v=30"></script>
-    <script src="bilingual.js?v=30"></script>
-    <script type="module" src="auth.js?v=30"></script>
-    <script type="module" src="records.js?v=30"></script>
-    <script type="module" src="settings.js?v=30"></script>
-    <script type="module" src="app.js?v=30"></script>
+    <script src="practice.js?v=31"></script>
+    <script src="test.js?v=31"></script>
+    <script src="bilingual.js?v=31"></script>
+    <script type="module" src="auth.js?v=31"></script>
+    <script type="module" src="records.js?v=31"></script>
+    <script type="module" src="settings.js?v=31"></script>
+    <script type="module" src="app.js?v=31"></script>
 
 </body>
 </html>

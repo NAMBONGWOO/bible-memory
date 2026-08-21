@@ -212,6 +212,24 @@ body {
 }
 .part-btn.active { background: white; color: var(--dark-blue); font-weight: bold; }
 
+/* [요청] 파트 버튼 가로 스크롤 — 스크롤바는 숨기고 양끝에 페이드 처리 */
+#part-container::-webkit-scrollbar { display: none; }
+.part-fade {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 28px;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+.part-fade-left {
+    left: 0;
+    background: linear-gradient(to right, var(--main-blue), transparent);
+}
+.part-fade-right {
+    right: 0;
+    background: linear-gradient(to left, var(--main-blue), transparent);
+}
+
 /* 회원가입 코스 선택 */
 #course-checkboxes {
     background: #f1f5f9;

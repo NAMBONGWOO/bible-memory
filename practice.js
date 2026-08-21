@@ -114,7 +114,33 @@ window.generatePartButtons = () => {
         btn.onclick = () => window.filterPart(p);
         container.appendChild(btn);
     });
+
+    // [요청] 스크롤이 끝에 닿으면 해당 방향 페이드를 자연스럽게 숨김
+    updatePartScrollFade();
 };
+
+// ─── [요청] 파트 버튼 가로스크롤 위치에 따라 좌/우 페이드 표시 여부 갱신 ──
+function updatePartScrollFade() {
+    const container  = document.getElementById('part-container');
+    const fadeLeft   = document.querySelector('.part-fade-left');
+    const fadeRight  = document.querySelector('.part-fade-right');
+    if (!container || !fadeLeft || !fadeRight) return;
+
+    const atStart = container.scrollLeft <= 2;
+    const atEnd   = container.scrollLeft + container.clientWidth >= container.scrollWidth - 2;
+
+    fadeLeft.style.opacity  = atStart ? '0' : '1';
+    fadeRight.style.opacity = atEnd   ? '0' : '1';
+}
+
+// 스크롤 시 실시간으로 페이드 갱신 (한 번만 리스너 등록)
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('part-container');
+    if (container && !container.dataset.fadeBound) {
+        container.dataset.fadeBound = 'true';
+        container.addEventListener('scroll', updatePartScrollFade);
+    }
+});
 
 // ─── 파트 필터링 ─────────────────────────────────────────────────────────
 window.filterPart = (p) => {

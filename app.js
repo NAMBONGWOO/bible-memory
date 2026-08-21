@@ -135,7 +135,7 @@ window.setMode = (mode) => {
     document.getElementById('test-controls').style.display   = 'none';
     document.getElementById('test-section').style.display    = 'none';
     document.getElementById('status-panel').style.display    = 'none';
-    document.getElementById('part-container').style.display  = isTest ? 'none'  : 'flex';
+    document.getElementById('part-scroll-wrap').style.display  = isTest ? 'none'  : 'block';
 
     // [버그 수정] test-setup(코스 선택 화면)이 열릴 때, 카드 상단에 고정된
     // v-ref(장절)·v-id(분류코드)가 practice-area 밖에 있어서 안 숨겨지고

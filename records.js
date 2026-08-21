@@ -295,7 +295,7 @@ window.startWrongPractice = async () => {
     document.getElementById('test-controls').style.display = 'none';
     document.getElementById('test-section').style.display = 'none';
     document.getElementById('status-panel').style.display = 'none';
-    document.getElementById('part-container').style.display = 'none'; // 오답 모음엔 파트 구분 없음
+    document.getElementById('part-scroll-wrap').style.display = 'none'; // 오답 모음엔 파트 구분 없음
 
     window.updateCardUI(window.verses[0]);
 };
