@@ -689,3 +689,154 @@ body {
     box-shadow: 0 20px 40px rgba(0,0,0,0.3);
     text-align: left;
 }
+
+/* ═══════════════════════════════════════════
+   [확정 스펙] 아이패드(900px~) 반응형 레이아웃
+   — 좌측 고정 사이드패널(코스/파트) + 우측 콘텐츠
+   — 아이폰(900px 미만)에서는 기존 레이아웃 그대로, 아래 규칙 전부 비활성
+   ═══════════════════════════════════════════ */
+
+/* 기본(아이폰) 상태: 아이패드 전용 요소는 전부 숨김 */
+.ipad-side-panel,
+.ipad-practice-pad { display: none; }
+
+.ipad-content-col {
+    display: contents; /* 아이폰에서는 래퍼가 레이아웃에 영향 없이 자식만 그대로 배치 */
+}
+.ipad-card-pad-row {
+    display: contents;
+}
+
+@media (min-width: 900px) {
+    /* main-content 자체를 좌우 2컬럼으로 전환 */
+    .main-content {
+        flex-direction: row;
+        align-items: stretch;
+        justify-content: flex-start;
+        padding: 0 24px;
+        gap: 20px;
+    }
+
+    /* 좌측 고정 사이드패널 */
+    .ipad-side-panel {
+        display: flex;
+        flex-direction: column;
+        width: 240px;
+        flex-shrink: 0;
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(6px);
+        border-radius: 16px;
+        padding: 18px 14px;
+        margin: 16px 0;
+        overflow-y: auto;
+    }
+    .ipad-side-title {
+        color: rgba(255,255,255,0.6);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        margin-bottom: 8px;
+        padding-left: 4px;
+    }
+    .ipad-course-item, .ipad-part-item {
+        border-radius: 9px;
+        padding: 9px 12px;
+        font-size: 12.5px;
+        margin-bottom: 6px;
+        cursor: pointer;
+        color: white;
+        background: rgba(255,255,255,0.12);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .ipad-course-item.active {
+        background: white;
+        color: var(--dark-blue);
+        font-weight: 700;
+    }
+    .ipad-part-item {
+        margin-left: 8px;
+        font-size: 12px;
+        background: rgba(255,255,255,0.08);
+        color: rgba(255,255,255,0.85);
+    }
+    .ipad-part-item.active {
+        background: rgba(255,255,255,0.92);
+        color: var(--dark-blue);
+        font-weight: 700;
+    }
+
+    /* 우측 콘텐츠 컬럼: 아이폰 전용 요소는 숨기고 세로 flex 유지 */
+    .ipad-content-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        min-width: 0;
+        padding-top: 16px;
+    }
+
+    /* 아이패드에서는 사이드패널이 코스/파트를 담당하므로 아이폰 전용 UI 숨김 */
+    #quick-data-select,
+    #part-scroll-wrap {
+        display: none !important;
+    }
+
+    /* 카드 + 연습장 좌우 배치 */
+    .ipad-card-pad-row {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        gap: 18px;
+        width: 100%;
+        max-width: 980px;
+        flex: 1;
+        min-height: 0;
+    }
+    #card-swipe-wrap {
+        max-width: 480px;
+    }
+
+    /* [확정 스펙] 연습장 — 채점과 무관한 순수 필기 보조 공간 */
+    .ipad-practice-pad {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 280px;
+        background: white;
+        border-radius: 24px;
+        padding: 16px 20px;
+        position: relative;
+    }
+    .ipad-pad-label {
+        font-size: 12px;
+        color: #94a3b8;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+    .ipad-pad-textarea {
+        flex: 1;
+        width: 100%;
+        border: none;
+        resize: none;
+        outline: none;
+        font-size: 16px;
+        line-height: 27px;
+        color: #334155;
+        font-family: inherit;
+        background-image: repeating-linear-gradient(to bottom, transparent, transparent 26px, #e2e8f0 27px);
+        background-attachment: local;
+    }
+    .ipad-pad-clear-btn {
+        align-self: flex-end;
+        margin-top: 8px;
+        background: #f1f5f9;
+        border: none;
+        border-radius: 8px;
+        padding: 6px 14px;
+        font-size: 12px;
+        color: #64748b;
+        cursor: pointer;
+    }
+}

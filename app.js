@@ -65,7 +65,7 @@ onAuthStateChanged(auth, async (user) => {
 
 // ─── config.json 기반으로 사용자 코스를 select에 채우기 ─────────────────
 // [설정 연동] settings.js의 코스 관리 저장 후 즉시 갱신하기 위해 window로 노출
-// [요청] 사이드메뉴 select + 카드 상단 quick select 두 곳 모두 채움
+// [요청] 사이드메뉴 select + 카드 상단 quick select + 아이패드 사이드패널까지 모두 채움
 window.populateDataSelect = async function populateDataSelect(selectedCourses) {
     const sel      = document.getElementById('data-select');
     const quickSel = document.getElementById('quick-data-select');
@@ -83,6 +83,8 @@ window.populateDataSelect = async function populateDataSelect(selectedCourses) {
             const emptyHTML = '<option value="">코스 없음</option>';
             sel.innerHTML = emptyHTML;
             if (quickSel) quickSel.innerHTML = emptyHTML;
+            window._ipadCourseList = [];
+            renderIpadCourseList();
             return;
         }
 
@@ -92,6 +94,10 @@ window.populateDataSelect = async function populateDataSelect(selectedCourses) {
 
         sel.innerHTML = optionsHTML;
         if (quickSel) quickSel.innerHTML = optionsHTML;
+
+        // [확정 스펙] 아이패드 좌측 사이드패널용 코스 목록 캐싱 후 렌더링
+        window._ipadCourseList = userCourses;
+        renderIpadCourseList();
     } catch (e) {
         // config.json 로드 실패 시 selectedCourses 파일명으로 표시 (fallback)
         console.warn('config.json 로드 실패, fallback 사용:', e);
@@ -100,6 +106,63 @@ window.populateDataSelect = async function populateDataSelect(selectedCourses) {
             .join('');
         sel.innerHTML = fallbackHTML;
         if (quickSel) quickSel.innerHTML = fallbackHTML;
+        window._ipadCourseList = selectedCourses.map(f => ({ file: f, name: f.replace('.json', '') }));
+        renderIpadCourseList();
+    }
+};
+
+// ─── [확정 스펙] 아이패드 사이드패널 — 코스 목록 렌더링 ─────────────────
+function renderIpadCourseList() {
+    const listEl = document.getElementById('ipad-course-list');
+    if (!listEl) return;
+
+    const courses = window._ipadCourseList || [];
+    const currentFile = document.getElementById('data-select')?.value;
+
+    listEl.innerHTML = courses.map(c => `
+        <div class="ipad-course-item ${c.file === currentFile ? 'active' : ''}" onclick="selectIpadCourse('${c.file}')">
+            ${c.name}
+        </div>
+    `).join('');
+}
+
+// ─── 사이드패널에서 코스 클릭 시 — 기존 loadData/select 동기화 로직 재사용 ─
+window.selectIpadCourse = async (file) => {
+    const sel = document.getElementById('data-select');
+    if (sel) sel.value = file;
+    window.syncDataSelects(file);
+    await window.loadData(file);
+    renderIpadCourseList();
+};
+
+// ─── [확정 스펙] 아이패드 사이드패널 — 파트 목록 렌더링 ─────────────────
+// practice.js의 generatePartButtons가 호출될 때 함께 갱신됨 (아래 훅 참고)
+window.renderIpadPartList = () => {
+    const listEl  = document.getElementById('ipad-part-list');
+    const titleEl = document.getElementById('ipad-part-title');
+    if (!listEl || !titleEl) return;
+
+    const parts = [...new Set((window.allVerses || []).map(v => v.p))];
+
+    if (parts.length <= 1) {
+        titleEl.style.display = 'none';
+        listEl.innerHTML = '';
+        return;
+    }
+
+    titleEl.style.display = 'block';
+    listEl.innerHTML = parts.map(p => `
+        <div class="ipad-part-item" onclick="filterPart('${p}'); renderIpadPartList();">
+            ${p}
+        </div>
+    `).join('');
+
+    // 현재 활성 파트 표시 동기화
+    const activeBtn = document.querySelector('#part-container .part-btn.active');
+    if (activeBtn) {
+        listEl.querySelectorAll('.ipad-part-item').forEach(el => {
+            el.classList.toggle('active', el.innerText.trim() === activeBtn.innerText.trim());
+        });
     }
 };
 

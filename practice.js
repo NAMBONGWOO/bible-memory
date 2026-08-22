@@ -117,6 +117,9 @@ window.generatePartButtons = () => {
 
     // [요청] 스크롤이 끝에 닿으면 해당 방향 페이드를 자연스럽게 숨김
     updatePartScrollFade();
+
+    // [확정 스펙] 아이패드 사이드패널의 파트 목록도 함께 갱신
+    if (window.renderIpadPartList) window.renderIpadPartList();
 };
 
 // ─── [요청] 파트 버튼 가로스크롤 위치에 따라 좌/우 페이드 표시 여부 갱신 ──
@@ -152,6 +155,9 @@ window.filterPart = (p) => {
     if (window.verses.length > 0) {
         window.updateCardUI(window.verses[0]);
     }
+
+    // [확정 스펙] 아이패드 사이드패널의 파트 활성 표시도 동기화
+    if (window.renderIpadPartList) window.renderIpadPartList();
 };
 
 // ─── 이전 / 다음 구절 — 카드 슬라이드 애니메이션 ────────────────────────
