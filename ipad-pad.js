@@ -1,7 +1,13 @@
-// ─── [변경] 아이패드 연습장 — 캔버스 기반 순수 필기 (텍스트 자동변환 없음) ─
+// ─── [버그 수정] 아이패드 연습장 — 캔버스 기반 순수 필기 (텍스트 자동변환 없음) ─
 // Apple Pencil/손가락/마우스 궤적을 그대로 그림으로 남긴다.
 // textarea를 쓰면 Scribble 기능이 손글씨를 텍스트로 바꿔버리므로,
 // canvas + Pointer Events로 순수 드로잉만 구현한다.
+//
+// [원인] 기존엔 setTimeout(1000ms) 재시도 루프로 캔버스에 리스너를 붙였는데,
+// 앱을 열자마자(1~2초 이내) 바로 펜슬로 캔버스를 터치하면 그 찰나에 아직
+// 리스너가 안 붙어있어 iOS가 기본 동작(Scribble 텍스트 변환)으로 처리해버림.
+// → MutationObserver로 캔버스가 DOM에 나타나는 즉시 리스너를 붙이고,
+//   pointerdown에서 preventDefault()로 브라우저 기본 제스처 인식 자체를 차단.
 
 (function initIpadPad() {
     let canvas, ctx;
@@ -48,6 +54,7 @@
     }
 
     function start(e) {
+        e.preventDefault(); // [버그 수정] 브라우저의 기본 제스처 인식(Scribble 포함) 차단
         drawing = true;
         const pos = getPos(e);
         lastX = pos.x;
@@ -56,6 +63,7 @@
 
     function move(e) {
         if (!drawing) return;
+        e.preventDefault();
         const pos = getPos(e);
         ctx.beginPath();
         ctx.moveTo(lastX, lastY);
@@ -65,7 +73,8 @@
         lastY = pos.y;
     }
 
-    function end() {
+    function end(e) {
+        if (e) e.preventDefault();
         drawing = false;
     }
 
@@ -75,20 +84,24 @@
         ctx.clearRect(0, 0, canvas.width, canvas.height);
     };
 
-    function attach() {
-        const c = getCanvas();
+    function bindCanvas(c) {
         if (!c || c.dataset.padBound) return;
         c.dataset.padBound = 'true';
         canvas = c;
 
+        // [버그 수정] Scribble/제스처 인식을 위한 브라우저 힌트를 명시적으로 차단
+        canvas.style.touchAction = 'none';
+        canvas.setAttribute('inputmode', 'none');
+
         resizeCanvasKeepingContent();
 
         // Pointer Events: 마우스/터치/펜슬을 하나의 API로 통일 처리
-        canvas.addEventListener('pointerdown', (e) => { canvas.setPointerCapture(e.pointerId); start(e); });
-        canvas.addEventListener('pointermove', move);
-        canvas.addEventListener('pointerup', end);
-        canvas.addEventListener('pointercancel', end);
-        canvas.addEventListener('pointerleave', end);
+        // { passive: false }로 등록해야 preventDefault()가 실제로 동작함
+        canvas.addEventListener('pointerdown', (e) => { canvas.setPointerCapture(e.pointerId); start(e); }, { passive: false });
+        canvas.addEventListener('pointermove', move, { passive: false });
+        canvas.addEventListener('pointerup', end, { passive: false });
+        canvas.addEventListener('pointercancel', end, { passive: false });
+        canvas.addEventListener('pointerleave', end, { passive: false });
 
         // 화면 회전/창 크기 변화 시 캔버스 해상도 재조정 (내용 유지)
         window.addEventListener('resize', () => {
@@ -96,16 +109,24 @@
         });
     }
 
-    // 연습장은 900px 이상(아이패드)에서만 존재하므로, 화면 크기가 바뀌어
-    // 뒤늦게 나타나는 경우(태블릿 회전 등)에도 대응하도록 주기적으로 확인
-    function tryAttachLoop() {
-        attach();
-        setTimeout(tryAttachLoop, 1000);
+    // ─── [버그 수정] MutationObserver로 캔버스 등장을 즉시 감지 ─────────────
+    // setTimeout 재시도(최대 1초 지연) 대신, DOM에 나타나는 순간 바로 리스너를 붙인다.
+    function watchForCanvas() {
+        // 이미 있으면 즉시 바인딩
+        const existing = getCanvas();
+        if (existing) bindCanvas(existing);
+
+        // 이후 DOM 변화(모드 전환, 화면 폭 변경 등)를 계속 감시
+        const observer = new MutationObserver(() => {
+            const c = getCanvas();
+            if (c && !c.dataset.padBound) bindCanvas(c);
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', tryAttachLoop);
+        document.addEventListener('DOMContentLoaded', watchForCanvas);
     } else {
-        tryAttachLoop();
+        watchForCanvas();
     }
 })();
