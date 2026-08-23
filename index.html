@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=32">
+    <link rel="stylesheet" href="style.css?v=33">
 </head>
 <body>
 
@@ -197,11 +197,15 @@
             </div><!-- /card-clip -->
             </div><!-- /card-swipe-wrap -->
 
-            <!-- [확정 스펙] 아이패드 전용 연습장 — 카드 옆에 나란히, 채점과 무관한 순수 필기 보조 공간 -->
+            <!-- [변경] 텍스트로 자동변환(Scribble)되지 않도록 textarea 대신 canvas로 순수 필기만 남김 -->
             <div id="ipad-practice-pad" class="ipad-practice-pad">
-                <div class="ipad-pad-label">✏️ 연습장</div>
-                <textarea id="ipad-pad-textarea" class="ipad-pad-textarea" placeholder="여기에 손으로 쓰거나 타이핑하며 암송을 연습해보세요.&#10;(이 내용은 채점되지 않습니다)"></textarea>
-                <button class="ipad-pad-clear-btn" onclick="document.getElementById('ipad-pad-textarea').value=''">지우기</button>
+                <div class="ipad-pad-label-row">
+                    <span class="ipad-pad-label">✏️ 연습장 (손글씨 그대로 남음)</span>
+                    <button class="ipad-pad-clear-btn" onclick="window.clearIpadPad()">지우기</button>
+                </div>
+                <div class="ipad-pad-canvas-wrap">
+                    <canvas id="ipad-pad-canvas" class="ipad-pad-canvas"></canvas>
+                </div>
             </div>
 
             </div><!-- /ipad-card-pad-row -->
@@ -374,13 +378,14 @@
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js?v=32"></script>
-    <script src="test.js?v=32"></script>
-    <script src="bilingual.js?v=32"></script>
-    <script type="module" src="auth.js?v=32"></script>
-    <script type="module" src="records.js?v=32"></script>
-    <script type="module" src="settings.js?v=32"></script>
-    <script type="module" src="app.js?v=32"></script>
+    <script src="practice.js?v=33"></script>
+    <script src="test.js?v=33"></script>
+    <script src="bilingual.js?v=33"></script>
+    <script src="ipad-pad.js?v=33"></script>
+    <script type="module" src="auth.js?v=33"></script>
+    <script type="module" src="records.js?v=33"></script>
+    <script type="module" src="settings.js?v=33"></script>
+    <script type="module" src="app.js?v=33"></script>
 
 </body>
 </html>
