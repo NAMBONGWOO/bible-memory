@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=33">
+    <link rel="stylesheet" href="style.css?v=35">
 </head>
 <body>
 
@@ -88,6 +88,7 @@
         <div class="menu-overlay" id="overlay" onclick="toggleMenu()"></div>
         <div class="side-menu" id="sideMenu">
             <div id="user-display" style="font-weight:bold; font-size:22px; color:var(--dark-blue); margin-bottom:25px;">사용자님</div>
+            <div class="menu-item" style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="openSearchScreen()">🔍 검색하기</div>
             <div class="menu-item" style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="setMode('practice')">📖 암송 연습</div>
             <div class="menu-item" style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="setMode('bilingual')">🔄 암송 연습 2 (한/영)</div>
             <div class="menu-item" style="padding:15px 0; border-bottom:1px solid #eee; cursor:pointer;" onclick="setMode('test')">✍️ 암송 테스트</div>
@@ -226,6 +227,29 @@
         </main>
 
         <!-- ③ 암송 기록 화면 -->
+        <!-- [확정 스펙] 구절 검색 화면 -->
+        <div id="search-screen" style="display:none; width:100%;">
+            <header class="top-bar" style="position:sticky; top:0;">
+                <button onclick="closeSearchScreen()" style="background:none; border:none; color:white; font-size:22px; cursor:pointer;">‹</button>
+                <div style="font-weight:bold;">검색하기</div>
+                <div style="width:22px;"></div>
+            </header>
+
+            <div style="padding:16px; max-width:450px; margin:0 auto;">
+                <div style="position:relative; margin-bottom:6px;">
+                    <input type="text" id="search-input" class="test-input"
+                           placeholder="단어 또는 '요 3:16' 같은 성구 입력"
+                           style="padding-right:40px; margin-bottom:0;"
+                           oninput="onSearchInput()">
+                    <span style="position:absolute; right:14px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:15px;">🔍</span>
+                </div>
+                <div style="font-size:11.5px; color:rgba(255,255,255,0.65); margin:6px 0 14px;">전체 코스에서 검색됩니다</div>
+
+                <div id="search-result-count" style="color:white; font-size:12.5px; font-weight:600; margin-bottom:10px; display:none;"></div>
+                <div id="search-results"></div>
+            </div>
+        </div>
+
         <div id="records-screen" style="display:none; width:100%;">
             <header class="top-bar" style="position:sticky; top:0;">
                 <button onclick="closeRecordsScreen()" style="background:none; border:none; color:white; font-size:22px; cursor:pointer;">‹</button>
@@ -378,14 +402,15 @@
     </div>
 
     <!-- [버그 수정] 로딩 순서: practice/test 먼저, 그 다음 module -->
-    <script src="practice.js?v=33"></script>
-    <script src="test.js?v=33"></script>
-    <script src="bilingual.js?v=33"></script>
-    <script src="ipad-pad.js?v=34"></script>
-    <script type="module" src="auth.js?v=33"></script>
-    <script type="module" src="records.js?v=33"></script>
-    <script type="module" src="settings.js?v=33"></script>
-    <script type="module" src="app.js?v=33"></script>
+    <script src="practice.js?v=35"></script>
+    <script src="test.js?v=35"></script>
+    <script src="bilingual.js?v=35"></script>
+    <script src="ipad-pad.js?v=35"></script>
+    <script src="search.js?v=35"></script>
+    <script type="module" src="auth.js?v=35"></script>
+    <script type="module" src="records.js?v=35"></script>
+    <script type="module" src="settings.js?v=35"></script>
+    <script type="module" src="app.js?v=35"></script>
 
 </body>
 </html>
