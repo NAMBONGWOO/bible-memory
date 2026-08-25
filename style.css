@@ -372,7 +372,9 @@ body {
    암송 기록 화면
    ═══════════════════════════════════════════ */
 #records-screen { height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #f8fafc; }
+#search-screen { height: 100vh; overflow-y: auto; -webkit-overflow-scrolling: touch; background: radial-gradient(circle at top, var(--main-blue) 0%, var(--dark-blue) 100%); }
 #records-screen .top-bar { position: sticky !important; z-index: 2100; }
+#search-screen .top-bar { position: sticky !important; z-index: 2100; }
 
 .records-tabs {
     display: flex;
