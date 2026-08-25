@@ -62,7 +62,7 @@
     }
 
     function move(e) {
-        if (!drawing) return;
+        if (!drawing || !ctx) return;
         e.preventDefault();
         const pos = getPos(e);
         ctx.beginPath();
@@ -97,7 +97,10 @@
 
         // Pointer Events: 마우스/터치/펜슬을 하나의 API로 통일 처리
         // { passive: false }로 등록해야 preventDefault()가 실제로 동작함
-        canvas.addEventListener('pointerdown', (e) => { canvas.setPointerCapture(e.pointerId); start(e); }, { passive: false });
+        canvas.addEventListener('pointerdown', (e) => {
+            try { canvas.setPointerCapture(e.pointerId); } catch (err) { /* 캔버스 크기가 아직 0일 때 등 예외 상황 방어 */ }
+            start(e);
+        }, { passive: false });
         canvas.addEventListener('pointermove', move, { passive: false });
         canvas.addEventListener('pointerup', end, { passive: false });
         canvas.addEventListener('pointercancel', end, { passive: false });
@@ -107,6 +110,21 @@
         window.addEventListener('resize', () => {
             if (canvas.offsetParent !== null) resizeCanvasKeepingContent();
         });
+
+        // [버그 수정] 캔버스가 DOM에 나타난 시점엔 부모(flex 레이아웃)의
+        // 크기 계산이 아직 끝나지 않아 rect.width/height가 0일 수 있음.
+        // 이 경우 resizeCanvasKeepingContent()가 조기 종료되어 캔버스의
+        // 실제 픽셀 크기가 0x0으로 남고, 이후 그림이 전혀 그려지지 않는
+        // (혹은 그려져도 안 보이는) 상태가 됨 → 크기가 실제로 잡히는
+        // 시점을 ResizeObserver로 감지해서 다시 한번 리사이즈를 강제한다.
+        if (window.ResizeObserver) {
+            const ro = new ResizeObserver(() => {
+                if (canvas.width === 0 || canvas.height === 0) {
+                    resizeCanvasKeepingContent();
+                }
+            });
+            ro.observe(canvas);
+        }
     }
 
     // ─── [버그 수정] MutationObserver로 캔버스 등장을 즉시 감지 ─────────────
