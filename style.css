@@ -937,11 +937,12 @@ body {
 
     /* [확정 스펙] 카드 컬럼 — 소주제 버튼 + 카드 + 이전/다음 버튼을 세로로 묶어
        카드 폭 안에서만 배치 (연습장과는 완전히 분리된 영역) */
+    /* [요청] 카드 컬럼 - 사이드패널 제외 영역의 40% */
     .ipad-card-column {
         display: flex;
         flex-direction: column;
         align-items: center;
-        flex: 1;
+        flex: 0 0 40%;
         min-width: 0;
         min-height: 0;
     }
@@ -949,41 +950,49 @@ body {
     /* 소주제 버튼: 카드 폭에 맞춰 표시 (연습장 침범 없음, 좌우스크롤+페이드는 기존 그대로) */
     #part-scroll-wrap {
         display: block !important;
-        max-width: 480px;
+        max-width: none;
+        width: 96%;
     }
 
-    /* 카드 + 연습장 좌우 배치 — 카드 컬럼(가변폭) + 연습장(고정폭) */
+    /* [요청] 카드 + 연습장 좌우 배치 — 사이드패널을 제외한 영역을 카드 40% : 연습장 60% 비율로 배분 */
     .ipad-card-pad-row {
         display: flex;
         flex-direction: row;
         align-items: stretch;
         gap: 18px;
         width: 100%;
-        max-width: 980px;
         flex: 1;
         min-height: 0;
         min-width: 0;
     }
     #card-swipe-wrap {
-        max-width: 480px;
+        max-width: none !important;
+        width: 100% !important;
+    }
+    #card-swipe-wrap .card {
+        max-width: none !important;
+        width: 100% !important;
     }
 
     /* [확정 스펙] 이전/다음 버튼 — 카드 바로 아래, 중앙정렬 */
     #main-controls {
         display: flex;
         justify-content: center;
+        width: 100% !important;
+        max-width: none !important;
     }
     #main-controls #practice-controls,
     #main-controls #test-controls {
-        max-width: 480px;
+        max-width: none;
+        width: 100%;
     }
 
-    /* [확정 스펙] 연습장 — 카드와 무관하게 항상 일정한 고정폭으로 우측을 차지 */
+    /* [요청] 연습장 — 전체 폭의 60% (카드와 무관하게 항상 이 비율 유지) */
     .ipad-practice-pad {
         display: flex;
         flex-direction: column;
-        width: 320px;
-        flex-shrink: 0;
+        flex: 0 0 60%;
+        width: auto;
         background: white;
         border-radius: 24px;
         padding: 16px 20px;
