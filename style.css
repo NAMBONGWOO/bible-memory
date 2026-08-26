@@ -856,6 +856,9 @@ body {
 .ipad-card-pad-row {
     display: contents;
 }
+.ipad-card-column {
+    display: contents;
+}
 
 @media (min-width: 900px) {
     /* main-content 자체를 좌우 2컬럼으로 전환 */
@@ -927,13 +930,29 @@ body {
         padding-top: 16px;
     }
 
-    /* 아이패드에서는 사이드패널이 코스/파트를 담당하므로 아이폰 전용 UI 숨김 */
-    #quick-data-select,
-    #part-scroll-wrap {
+    /* 아이패드에서는 사이드패널이 코스 목록을 담당 (파트 선택은 카드 상단 소주제 버튼이 계속 담당) */
+    #quick-data-select {
         display: none !important;
     }
 
-    /* 카드 + 연습장 좌우 배치 */
+    /* [확정 스펙] 카드 컬럼 — 소주제 버튼 + 카드 + 이전/다음 버튼을 세로로 묶어
+       카드 폭 안에서만 배치 (연습장과는 완전히 분리된 영역) */
+    .ipad-card-column {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        min-width: 0;
+        min-height: 0;
+    }
+
+    /* 소주제 버튼: 카드 폭에 맞춰 표시 (연습장 침범 없음, 좌우스크롤+페이드는 기존 그대로) */
+    #part-scroll-wrap {
+        display: block !important;
+        max-width: 480px;
+    }
+
+    /* 카드 + 연습장 좌우 배치 — 카드 컬럼(가변폭) + 연습장(고정폭) */
     .ipad-card-pad-row {
         display: flex;
         flex-direction: row;
@@ -943,17 +962,28 @@ body {
         max-width: 980px;
         flex: 1;
         min-height: 0;
+        min-width: 0;
     }
     #card-swipe-wrap {
         max-width: 480px;
     }
 
-    /* [변경] 연습장 — 캔버스 기반 순수 필기 보조 공간 (텍스트 자동변환 없음) */
+    /* [확정 스펙] 이전/다음 버튼 — 카드 바로 아래, 중앙정렬 */
+    #main-controls {
+        display: flex;
+        justify-content: center;
+    }
+    #main-controls #practice-controls,
+    #main-controls #test-controls {
+        max-width: 480px;
+    }
+
+    /* [확정 스펙] 연습장 — 카드와 무관하게 항상 일정한 고정폭으로 우측을 차지 */
     .ipad-practice-pad {
         display: flex;
         flex-direction: column;
-        flex: 1;
-        min-width: 280px;
+        width: 320px;
+        flex-shrink: 0;
         background: white;
         border-radius: 24px;
         padding: 16px 20px;

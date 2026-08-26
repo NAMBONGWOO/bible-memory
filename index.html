@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=36">
+    <link rel="stylesheet" href="style.css?v=37">
 </head>
 <body>
 
@@ -119,20 +119,23 @@
             <!-- [요청] 카드 상단에서 데이터 세트를 바로 전환할 수 있는 빠른 선택 (아이폰 전용, 아이패드에서는 사이드패널로 대체되어 숨김) -->
             <select id="quick-data-select" class="quick-select" onchange="loadData(this.value); syncDataSelects(this.value);" style="margin-bottom:8px;"></select>
 
-            <!-- [요청] 소주제명이 길어져도 줄바꿈 없이 가로 스크롤 + 양끝 페이드 처리 (아이폰 전용) -->
-            <div id="part-scroll-wrap" style="position:relative; width:96%; flex-shrink:0; margin-bottom:10px;">
-                <div id="part-container" style="display:flex; flex-wrap:nowrap; gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding:2px 4px;"></div>
-                <div class="part-fade part-fade-left"></div>
-                <div class="part-fade part-fade-right"></div>
-            </div>
-
             <div id="status-panel" style="display:none; width:90%; max-width:450px; justify-content:space-between; margin-bottom:10px; color:white; font-size:14px; font-weight:bold; flex-shrink:0;">
                 <span id="test-progress">진행: 1 / 10</span>
                 <span id="test-total-score">누적 감점: 0</span>
             </div>
 
-            <!-- [확정 스펙] 아이패드에서 카드+연습장을 좌우로 나란히 배치하는 wrapper -->
+            <!-- [확정 스펙] 아이패드에서 카드 컬럼(소주제+카드+이전다음)과 연습장을 좌우로 나란히 배치 -->
             <div id="ipad-card-pad-row" class="ipad-card-pad-row">
+
+            <!-- [확정 스펙] 카드 컬럼 — 소주제 버튼, 카드, 이전/다음 버튼을 세로로 묶어 카드 폭 안에서만 배치 -->
+            <div id="ipad-card-column" class="ipad-card-column">
+
+            <!-- [요청] 소주제명이 길어져도 줄바꿈 없이 가로 스크롤 + 양끝 페이드 처리 (카드 폭 안에서만, 연습장 침범 없음) -->
+            <div id="part-scroll-wrap" style="position:relative; width:96%; flex-shrink:0; margin-bottom:10px;">
+                <div id="part-container" style="display:flex; flex-wrap:nowrap; gap:6px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding:2px 4px;"></div>
+                <div class="part-fade part-fade-left"></div>
+                <div class="part-fade part-fade-right"></div>
+            </div>
 
             <div id="card-swipe-wrap" style="position:relative; width:96%; max-width:480px; flex:1; min-height:0; display:flex; flex-direction:column;">
                 <!-- [요청#4] 반투명 좌우 화살표 (연습 모드에서만 표시) -->
@@ -196,9 +199,24 @@
                 </div>
             </div>
             </div><!-- /card-clip -->
+
+            <!-- [확정 스펙] 이전/다음(또는 다음문제로) 버튼 — 하나의 마크업을 유지하고
+                 아이패드에서는 CSS order로 카드 바로 아래에 오도록 위치만 조정 -->
+            <div class="controls" id="main-controls" style="width:90%; max-width:450px; flex-shrink:0;">
+                <div id="practice-controls" style="display:flex; gap:12px; justify-content:center;">
+                    <button class="btn" style="background:white; color:#333; flex:1; border:1px solid #ddd;" onclick="prevVerse()">이전</button>
+                    <button class="btn primary-btn" style="flex:1;" onclick="handleNext()">다음</button>
+                </div>
+                <div id="test-controls" style="display:none;">
+                    <button class="btn primary-btn" onclick="testNext()">다음 문제로</button>
+                </div>
+            </div>
+
             </div><!-- /card-swipe-wrap -->
+            </div><!-- /ipad-card-column -->
 
             <!-- [변경] 텍스트로 자동변환(Scribble)되지 않도록 textarea 대신 canvas로 순수 필기만 남김 -->
+            <!-- [확정 스펙] 연습장은 카드와 독립적인 고정폭 컬럼으로 우측을 채움 -->
             <div id="ipad-practice-pad" class="ipad-practice-pad">
                 <div class="ipad-pad-label-row">
                     <span class="ipad-pad-label">✏️ 연습장 (손글씨 그대로 남음)</span>
@@ -210,16 +228,6 @@
             </div>
 
             </div><!-- /ipad-card-pad-row -->
-
-            <div class="controls" style="width:90%; max-width:450px; flex-shrink:0;">
-                <div id="practice-controls" style="display:flex; gap:12px;">
-                    <button class="btn" style="background:white; color:#333; flex:1; border:1px solid #ddd;" onclick="prevVerse()">이전</button>
-                    <button class="btn primary-btn" style="flex:1;" onclick="handleNext()">다음</button>
-                </div>
-                <div id="test-controls" style="display:none;">
-                    <button class="btn primary-btn" onclick="testNext()">다음 문제로</button>
-                </div>
-            </div>
 
             <div id="v-page" style="margin-top:10px; margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:14px; flex-shrink:0;">0 / 0</div>
 
