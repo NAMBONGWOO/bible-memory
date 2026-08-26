@@ -15,6 +15,19 @@ body {
     flex-direction: column;
     align-items: center;
     font-family: 'Pretendard', sans-serif;
+    /* [버그 수정] 아이패드 필기 중 손바닥이 화면에 닿으면서 텍스트가 선택되어
+       파란 선택 커서가 뜨는 문제 방지 — 전역으로 텍스트 선택을 막고,
+       실제 타이핑이 필요한 입력 요소만 아래에서 예외로 허용 */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* 실제 텍스트 입력이 필요한 요소는 선택/편집 가능하도록 예외 처리 */
+input, textarea {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
 }
 
 /* 인증 전체 배경 */
