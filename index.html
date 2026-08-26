@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=41">
+    <link rel="stylesheet" href="style.css?v=42">
 </head>
 <body>
 
@@ -213,8 +213,10 @@
             </div>
 
             <!-- [요청] 카드 번호(1/12) — 카드 컬럼 하단에 위치 (아이패드에서 화면 전체 폭 하단으로 새지 않도록) -->
-            <!-- [버그 수정] 필기 중 손바닥이 닿으면서 이 텍스트가 선택되던 문제 방지 -->
-            <div id="v-page" style="margin-top:10px; margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:14px; flex-shrink:0; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none;">0 / 0</div>
+            <!-- [버그 수정] 필기 중 손바닥이 닿으면서 텍스트 선택 팝업이 뜨던 문제 —
+                 user-select만으로는 iOS에서 완전히 막히지 않아 pointer-events:none으로
+                 이 요소 자체가 터치/펜슬 입력을 아예 받지 않도록 처리 (클릭 기능이 없는 순수 표시용 텍스트라 안전함) -->
+            <div id="v-page" style="margin-top:10px; margin-bottom:10px; color:rgba(255,255,255,0.7); font-size:14px; flex-shrink:0; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; pointer-events:none;">0 / 0</div>
 
             </div><!-- /card-swipe-wrap -->
             </div><!-- /ipad-card-column -->
