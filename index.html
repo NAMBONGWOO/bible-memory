@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>성경암송 Pro</title>
-    <link rel="stylesheet" href="style.css?v=42">
+    <link rel="stylesheet" href="style.css?v=43">
 </head>
 <body>
 
@@ -96,7 +96,7 @@
 
             <div style="margin-top:30px; font-size:11px; color:#999; font-weight:bold;">데이터 세트 선택</div>
             <!-- [개선] 내 코스 목록 -->
-            <select id="data-select" class="test-input" onchange="loadData(this.value); syncDataSelects(this.value); toggleMenu();" style="margin-top:5px; height:40px; white-space:nowrap; text-overflow:ellipsis;"></select>
+            <select id="data-select" class="test-input" onchange="loadData(this.value); syncDataSelects(this.value); toggleMenu(); this.blur();" style="margin-top:5px; height:40px; white-space:nowrap; text-overflow:ellipsis;"></select>
 
             <div style="flex:1;"></div>
             <div class="menu-item" style="padding:15px 0; border-top:1px solid #eee; cursor:pointer; color:#888; font-size:14px;" onclick="openSettingsScreen()">⚙️ 설정</div>
@@ -117,7 +117,7 @@
             <div id="ipad-content-col" class="ipad-content-col">
 
             <!-- [요청] 카드 상단에서 데이터 세트를 바로 전환할 수 있는 빠른 선택 (아이폰 전용, 아이패드에서는 사이드패널로 대체되어 숨김) -->
-            <select id="quick-data-select" class="quick-select" onchange="loadData(this.value); syncDataSelects(this.value);" style="margin-bottom:8px;"></select>
+            <select id="quick-data-select" class="quick-select" onchange="loadData(this.value); syncDataSelects(this.value); this.blur();" style="margin-bottom:8px;"></select>
 
             <div id="status-panel" style="display:none; width:90%; max-width:450px; justify-content:space-between; margin-bottom:10px; color:white; font-size:14px; font-weight:bold; flex-shrink:0;">
                 <span id="test-progress">진행: 1 / 10</span>
@@ -229,7 +229,7 @@
                     <button class="ipad-pad-clear-btn" onclick="window.clearIpadPad()">지우기</button>
                 </div>
                 <div class="ipad-pad-canvas-wrap">
-                    <canvas id="ipad-pad-canvas" class="ipad-pad-canvas"></canvas>
+                    <canvas id="ipad-pad-canvas" class="ipad-pad-canvas" contenteditable="false" tabindex="-1"></canvas>
                 </div>
             </div>
 
@@ -417,12 +417,12 @@
     <script src="practice.js?v=35"></script>
     <script src="test.js?v=35"></script>
     <script src="bilingual.js?v=35"></script>
-    <script src="ipad-pad.js?v=37"></script>
+    <script src="ipad-pad.js?v=38"></script>
     <script src="search.js?v=35"></script>
     <script type="module" src="auth.js?v=35"></script>
     <script type="module" src="records.js?v=35"></script>
     <script type="module" src="settings.js?v=35"></script>
-    <script type="module" src="app.js?v=35"></script>
+    <script type="module" src="app.js?v=36"></script>
 
 </body>
 </html>

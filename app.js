@@ -328,4 +328,17 @@ window.toggleMenu = () => {
     if (!side || !over) return;
     const isOpen = side.classList.toggle('open');
     over.style.display = isOpen ? 'block' : 'none';
+
+    // [버그 수정] 사이드메뉴 안의 select(data-select) 등이 포커스를 유지한 채
+    // 메뉴가 닫히면, 나중에 화면 다른 곳(특히 연습장)에서 손이 닿았을 때
+    // iOS가 그 남은 포커스 위치(메뉴가 있던 좌상단)에 붙여넣기 팝업을 띄우는
+    // 현상이 있었다. 메뉴를 닫을 때 내부의 모든 포커스 가능한 요소에서
+    // 명시적으로 포커스를 제거해 이 잔여 상태를 없앤다.
+    if (!isOpen) {
+        side.querySelectorAll('select, input, textarea, button').forEach(el => el.blur());
+        // 활성 요소가 메뉴 안에 남아있다면 body로 포커스를 되돌림
+        if (side.contains(document.activeElement)) {
+            document.activeElement.blur();
+        }
+    }
 };
